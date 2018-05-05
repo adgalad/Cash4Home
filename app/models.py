@@ -32,7 +32,8 @@ class MyUserManager(BaseUserManager):
             raise ValueError('Superuser must have is_superuser=True.')
         return self._create_user(email, password, **extra_fields)
 
-
+def get_image_path(instance, filename):
+    return os.path.join('photos', str(instance.id), filename)
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, null=True)
@@ -54,6 +55,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     updated_at   = models.DateTimeField(auto_now=True)
     first_name   = models.CharField(blank=True, max_length=30, verbose_name='first name')
     last_name    = models.CharField(blank=True, max_length=30, verbose_name='last name')
+    address      = models.CharField(blank=True, max_length=64, verbose_name='address')
+    id_number    = models.IntegerField(blank=True, verbose_name='ID number', default=0)
+    mobile_phone = models.CharField(blank=True, max_length=16, verbose_name='address')
+    id_front     = models.ImageField(upload_to=get_image_path, blank=True, null=True)
+    id_back      = models.ImageField(upload_to=get_image_path, blank=True, null=True)
+    selfie_image = models.ImageField(upload_to=get_image_path, blank=True, null=True)
+    service_image = models.ImageField(upload_to=get_image_path, blank=True, null=True)
+    # validation_status =
 
     USERNAME_FIELD = 'email'
     objects = MyUserManager()
