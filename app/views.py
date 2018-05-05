@@ -5,7 +5,7 @@ from django import forms
 from django.http import JsonResponse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.models import User
+
 from django.contrib.auth.forms import UserCreationForm
 from io import BytesIO
 import time
@@ -13,6 +13,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 from django.template import Context
 
+from app.models import User
 
 def home(request):
   return render(request, 'index.html')
@@ -24,16 +25,16 @@ class SignUpForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'username', 'password1', 'password2', )
+        fields = ('first_name', 'last_name', 'email', 'password1', 'password2', )
 
 def signup(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
             form.save()
-            username = form.cleaned_data.get('username')
+            email = form.cleaned_data.get('email')
             raw_password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=raw_password)
+            user = authenticate(username=email, password=raw_password)
             login(request, user)
             return redirect('home')
     else:

@@ -82,9 +82,13 @@ DATABASES = {
 }
 
 
+
+# User substitution
+# https://docs.djangoproject.com/en/1.11/topics/auth/customizing/#auth-custom-user
+AUTH_USER_MODEL = 'app.User'
+
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -142,4 +146,5 @@ EMAIL_HOST_USER = 'smarticket.suport@gmail.com'
 EMAIL_HOST_PASSWORD = 'asd123asd'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'Equipo de soporte Cash4Home <support@cash4home.com>'
 
