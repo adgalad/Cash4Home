@@ -1,14 +1,55 @@
-{% extends 'base.html' %}
+{% extends "base_site.html" %}
 
-{% block title %}Login{% endblock %}
+{% block title %} Inicio Sesión {% endblock title %}
 
-{% block content %}
-  <h2>Login</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Login</button>
-  </form>
-  <a href="/signup">Registrarse</a><br>
-  <a href="/password_reset">Olvidé mi contraseña</a>
-{% endblock %}
+{% block stylesheets %}
+  {{ block.super }}
+  <!-- Animate.css -->
+  <link href="/static/vendors/animate.css/animate.min.css" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block body_class %}login{% endblock body_class %}
+
+{% block body %}
+  <div>
+    <a class="hiddenanchor" id="signup"></a>
+    <a class="hiddenanchor" id="signin"></a>
+
+    <div class="login_wrapper">
+      <div class="animate form login_form">
+        <section class="login_content">
+          <form>
+            {% csrf_token %}
+            <h1>Iniciar sesión</h1>
+            <div>
+              <input type="text" class="form-control" placeholder="Usuario" required="" />
+            </div>
+            <div>
+              <input type="password" class="form-control" placeholder="Contraseña" required="" />
+            </div>
+            <div>
+              <a class="btn btn-default submit" href="index.html">Entrar</a>
+              <a class="reset_pass" href="#">¿Olvidaste tu contraseña?</a>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="separator">
+              <p class="change_link">¿Eres nuevo por aquí?
+                <a href="#signup" class="to_register"> Crear cuenta </a>
+              </p>
+
+              <div class="clearfix"></div>
+              <br />
+
+              <div style="position: relative;left: 34%;"">
+                <img src="/static/images/logo.png" class="img-responsive" width="30%">
+              </div>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </div>
+{% endblock body %}
+
