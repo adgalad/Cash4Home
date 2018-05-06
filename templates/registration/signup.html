@@ -18,10 +18,18 @@
     <div class="login_wrapper">
       <div class="form registration_form">
         <section class="login_content">
-          <form>
+          <form method="post">
             {% csrf_token %}
             <h1>Crear cuenta</h1>
-            <div>
+            {% for field in form %}
+              <p>
+                {{ field }}
+                {% for error in field.errors %}
+                  <p style="color: red">{{ error }}</p>
+                {% endfor %}
+              </p>
+            {% endfor %}
+<!--             <div>
               <input type="text" class="form-control" placeholder="Username" required="" />
             </div>
             <div>
@@ -29,26 +37,24 @@
             </div>
             <div>
               <input type="password" class="form-control" placeholder="Password" required="" />
-            </div>
-            <div>
-              <a class="btn btn-default submit" href="index.html">Registrarse</a>
-            </div>
+            </div> -->
+            <button class="btn btn-default submit" type="submit">Registrarse</button>
+          </form>
+          <div class="clearfix"></div>
+
+          <div class="separator">
+            <p class="change_link">¿Ya tienes una cuenta?
+              <a href="/login" class="to_register">Iniciar Sesión</a>
+            </p>
 
             <div class="clearfix"></div>
+            <br />
 
-            <div class="separator">
-              <p class="change_link">¿Ya tienes una cuenta?
-                <a href="#signin" class="to_register">Iniciar Sesión</a>
-              </p>
-
-              <div class="clearfix"></div>
-              <br />
-
-              <div style="position: relative;left: 34%;"">
-                <img src="/static/images/logo.png" class="img-responsive" width="30%">
-              </div>
+            <div style="position: relative;left: 34%;"">
+             <a href="/"> <img src="/static/images/logo.png" class="img-responsive" width="30%"> </a>
             </div>
-          </form>
+          </div>
+          
         </section>
       </div>
     </div>

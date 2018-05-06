@@ -1,33 +1,26 @@
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 import json
-from django import forms
 from django.http import JsonResponse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import login, authenticate
+from django.contrib.auth import logout as login_auth
 
-from django.contrib.auth.forms import UserCreationForm
 from io import BytesIO
 import time
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import get_template
-from django.template import Context
 
-from app.models import User
+from app.forms import SignUpForm
 
 def home(request):
   return render(request, 'index.html')
 
+def logout(request):
+    login_auth(request)
+    return render(request, 'index.html')    
 
-class SignUpForm(UserCreationForm):
-    first_name = forms.CharField(max_length=30, required=False, help_text='Optional.')
-    last_name = forms.CharField(max_length=30, required=False, help_text='Optional.')
-
-    class Meta:
-        model = User
-        fields = ('first_name', 'last_name', 'email', 'password1', 'password2', )
 
 def signup(request):
+    print(request.method)
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
@@ -36,7 +29,9 @@ def signup(request):
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=email, password=raw_password)
             login(request, user)
-            return redirect('home')
+            print("Exito")
+            return redirect('/')
     else:
         form = SignUpForm()
+        print("What")
     return render(request, 'registration/signup.html', {'form': form})

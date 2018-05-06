@@ -22,7 +22,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^signup/$', views.signup, name='signup'),
     url(r'^login/$', auth_views.login, name='login'),
-    url(r'^logout/$', auth_views.logout, name='logout'),
+    url(r'^logout/$', views.logout, name='logout'),
     
     # Reset Password
     url(r'^password_reset/$', auth_views.password_reset, name='password_reset'),
@@ -30,5 +30,10 @@ urlpatterns = [
     url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', auth_views.password_reset_confirm, name='password_reset_confirm'),
     url(r'^reset/done/$', auth_views.password_reset_complete, name='password_reset_complete'),
 
-    url(r'^$', views.home, name="home"),
+    
+    url(r'^$', views.home, name='home'),
+    url(r'^index$', views.home, name='home'),
+    url(r'^index.html', views.home, name='home'),
+
+    url(r'^accounts/profile/$', views.home, name="home") # Solo por prueba
 ]

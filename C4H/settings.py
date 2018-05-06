@@ -108,7 +108,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-ES'
 
 TIME_ZONE = 'UTC'
 
@@ -146,5 +146,5 @@ EMAIL_HOST_USER = 'smarticket.suport@gmail.com'
 EMAIL_HOST_PASSWORD = 'asd123asd'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'Equipo de soporte Cash4Home <support@cash4home.com>'
+DEFAULT_FROM_EMAIL = 'Equipo de soporte de Cash4Home <support@cash4home.com>'
 
