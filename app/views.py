@@ -3,24 +3,48 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from django.http import JsonResponse
 from django.http import HttpResponseRedirect, HttpResponse
-from django.contrib.auth import login, authenticate
-from django.contrib.auth import logout as login_auth
-
+from django.contrib.auth import authenticate
+from django.contrib.auth import logout as logout_auth
+from django.contrib.auth import login as login_auth
+from django.contrib import messages
 from io import BytesIO
 import time
 
-from app.forms import SignUpForm
+from app.forms import SignUpForm, AuthenticationForm
 
 def home(request):
-  return render(request, 'index.html')
+    if request.user.is_authenticated():
+        return render(request, 'dashboard.html')
+    else:
+        return render(request, 'index.html')
+
+def company(request):
+  return render(request, 'company.html')
 
 def logout(request):
-    login_auth(request)
+    logout_auth(request)
     return render(request, 'index.html')    
 
+def login(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get('email')
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=email, password=raw_password)
+            print(user, email, raw_password)
+            if user is not None:
+                # if user.is_active:
+                login_auth(request, user)
+                return redirect('/')
+            else:
+                messages.error(request,'El correo electrónico o la contraseña son invalidos.')
+                return redirect('login')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'registration/login.html', {'form': form})
 
 def signup(request):
-    print(request.method)
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
@@ -28,10 +52,8 @@ def signup(request):
             email = form.cleaned_data.get('email')
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=email, password=raw_password)
-            login(request, user)
-            print("Exito")
+            login_auth(request, user)
             return redirect('/')
     else:
         form = SignUpForm()
-        print("What")
     return render(request, 'registration/signup.html', {'form': form})

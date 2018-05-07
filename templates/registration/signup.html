@@ -1,4 +1,4 @@
-{% extends "base_site.html" %}
+{% extends "base_dashboard.html" %}
 
 {% block title %} Registrarse {% endblock title %}
 
@@ -22,23 +22,12 @@
             {% csrf_token %}
             <h1>Crear cuenta</h1>
             {% for field in form %}
-              <p>
                 {{ field }}
                 {% for error in field.errors %}
                   <p style="color: red">{{ error }}</p>
                 {% endfor %}
-              </p>
             {% endfor %}
-<!--             <div>
-              <input type="text" class="form-control" placeholder="Username" required="" />
-            </div>
-            <div>
-              <input type="email" class="form-control" placeholder="Email" required="" />
-            </div>
-            <div>
-              <input type="password" class="form-control" placeholder="Password" required="" />
-            </div> -->
-            <button class="btn btn-default submit" type="submit">Registrarse</button>
+            <button class="btn btn-primary submit" type="submit">Registrarse</button>
           </form>
           <div class="clearfix"></div>
 

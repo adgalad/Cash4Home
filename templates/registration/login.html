@@ -1,4 +1,6 @@
-{% extends "base_site.html" %}
+
+{% extends "base_dashboard.html" %}
+{% load i18n %}
 
 {% block title %} Inicio Sesión {% endblock title %}
 
@@ -11,6 +13,7 @@
 {% block body_class %}login{% endblock body_class %}
 
 {% block body %}
+ 
   <div>
     <a class="hiddenanchor" id="signup"></a>
     <a class="hiddenanchor" id="signin"></a>
@@ -18,23 +21,19 @@
     <div class="login_wrapper">
       <div class="animate form login_form">
         <section class="login_content">
+          {% for message in messages %}
+          <div class="alert alert-warning" style="background-color: #6f9300; border-color: #6f9300">
+            {{ message }}
+          </div>
+          {% endfor %}
           <form method="post">
             {% csrf_token %}
             <h1>Iniciar sesión</h1>
-            {% csrf_token %}
             {% for field in form %}
               {{ field }} 
-              {% for error in field.errors %}
-                <p style="color: red">{{ error }}</p>
-              {% endfor %}
-              <script type="text/javascript">
-                var i = document.getElementsByName('{{field.html_name}}')[0]
-                i.classList.add('form-control')
-                i.placeholder = '{{ field.label }}'
-              </script>
             {% endfor %}
             <div>
-              <button type="submit" class="btn btn-default submit">Entrar</button>
+              <button class="btn btn-primary submit" type="submit">Entrar</button>
               <a class="reset_pass" href="/password_reset">¿Olvidaste tu contraseña?</a>
             </div>
           </form>

@@ -21,7 +21,7 @@ from app import views
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^signup/$', views.signup, name='signup'),
-    url(r'^login/$', auth_views.login, name='login'),
+    url(r'^login/$', views.login, name='login'),
     url(r'^logout/$', views.logout, name='logout'),
     
     # Reset Password
@@ -34,6 +34,7 @@ urlpatterns = [
     url(r'^$', views.home, name='home'),
     url(r'^index$', views.home, name='home'),
     url(r'^index.html', views.home, name='home'),
+    url(r'^company$', views.company, name="company"), # Solo por prueba
 
     url(r'^accounts/profile/$', views.home, name="home") # Solo por prueba
 ]

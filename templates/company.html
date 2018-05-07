@@ -1,0 +1,38 @@
+{% extends "base_index.html" %}
+{% block content %}
+<style type="text/css">
+  .column {
+    float: left;
+    width: 50%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+</style>
+<section id="company-about" class="section no-full-height background-theme-light">
+  <div class="container">
+    <div class="row">
+
+      <div class="column">
+        <h1> Lorem Ipsum </h1>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum efficitur mi arcu, eget semper tellus eleifend eu. Fusce interdum sed tellus in blandit. Suspendisse dignissim ipsum in volutpat interdum. Maecenas id massa eget nibh efficitur viverra. Nunc sit amet mollis turpis, sed accumsan odio. Praesent congue, libero non congue tempus, dolor nibh ornare libero, nec finibus mi dolor ut diam. Integer est massa, pharetra eget turpis id, commodo rutrum neque. Vivamus interdum eu urna eget tempor. Nulla ornare scelerisque sapien, vel feugiat est laoreet vitae. Sed vehicula et turpis vitae efficitur. Quisque volutpat, ipsum et iaculis tincidunt, dui magna commodo risus, non molestie enim leo in diam. Sed vel interdum dui. Sed ac faucibus quam, in euismod ipsum. Donec vitae pellentesque tortor.
+        </p>
+        <p>
+          Nunc molestie leo venenatis consequat rhoncus. Duis lorem risus, cursus non rutrum sit amet, elementum id dui. Etiam vitae diam lorem. Etiam non varius nisl, quis ornare sapien. Quisque a augue mollis, aliquam magna ac, facilisis quam. Suspendisse ac imperdiet augue. Nunc at elit congue, condimentum ex non, lobortis lectus. Nulla finibus, urna vel mollis pretium, urna quam ultricies enim, nec convallis felis risus sed urna. Nam viverra dui eu metus mollis sollicitudin. Pellentesque eget lectus vel ipsum varius vehicula. Curabitur nec posuere leo. Fusce in tincidunt arcu. Sed a tristique nibh.
+        </p>
+        <p>
+          Integer quam purus, sodales non velit eu, convallis interdum mi. Nam faucibus dui tortor, et auctor eros accumsan nec. Nulla sed leo nec nulla iaculis suscipit id a massa. Ut eleifend lacinia ligula vel lobortis. Nulla facilisi. Curabitur odio lectus, commodo quis sapien quis, vulputate varius ligula. Integer bibendum lorem leo, sit amet consequat mauris fringilla id. Maecenas congue est maximus egestas pulvinar.
+        </p>
+      </div>
+      <div class="column" align="center">
+        <img src="/static/images/logo.png" width="350px">
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock content %}

@@ -1,0 +1,149 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Landing Page - Start Bootstrap Theme</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/static/vendors/index/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template -->
+    <link href="/static/vendors/index/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="/static/vendors/index/simple-line-icons/css/simple-line-icons.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+
+    <!-- Custom styles for this template -->
+    <link href="/static/css/landing-page.css" rel="stylesheet">
+    <link href="/static/css/custom.css" rel="stylesheet">
+
+  </head>
+
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-light bg-light static-top" style="height: 80px;">
+      <!-- <div class="container"> -->
+        <div align="left">
+          <a class="navbar-brand" href="/"><img src="/static/images/logo3.png" width="240px"></a>
+          <style>
+            ul {
+                float:right;
+                list-style-type: none;
+                margin-left: 0px;
+                padding: 0;
+                overflow: hidden;
+            }
+
+            li {
+                float: left;
+                margin-top: 10px;
+            }
+
+            li a {
+                display: block;
+                color: black;
+                font-size: 15px;
+                text-align: center;
+                /*margin-top: 10px;*/
+                padding: 20px 30px;
+                text-decoration: none;
+            }
+
+            li a:hover {
+                background-color: #6f9300;
+                color:white;
+            }
+            </style>
+          <ul class="navbar-item navbar-navigation hidden-xs hidden-sm layout" layout="" layout-align-xs="start center">
+            <li>
+              <a href="/company" class="underline underline-primary">
+                ¿Quienes somos?
+              </a>
+            </li>
+            <li>
+              <a href="/company" class="underline underline-primary">
+                Contactenos
+              </a>
+            </li>
+            <li>
+              <a href="/company" class="underline underline-primary">
+                Preguntas Frecuentes
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div align="right" style="width: 50%">
+          <div class="container" style="padding: 40px"> 
+            <a class="btn btn-primary" href="/login">Ingresar</a>
+            <a class="btn btn-primary" style="background-color: white; color:#6f9300; border-color: #6f9300; border-width: medium;" href="/signup">Registrarse  </a>
+          </div>
+        </div>
+      <!-- </div> -->
+    </nav>
+
+    <!-- Masthead -->
+    {% block content %}
+
+    {% endblock content %}
+
+    <!-- Footer -->
+    <footer class="footer bg-light">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-6 h-100 text-center text-lg-left my-auto">
+            <ul class="list-inline mb-2">
+              <li class="list-inline-item">
+                <a href="#">About</a>
+              </li>
+              <li class="list-inline-item">&sdot;</li>
+              <li class="list-inline-item">
+                <a href="#">Contact</a>
+              </li>
+              <li class="list-inline-item">&sdot;</li>
+              <li class="list-inline-item">
+                <a href="#">Terms of Use</a>
+              </li>
+              <li class="list-inline-item">&sdot;</li>
+              <li class="list-inline-item">
+                <a href="#">Privacy Policy</a>
+              </li>
+            </ul>
+            <p class="text-muted small mb-4 mb-lg-0">&copy; Your Website 2018. All Rights Reserved.</p>
+          </div>
+          <div class="col-lg-6 h-100 text-center text-lg-right my-auto">
+            <ul class="list-inline mb-0">
+              <li class="list-inline-item mr-3">
+                <a href="#">
+                  <i class="fa fa-facebook fa-2x fa-fw"></i>
+                </a>
+              </li>
+              <li class="list-inline-item mr-3">
+                <a href="#">
+                  <i class="fa fa-twitter fa-2x fa-fw"></i>
+                </a>
+              </li>
+              <li class="list-inline-item">
+                <a href="#">
+                  <i class="fa fa-instagram fa-2x fa-fw"></i>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/static/vendors/index/jquery/jquery.min.js"></script>
+    <script src="/static/vendors/index/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  </body>
+
+</html>
