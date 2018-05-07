@@ -23,7 +23,7 @@ def company(request):
 
 def logout(request):
     logout_auth(request)
-    return render(request, 'index.html')    
+    return redirect("/")
 
 def login(request):
     if request.method == 'POST':

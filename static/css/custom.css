@@ -22,12 +22,7 @@ html , body{
     border-color: #6f9300;
 }
 
-,
- {
-  color: #fff;
-  background-color: #607f00;
-  border-color: #5c7a01;
-}
+
 
 .btn-primary:active,
 .btn-primary.active,
@@ -852,19 +847,17 @@ a:focus {
 .site_title:focus {
     text-decoration: none
 }
-.nav.navbar-nav>li>a {
-    color: #515356 !important
-}
-.nav.top_menu>li>a {
+
+/*.nav.top_menu>li>a {
     position: relative;
     display: block;
     padding: 10px 15px;
     color: #34495E !important
-}
-.nav>li>a:hover,
+}*/
+/*.nav>li>a:hover,
 .nav>li>a:focus {
     background-color: transparent
-}
+}*/
 .top_search {
     padding: 0
 }

@@ -28,17 +28,29 @@
   <body>
 
     <!-- Navigation -->
-    <nav class="navbar navbar-light bg-light static-top" style="height: 80px;">
-      <!-- <div class="container"> -->
-        <div align="left">
-          <a class="navbar-brand" href="/"><img src="/static/images/logo3.png" width="240px"></a>
-          <style>
+    <nav class="navbar navbar-expand-md navbar-light">
+      <!-- Brand -->
+      <a class="navbar-brand" href="/"><img src="/static/images/logo3.png" width="200px"></a>
+
+      <!-- Toggler/collapsibe Button -->
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Navbar links -->
+      <div class="collapse navbar-collapse" id="collapsibleNavbar">
+        
+       <style>
             ul {
                 float:right;
                 list-style-type: none;
                 margin-left: 0px;
                 padding: 0;
                 overflow: hidden;
+            }
+            
+            ul.navbar-right{
+              margin-left: 50% !important;
             }
 
             li {
@@ -48,7 +60,7 @@
 
             li a {
                 display: block;
-                color: black;
+                color: black !important;
                 font-size: 15px;
                 text-align: center;
                 /*margin-top: 10px;*/
@@ -57,36 +69,39 @@
             }
 
             li a:hover {
-                background-color: #6f9300;
-                color:white;
+                background-color: #6f9300 !important;
+                color:white !important;
             }
             </style>
-          <ul class="navbar-item navbar-navigation hidden-xs hidden-sm layout" layout="" layout-align-xs="start center">
-            <li>
-              <a href="/company" class="underline underline-primary">
-                ¿Quienes somos?
-              </a>
-            </li>
-            <li>
-              <a href="/company" class="underline underline-primary">
-                Contactenos
-              </a>
-            </li>
-            <li>
-              <a href="/company" class="underline underline-primary">
-                Preguntas Frecuentes
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div align="right" style="width: 50%">
-          <div class="container" style="padding: 40px"> 
-            <a class="btn btn-primary" href="/login">Ingresar</a>
-            <a class="btn btn-primary" style="background-color: white; color:#6f9300; border-color: #6f9300; border-width: medium;" href="/signup">Registrarse  </a>
-          </div>
-        </div>
-      <!-- </div> -->
+            <ul class="nav navbar-nav" layout="" layout-align-xs="start center">
+              <li>
+                <a href="/company" style="color:black !important">
+                  ¿Quienes somos?
+                </a>
+              </li>
+              <li>
+                <a href="/company" style="color:black !important">
+                  Contactenos
+                </a>
+              </li>
+              <li>
+                <a href="/company" style="color:black !important">
+                  Preguntas Frecuentes
+                </a>
+              </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li>
+                <a class="btn btn-primary" href="/login">Ingresar</a>
+              </li>
+              <li>
+                <a class="btn btn-primary" style="background-color: white; color:#6f9300 !important; border-color: #6f9300; border-width: medium;" href="/signup">Registrarse  </a>
+              </li>
+            </ul>
+      </div> 
     </nav>
+
+
 
     <!-- Masthead -->
     {% block content %}
@@ -94,7 +109,7 @@
     {% endblock content %}
 
     <!-- Footer -->
-    <footer class="footer bg-light">
+    <footer class="footer bg-light" style="margin-left:0px">
       <div class="container">
         <div class="row">
           <div class="col-lg-6 h-100 text-center text-lg-left my-auto">
