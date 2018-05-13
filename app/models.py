@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 from django.utils.translation import ugettext_lazy as _
+from django.core.validators import RegexValidator
 
 class MyUserManager(BaseUserManager):
     """
@@ -50,14 +51,18 @@ class User(AbstractBaseUser, PermissionsMixin):
             'Unselect this instead of deleting accounts.'
         ),
     )
+    
+    phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+
     is_superuser = models.BooleanField(default=False, help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status')
+    verified     = models.BooleanField(default=False)
     created_at   = models.DateTimeField(auto_now_add=True)
     updated_at   = models.DateTimeField(auto_now=True)
     first_name   = models.CharField(blank=True, max_length=30, verbose_name='first name')
     last_name    = models.CharField(blank=True, max_length=30, verbose_name='last name')
     address      = models.CharField(blank=True, max_length=64, verbose_name='address')
     id_number    = models.IntegerField(blank=True, verbose_name='ID number', default=0)
-    mobile_phone = models.CharField(blank=True, max_length=16, verbose_name='address')
+    mobile_phone = models.CharField(validators=[phone_regex], blank=True, max_length=16, verbose_name='mobile phone')
     id_front     = models.ImageField(upload_to=get_image_path, blank=True, null=True)
     id_back      = models.ImageField(upload_to=get_image_path, blank=True, null=True)
     selfie_image = models.ImageField(upload_to=get_image_path, blank=True, null=True)
@@ -75,3 +80,11 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return self.email
+
+
+class Bank(models.Model):
+    country = models.CharField(blank=True, max_length=30, verbose_name='country')
+    name = models.CharField(blank=True, max_length=30, verbose_name='bank name')
+
+    def __str__(self):
+        return self.name

@@ -22,7 +22,25 @@ html , body{
     border-color: #6f9300;
 }
 
+div.list-profile{
 
+max-width: 90%;
+min-width: 50%;
+padding-left: 10%;
+}
+
+div.list-profile > .list-item {
+border-top: 1px solid #6f9300;
+padding-top: 20px;
+padding-bottom: 20px;
+font-size: 12px;
+padding-left: 10%;
+padding-right: 10%;
+}
+
+div.list-profile > .last-child {
+border-bottom: 1px solid #6f9300;
+}
 
 .btn-primary:active,
 .btn-primary.active,
@@ -34,6 +52,48 @@ html , body{
 }
 
 .btn-primary:hover {
+  color: #fff;
+  background-color: #678801;
+  border-color: #678801;
+}
+
+.btn-primary1 {
+    color: white !important;
+    background-color: #6f9300;
+    border-color: #6f9300;
+}
+
+.btn-primary1:active,
+.btn-primary1.active,
+.btn-primary1:target
+.btn-primary1.target {
+  color: #fff !important;
+  background-color: #567201 !important;
+  border-color: #567201 !important;
+}
+
+.btn-primary1:hover {
+  color: #fff !important;
+  background-color: #567201 !important;
+  border-color: #567201 !important;
+}
+
+.btn-primary2 {
+    color: #6f9300 !important;
+    background-color: white;
+    border-color: #6f9300;
+}
+
+.btn-primary2:active,
+.btn-primary2.active,
+.btn-primary2:target
+.btn-primary2.target {
+  color: #fff;
+  background-color: #567201 !important;
+  border-color: #567201 !important;
+}
+
+.btn-primary2:hover {
   color: #fff;
   background-color: #678801;
   border-color: #678801;
@@ -247,7 +307,7 @@ html , body{
     top: 0;
     width: 210px;
     z-index: 4000;
-    background: #3E5367;
+    background: #dddddd;
     display: none
 }
 .nav-sm ul.nav.child_menu li {
@@ -501,7 +561,7 @@ body .container.body .right_col {
 .navbar-nav>li>a,
 .navbar-brand,
 .navbar-nav>li>a {
-    color: #fff !important
+    color: #fff
 }
 .top_nav .nav>li>a:focus,
 .top_nav .nav>li>a:hover,
@@ -748,7 +808,7 @@ a:focus {
     margin-bottom: 6px
 }
 .nav.side-menu>li>a:hover {
-    color: #7d7d7d !important
+    color: black !important
 }
 .nav.side-menu>li>a:hover,
 .nav>li>a:focus {
@@ -802,7 +862,7 @@ a:focus {
 .nav>li>a {
     position: relative;
     display: block;
-    padding: 13px 15px 12px
+    /*padding: 13px 15px 12px*/
 }
 .nav.side-menu>li.current-page,
 .nav.side-menu>li.active {
@@ -815,7 +875,8 @@ a:focus {
     background: none
 }
 .nav li li.current-page a {
-    color: #fff
+    color: #fff;
+    background-color: #6f9301;
 }
 .nav.side-menu>li.active>a {
     text-shadow: rgba(0, 0, 0, 0.25) 0 -1px 0;
@@ -825,7 +886,7 @@ a:focus {
 .navbar-brand,
 .navbar-nav>li>a {
     font-weight: 500;
-    color: #ECF0F1 !important;
+    color: black;
     margin-left: 0 !important;
     line-height: 32px
 }
@@ -895,8 +956,13 @@ a:focus {
     font-size: 26px
 }
 .nav.child_menu>li>a {
-    color: #7d7d7d;
+    color: black;
     font-size: 12px;
+    padding: 9px
+}
+.nav.child_menu>li>a:hover {
+    color: white;
+    background-color: #6f9301;
     padding: 9px
 }
 .panel_toolbox {
@@ -1319,7 +1385,7 @@ table.jambo_table {
     border: 1px solid rgba(221, 221, 221, 0.78)
 }
 table.jambo_table thead {
-    background: rgba(52, 73, 94, 0.94);
+    background: #6f9300;
     color: #ECF0F1
 }
 table.jambo_table tbody tr:hover td {
@@ -2361,15 +2427,18 @@ a.btn-danger {
     background-color: #6f9300;
 }
 .btn-success {
-    background: #26B99A;
-    border: 1px solid #169F85
+    background: #567201;
+    border: 1px solid #567201
 }
-.btn-success:hover,
+.btn-success:hover{
+    background: #678801
+}
+
 .btn-success:focus,
 .btn-success:active,
 .btn-success.active,
 .open .dropdown-toggle.btn-success {
-    background: #169F85
+    background: #567201
 }
 .btn-dark {
     color: #E9EDEF;
@@ -3902,12 +3971,12 @@ fieldset {
 }
 .wizard_horizontal ul.wizard_steps li a.selected:before,
 .step_no {
-    background: #34495E;
+    background: #d96d00;
     color: #fff
 }
 .wizard_horizontal ul.wizard_steps li a.done:before,
 .wizard_horizontal ul.wizard_steps li a.done .step_no {
-    background: #1ABB9C;
+    background: #6f9300;
     color: #fff
 }
 .wizard_horizontal ul.wizard_steps li:first-child a:before {
@@ -3999,7 +4068,7 @@ fieldset {
 }
 .wizard_verticle ul.wizard_steps li a.selected:before,
 .step_no {
-    background: #34495E;
+    background: #d96d00;
     color: #fff
 }
 .wizard_verticle ul.wizard_steps li a.done:before,
