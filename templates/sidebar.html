@@ -41,14 +41,14 @@
         </li>
         <li><a><i class="fa fa-percent"></i> Tasas <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
-            <li><a href="#">Agregar</a></li>
-            <li><a href="#">Editar</a></li>
+            <li><a href="{% url 'addExchangeRate' %}">Agregar</a></li>
+            <li><a href="{% url 'adminExchangeRate' %}">Editar</a></li>
           </ul>
         </li>
         <li><a><i class="fa fa-money"></i> Monedas <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
-              <li><a href="#level1_1">Agregar</a>
-              <li><a href="#level1_1">Editar</a>
+              <li><a href="{% url 'addCurrencies' %}">Agregar</a>
+              <li><a href="{% url 'adminCurrencies' %}">Editar</a>
           </ul>
         </li>
         <li><a><i class="fa fa-bank"></i> Cuentas <span class="fa fa-chevron-down"></span></a>

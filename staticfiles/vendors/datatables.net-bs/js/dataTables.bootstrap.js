@@ -95,25 +95,25 @@ DataTable.ext.renderer.pageButton.bootstrap = function ( settings, host, idx, bu
 						btnClass = 'disabled';
 						break;
 
-					case 'first':
+					case 'primero':
 						btnDisplay = lang.sFirst;
 						btnClass = button + (page > 0 ?
 							'' : ' disabled');
 						break;
 
-					case 'previous':
+					case 'Anterior':
 						btnDisplay = lang.sPrevious;
 						btnClass = button + (page > 0 ?
 							'' : ' disabled');
 						break;
 
-					case 'next':
+					case 'Siguiente':
 						btnDisplay = lang.sNext;
 						btnClass = button + (page < pages-1 ?
 							'' : ' disabled');
 						break;
 
-					case 'last':
+					case 'último':
 						btnDisplay = lang.sLast;
 						btnClass = button + (page < pages-1 ?
 							'' : ' disabled');

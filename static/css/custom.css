@@ -815,7 +815,7 @@ a:focus {
     background: none
 }
 .nav li li.current-page a {
-    color: #fff
+    color: #87a42e
 }
 .nav.side-menu>li.active>a {
     text-shadow: rgba(0, 0, 0, 0.25) 0 -1px 0;
@@ -4268,4 +4268,23 @@ table thead .checkbox.radio { margin-top:-7px;margin-top:-21px; }
 
 .fa-bars:hover {
     color: #dedede !important   ;
+}
+
+.admin_content h3:before,
+.admin_content h3:after {
+    content: "";
+    height: 1px;
+    position: absolute;
+    top: 25px;
+    width: 20%
+}
+.admin_content h3:after {
+    background: #6f9301;
+    background: linear-gradient(left, #6f9301 0%, #fff 100%);
+    right: 0
+}
+.admin_content h3:before {
+    background: #6f9301;
+    background: linear-gradient(right, #6f9301 0%, #fff 100%);
+    left: 0
 }

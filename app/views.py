@@ -9,8 +9,10 @@ from django.contrib.auth import login as login_auth
 from django.contrib import messages
 from io import BytesIO
 import time
+import datetime
 
-from app.forms import SignUpForm, AuthenticationForm
+from app.forms import *
+from app.models import *
 
 def home(request):
     if request.user.is_authenticated():
@@ -57,3 +59,112 @@ def signup(request):
     else:
         form = SignUpForm()
     return render(request, 'registration/signup.html', {'form': form})
+
+
+# Admin views
+
+def addCurrencies(request):
+    if (request.method == 'POST'):
+        form = NewCurrencyForm(request.POST)
+
+        if (form.is_valid()):
+            code = form.cleaned_data['code']
+            name =  form.cleaned_data['name']
+            currency_type = form.cleaned_data['currency_type']
+
+            alreadyExists = Currency.objects.filter(code=code).exists()
+
+            if (alreadyExists):
+                msg = "La moneda ingresada ya existe. Elija otro nombre."
+                return render(request, 'admin/addCurrency.html', {'form': form, 'msg': msg})
+
+            new_currency = Currency()
+            new_currency.code = code
+            new_currency.name = name
+            new_currency.currency_type = currency_type
+
+            new_currency.save()
+
+            msg = "La moneda fue agregada con éxito"
+            return render(request, 'admin/addCurrency.html', {'form': form, 'msg': msg})
+    else:
+        form = NewCurrencyForm()
+
+    return render(request, 'admin/addCurrency.html', {'form': form})
+
+
+def adminCurrencies(request):
+    if (request.method == 'GET'):
+        allCurrencies = Currency.objects.all()
+
+        return render(request, 'admin/adminCurrency.html', {'currencies': allCurrencies})
+
+def editCurrencies(request, _currency_id):
+    try:
+        c = Currency.objects.get(code=_currency_id)
+    except:
+        pass
+        # Raise 404 error
+
+    if (request.method == 'POST'):
+        form = NewCurrencyForm(request.POST)
+
+        if (form.is_valid()):
+            code = form.cleaned_data['code']
+            if (code != c.code):
+                if (Currency.objects.filter(code=code).exists()):
+                    msg = "El código de la moneda ingresado ya existe. Intente con uno diferente."
+
+                    return render(request, 'admin/editCurrency.html', {'form': form, 'msg': msg, 'c': c})
+                c.delete()
+                c = Currency()
+
+            c.code = code
+            c.name = form.cleaned_data['name']
+            c.currency_type = form.cleaned_data['currency_type']
+            c.save()
+
+            msg = "La moneda se editó con éxito."
+            return render(request, 'admin/editCurrency.html', {'form': form, 'msg': msg, 'c': c})
+    else:    
+        form = NewCurrencyForm(initial={'code': c.code, 'name': c.name, 'currency_type': c.currency_type})
+
+    return render(request, 'admin/editCurrency.html', {'form': form, 'c': c})
+
+def addExchangeRate(request):
+    allCurrencies = Currency.objects.all()
+
+    if (request.method == 'POST'):
+        form = NewExchangeRateForm(request.POST, currencyC=allCurrencies)
+
+        if (form.is_valid()):
+            rate = form.cleaned_data['rate']
+            origin =  Currency.objects.get(code=form.cleaned_data['origin_currency'])
+            target = Currency.objects.get(form.cleaned_data['target_currency'])
+
+            alreadyExists = ExchangeRate.objects.filter(origin_currency=origin, target_currency=target).exists()
+
+            if (alreadyExists):
+                msg = "La tasa de cambio ingresada ya existe. Elija otras monedas."
+                return render(request, 'admin/addExchangeRate.html', {'form': form, 'msg': msg})
+
+            new_exchange = ExchangeRate()
+            new_exchange.rate = rate
+            new_exchange.origin_currency = origin
+            new_exchange.target_currency = target
+            new_exchange.date = datetime.datetime.now()
+
+            new_exchange.save()
+
+            msg = "La moneda fue agregada con éxito"
+            return render(request, 'admin/addExchangeRate.html', {'form': form, 'msg': msg})
+    else:
+        form = NewExchangeRateForm(currencyC=allCurrencies)
+
+    return render(request, 'admin/addExchangeRate.html', {'form': form})
+
+def adminExchangeRate(request):
+    pass
+
+def editExchangeRate(request, _rate_id):
+    pass
