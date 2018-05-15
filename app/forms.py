@@ -59,7 +59,7 @@ class NewExchangeRateForm(forms.Form):
       self.fields['target_currency'].choices = currencyChoices
 
   rate = forms.CharField(max_length=10, required=True, label="Tasa", 
-                        widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+                        widget = forms.TextInput(attrs={'style': 'width:100%;', 'type': "number"}))
   origin_currency = forms.ChoiceField(required=True, label="Moneda origen",
                           widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
   target_currency = forms.ChoiceField(required=True, label="Moneda destino",

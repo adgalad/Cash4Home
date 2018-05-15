@@ -132,7 +132,8 @@ def editCurrencies(request, _currency_id):
     return render(request, 'admin/editCurrency.html', {'form': form, 'c': c})
 
 def addExchangeRate(request):
-    allCurrencies = Currency.objects.all()
+    tmpCurrencies = Currency.objects.all()
+    allCurrencies = [(tmp.code, tmp.code) for tmp in tmpCurrencies]
 
     if (request.method == 'POST'):
         form = NewExchangeRateForm(request.POST, currencyC=allCurrencies)
@@ -140,12 +141,16 @@ def addExchangeRate(request):
         if (form.is_valid()):
             rate = form.cleaned_data['rate']
             origin =  Currency.objects.get(code=form.cleaned_data['origin_currency'])
-            target = Currency.objects.get(form.cleaned_data['target_currency'])
+            target = Currency.objects.get(code=form.cleaned_data['target_currency'])
 
             alreadyExists = ExchangeRate.objects.filter(origin_currency=origin, target_currency=target).exists()
 
             if (alreadyExists):
                 msg = "La tasa de cambio ingresada ya existe. Elija otras monedas."
+                return render(request, 'admin/addExchangeRate.html', {'form': form, 'msg': msg})
+
+            if (origin == target):
+                msg = "Las monedas no pueden ser iguales. Elija otras monedas."
                 return render(request, 'admin/addExchangeRate.html', {'form': form, 'msg': msg})
 
             new_exchange = ExchangeRate()
@@ -164,7 +169,52 @@ def addExchangeRate(request):
     return render(request, 'admin/addExchangeRate.html', {'form': form})
 
 def adminExchangeRate(request):
-    pass
+    if (request.method == 'GET'):
+        allRates = ExchangeRate.objects.all()
+
+        return render(request, 'admin/adminExchangeRate.html', {'rates': allRates})
 
 def editExchangeRate(request, _rate_id):
-    pass
+    try:
+        actualRate = ExchangeRate.objects.get(id=_rate_id)
+    except:
+        pass
+        # Raise 404 error
+
+    tmpCurrencies = Currency.objects.all()
+    allCurrencies = [(tmp.code, tmp.code) for tmp in tmpCurrencies]
+
+    if (request.method == 'POST'):
+        form = NewExchangeRateForm(request.POST, currencyC=allCurrencies)
+
+        if (form.is_valid()):
+            rate = form.cleaned_data['rate']
+            origin =  Currency.objects.get(code=form.cleaned_data['origin_currency'])
+            target = Currency.objects.get(code=form.cleaned_data['target_currency'])
+
+
+            if ((origin != actualRate.origin_currency) or (target != actualRate.target_currency)):
+                alreadyExists = ExchangeRate.objects.filter(origin_currency=origin, target_currency=target).exists()
+
+                if (alreadyExists):
+                    msg = "La tasa de cambio ingresada ya existe. Elija otras monedas."
+                    return render(request, 'admin/editExchangeRate.html', {'form': form, 'msg': msg})
+
+                if (origin == target):
+                    msg = "Las monedas no pueden ser iguales. Elija otras monedas."
+                    return render(request, 'admin/editExchangeRate.html', {'form': form, 'msg': msg})
+
+            actualRate.rate = rate
+            actualRate.origin_currency = origin
+            actualRate.target_currency = target
+            actualRate.date = datetime.datetime.now()
+
+            actualRate.save()
+
+            msg = "La moneda fue editada con éxito"
+            return render(request, 'admin/editExchangeRate.html', {'form': form, 'msg': msg})
+    else:
+        form = NewExchangeRateForm(initial={'rate':actualRate.rate, 'origin_currency': actualRate.origin_currency.code, 'target_currency': actualRate.target_currency.code},
+                                        currencyC=allCurrencies)
+
+    return render(request, 'admin/editExchangeRate.html', {'form': form})
