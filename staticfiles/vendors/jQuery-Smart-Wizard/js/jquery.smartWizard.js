@@ -21,9 +21,9 @@ function SmartWizard (target, options) {
   this.elmStepContainer = $('<div></div>').addClass('stepContainer')
   this.loader = $('<div>Loading</div>').addClass('loader')
   this.buttons = {
-    next: $('<a>' + options.labelNext + '</a>').attr('href', '#').addClass('buttonNext'),
-    previous: $('<a>' + options.labelPrevious + '</a>').attr('href', '#').addClass('buttonPrevious'),
-    finish: $('<a>' + options.labelFinish + '</a>').attr('href', '#').addClass('buttonFinish')
+    next: $('<button class="btn btn-primary">' + options.labelNext + '</button>').addClass('buttonNext'),
+    previous: $('<button class="btn btn-primary">' + options.labelPrevious + '</button>').addClass('buttonPrevious'),
+    finish: $('<button class="btn submit" type="submit">' + options.labelFinish + '</button>').addClass('buttonFinish')
   }
 
     /*
@@ -284,7 +284,8 @@ function SmartWizard (target, options) {
       }
     }
         // Finish Button
-    if (!$this.steps.hasClass('disabled') || $this.options.enableFinishButton) {
+    console.log($this.curStepIdx, $this.curStepIdx == 2)
+    if ($this.curStepIdx == 2 && (!$this.steps.hasClass('disabled') || $this.options.enableFinishButton)) {
       $($this.buttons.finish).removeClass('buttonDisabled')
       if ($this.options.hideButtonsOnDisabled) {
         $($this.buttons.finish).show()
@@ -302,6 +303,18 @@ function SmartWizard (target, options) {
      */
 
   SmartWizard.prototype.goForward = function () {
+    if (this.curStepIdx == 0 && !$('#id_account').val()) {
+      return
+    } else if (this.curStepIdx == 1) {
+      for (var i = 0; i <= currentInput; ++i) {
+        if (parseInt($('#id_form-' + i + '-amount').val()) <= 0) {
+          return
+        } else if (!$('#id_form-' + i + '-account').val()) {
+          return
+        }
+      }
+    }
+
     var nextStepIdx = this.curStepIdx + 1
     if (this.steps.length <= nextStepIdx) {
       if (!this.options.cycleSteps) {
@@ -425,7 +438,7 @@ function SmartWizard (target, options) {
 // Default Properties and Events
   $.fn.smartWizard.defaults = {
     selected: 0,  // Selected Step, 0 = first step
-    keyNavigation: true, // Enable/Disable key navigation(left and right keys are used if enabled)
+    keyNavigation: false, // Enable/Disable key navigation(left and right keys are used if enabled)
     enableAllSteps: false,
     transitionEffect: 'fade', // Effect on navigation, none/fade/slide/slideleft
     contentURL: null, // content url, Enables Ajax content loading

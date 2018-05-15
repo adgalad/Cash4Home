@@ -24,36 +24,37 @@
       <div class="clearfix"></div>
         <div class="x_panel">
           <div class="x_content">
-            <h4>Cuentas fuera de Venezuela</h4>
-            <p>Estas son las cuentas de las cuales usted puede enviar dinero a Venezuela</p>
+            <h4>Cuentas propias</h4>
+            <p>Estas son las cuentas de las cuales usted puede enviar dinero como remesa</p>
             <div class="table-responsive">
               <table class="table table-striped jambo_table bulk_action">
                 <thead>
                   <tr class="headings">
                     <th class="column-title">Banco </th>
                     <th class="column-title">Número de cuenta </th>
-                    <th class="column-title">Titular</th>
+                    <!-- <th class="column-title">Titular</th> -->
                   </tr>
                 </thead>
 
                 <tbody>
+                  {% for acc in origin %}
                   <tr class="even pointer">
-                    <td class=" ">Wells Fargo</td>
-                    <td class=" ">1232131231000210</i></td>
-                    <td class=" ">John Blank L</td>
-                    </td>
+                    <td class=" ">{{ acc.id_account.id_bank }}</td>
+                    <td class=" ">{{ acc.id_account.number }}</i></td>
+                    <!-- <td class=" ">John Blank L</td> -->
                   </tr>
+                  {% endfor %}
                 </tbody>
               </table>
               <div align="center">
-                <a href="account/new">
+                <a href="account/new?own=1">
                   <button type="button" class="btn btn-primary">Añadir cuenta</button>
                 </a>
               </div>
             </div>
             <hr>
-            <h4>Cuentas en Venezuela</h4>
-            <p>Estas son las cuentas de sus parientes o amigos a quienes desea enviarles dinero</p>
+            <h4>Cuentas para enviar</h4>
+            <p>Estas son las cuentas de sus parientes o amigos a quienes desea enviarle dinero</p>
             <div class="table-responsive">
               <table class="table table-striped jambo_table bulk_action">
                 <thead>
@@ -61,20 +62,25 @@
                     <th class="column-title">Banco </th>
                     <th class="column-title">Número de cuenta </th>
                     <th class="column-title">Titular</th>
+                    <th class="column-title">Email</th>
                   </tr>
                 </thead>
 
                 <tbody>
+                  {% for acc in dest %}
                   <tr class="even pointer">
-                    <td class=" ">Banco de Venezuela</td>
-                    <td class=" ">1232131231000210</i></td>
-                    <td class=" ">Juan Pérez</td>
-                    </td>
+                    <td class=" ">{{ acc.id_account.id_bank }}</td>
+                    <td class=" ">{{ acc.id_account.number }}</i></td>
+                    <td class=" ">{{ acc.owner }}</td>
+                    <td class=" ">{{ acc.email }}</td>
                   </tr>
+                  {% endfor %}
                 </tbody>
               </table>
               <div align="center">
-                <button type="button" class="btn btn-primary">Añadir cuenta</button>
+                <a href="account/new?own=0">
+                  <button type="button" class="btn btn-primary">Añadir cuenta</button>
+                </a>
               </div>
             </div>
           </div>

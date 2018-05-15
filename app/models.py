@@ -63,11 +63,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     address      = models.CharField(blank=True, max_length=64, verbose_name='address')
     id_number    = models.IntegerField(blank=True, verbose_name='ID number', default=0)
     mobile_phone = models.CharField(validators=[phone_regex], blank=True, max_length=16, verbose_name='mobile phone')
-    id_front     = models.ImageField(upload_to=get_image_path, blank=True, null=True)
-    id_back      = models.ImageField(upload_to=get_image_path, blank=True, null=True)
-    selfie_image = models.ImageField(upload_to=get_image_path, blank=True, null=True)
-    service_image = models.ImageField(upload_to=get_image_path, blank=True, null=True)
-    # validation_status =
+    id_front     = models.ImageField(upload_to=get_image_path, null=True)
+    id_back      = models.ImageField(upload_to=get_image_path, null=True)
+    selfie_image = models.ImageField(upload_to=get_image_path, null=True)
+    service_image = models.ImageField(upload_to=get_image_path, null=True)
+    user_choices = (('Cliente', 'Cliente'), ('Aliado-1', 'Aliado-1'), ('Aliado-2', 'Aliado-2'), ('Aliado-3', 'Aliado-3'), ('Operador', 'Operador'), ('Admin', 'Admin'))
+    user_type = models.CharField(choices=user_choices, max_length=9, blank=True)
+    referred_by = models.ForeignKey('self', null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     objects = MyUserManager()
@@ -82,9 +84,116 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
 
+class Holiday(models.Model):
+    #The primary key is the django id
+    date = models.DateField()
+    description = models.CharField(max_length=140)
+    country = models.CharField(max_length=70)
+
+class Currency(models.Model):
+    code = models.CharField(max_length=10, primary_key=True, unique=True) # VEF, USD, BTC
+    name = models.CharField(max_length=50)
+    choices = (('FIAT', 'FIAT'), ('Crypto', 'Crypto'))
+    currency_type = models.CharField(choices=choices, max_length=7)
+
+class ExchangeRate(models.Model):
+    # The primary key is the django id
+    rate = models.FloatField()
+    date = models.DateTimeField()
+    origin_currency = models.ForeignKey(Currency, related_name='origin_currency_pair')
+    target_currency = models.ForeignKey(Currency, related_name='target_currency_pair')
+
 class Bank(models.Model):
-    country = models.CharField(blank=True, max_length=30, verbose_name='country')
-    name = models.CharField(blank=True, max_length=30, verbose_name='bank name')
+    swift = models.CharField(max_length=12, primary_key=True, unique=True, blank=True)
+    country = models.CharField(max_length=70)
+    name = models.CharField(max_length=100)
+    aba = models.CharField(max_length=10, null=True)
 
     def __str__(self):
         return self.name
+    
+class Account(models.Model):
+    number = models.CharField(max_length=270)
+    is_client = models.BooleanField()
+    choices = (('Origen', 'Origen'), ('Destino', 'Destino'))
+    use_type = models.CharField(choices=choices, max_length=8, blank=True)
+    id_bank = models.ForeignKey(Bank)
+
+
+
+class AccountBelongsTo(models.Model):
+    # The primary key is the django id
+    id_account = models.ForeignKey(Account)
+    id_client = models.ForeignKey(User)
+
+    owner = models.CharField(max_length=64, null=True)
+    alias = models.CharField(max_length=32, null=True)
+    email = models.EmailField(null=True)
+    id_number = models.IntegerField(verbose_name='ID number', null=True)
+
+    class Meta:
+        unique_together = ('id_account', 'id_client')
+
+    def __str__(self):
+        account = self.id_account
+        name = str(account.id_bank) + " " + str(account.number)
+        if not self.alias is None:
+            name = self.alias + " (" + name + ")"
+        return name
+
+class Operation(models.Model):
+    code = models.CharField(max_length=100, primary_key=True, unique=True)
+    fiat_amount = models.DecimalField(max_digits=30, decimal_places=15)
+    crypto_rate = models.FloatField(blank=True, null=True)
+    status_choices = (('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
+                      ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'))
+    status = models.CharField(choices=status_choices, max_length=20)
+    exchanger = models.CharField(max_length=70, blank=True, null=True)
+    date = models.DateTimeField()
+    id_client = models.ForeignKey(User)
+    id_account = models.ForeignKey(Account) # Origin account from the client
+    exchange_rate = models.FloatField()
+    origin_currency = models.ForeignKey(Currency, related_name='origin_currency_used')
+    target_currency = models.ForeignKey(Currency, related_name='target_currency_used')
+
+class OperationGoesTo(models.Model):
+    # The primary key is the django id
+    operation_code = models.ForeignKey(Operation)
+    number_account = models.ForeignKey(Account)
+
+    class Meta:
+        unique_together = ('operation_code', 'number_account')
+
+class Transaction(models.Model):
+    code = models.CharField(max_length=100, primary_key=True, unique=True)
+    date = models.DateTimeField()
+    choices = (('TO', 'TO'), ('TD', 'TD'), ('TE', 'TE')) #TO-Transaccion origen, TD-Transaccion destino, TC-transaccion crypto
+    operation_type = models.CharField(choices=choices, max_length=3)
+    transfer_image = models.ImageField(upload_to=get_image_path)
+    origin_account = models.ForeignKey(Account, blank=True, null=True, related_name='origin_account')
+    target_account = models.ForeignKey(Account, blank=True, null=True, related_name='target_account')
+
+class Repurchase(models.Model):
+    # The primary key is the django id
+    date = models.DateTimeField()
+    rate = models.FloatField()
+    origin_currency = models.ForeignKey(Currency, related_name='origin_currency_purchase')
+    target_currency = models.ForeignKey(Currency, related_name='target_currency_purchase')
+
+class RepurchaseCameFrom(models.Model):
+    # The primary key is the django id
+    id_repurchase = models.ForeignKey(Repurchase)
+    id_operation = models.ForeignKey(Operation)
+
+    class Meta:
+        unique_together = ('id_repurchase', 'id_operation')
+
+class Comission(models.Model):
+    # The primary key is the django id
+    id_allie = models.ForeignKey(User)
+    id_operation = models.ForeignKey(Operation, blank=True, null=True)
+    percentage = models.FloatField()
+    choices = (('Pagado', 'Pagado'), ('Por pagar', 'Por pagar'), ('Pagado parcialmente', 'Pagado parcialmente'))
+    status = models.CharField(choices=choices, max_length=20)
+    remaining = models.DecimalField(max_digits=40, decimal_places=40)
+

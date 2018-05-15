@@ -32,7 +32,13 @@
         <li><a href="/user/profile"><i class="fa fa-user"></i> Ver perfil</a></li>
       </ul>
       <ul class="nav side-menu">
-        <li><a href="/accounts"><i class="fa fa-bank"></i>Mis cuentas</a></li>
+        <li><a><i class="fa fa-bank"></i> Cuentas bancarias <span class="fa fa-chevron-down"></span></a>
+          <ul class="nav child_menu">
+            <li><a href="/accounts">Ver cuentas</a></li>
+            <li><a href="/account/new?own=1">Añadir cuenta origen</a></li>
+            <li><a href="/account/new?own=0">Añadir cuenta destino</a></li>
+          </ul>
+        </li>
       </ul>
 
       <ul class="nav side-menu">

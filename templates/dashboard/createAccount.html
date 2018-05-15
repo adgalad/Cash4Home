@@ -26,24 +26,21 @@
           <div class="x_content">
             <h4>Cuentas fuera de Venezuela</h4>
             <p>Estas son las cuentas de las cuales usted puede enviar dinero a Venezuela</p>
-            <form class="form-horizontal form-label-left" method="post" style="max-width: 500px;">
-              <div class="form-group has-feedback">
-                <label>{{ form.bank.label}}</label> 
-                {{ form.bank }}
-              </div>
-              <div class="form-group has-feedback">
-                <label>{{ form.account.label}}</label> 
-                {{ form.account }}
-              </div>
-              <div class="form-group has-feedback">
-                <label>{{ form.owner.label}}</label> 
-                {{ form.owner }}
-              </div>
-
-              <div class="form-group has-feedback">
-                <label>{{ form.email.label}}</label> 
-                {{ form.email }}
-              </div>
+            {% for message in messages %}
+            <br>
+            <div class="alert alert-warning" style="background-color: #d96d00; border-color: #d96d00; max-width: 500px; color:white">
+              {{ message }}
+            </div>
+            {% endfor %}
+            <form class="form-horizontal form-label-left" method="post" style="margin-left: 2%; max-width: 500px;">
+              {% csrf_token %}
+              {% for field in form %}
+                <div class="form-group has-feedback">
+                  <label>{{ field.label}}</label> 
+                  {{ field }}
+                </div>
+              {% endfor %}
+              <br>
               <button class="btn btn-primary submit" type="submit">Crear</button>
             </form>
           </div>
