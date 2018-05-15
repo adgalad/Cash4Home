@@ -1086,7 +1086,7 @@ Buttons.buttonSelector = function ( insts, selector )
  * @static
  */
 Buttons.defaults = {
-	buttons: [ 'copy', 'excel', 'csv', 'pdf', 'print' ],
+	buttons: [ 'copiar', 'excel', 'csv', 'pdf', 'imprimir' ],
 	name: 'main',
 	tabIndex: 0,
 	dom: {
@@ -1214,7 +1214,7 @@ $.extend( _dtButtons, {
 		autoClose: false,
 		fade: 400
 	},
-	copy: function ( dt, conf ) {
+	copiar: function ( dt, conf ) {
 		if ( _dtButtons.copyHtml5 ) {
 			return 'copyHtml5';
 		}

@@ -43,6 +43,7 @@ class AuthenticationForm(forms.Form):
                 
 
 
+
 class BankAccountForm(forms.Form):
   bank = GroupedModelChoiceField(label=_('Banco'), group_by_field='country', queryset=Bank.objects.all())
   number = forms.CharField(required=True, label=_(u"Número de cuenta"))
@@ -89,4 +90,44 @@ class ToAccountForm(forms.Form):
     return self
 
 
+
+
+
+
+class NewCurrencyForm(forms.Form):
+
+  code = forms.CharField(max_length=10, required=True, label="Código", 
+                        widget = forms.TextInput(attrs={'style': 'width:100%;', 'placeholder': 'VEF, USD, BTC...'})) # VEF, USD, BTC
+  name = forms.CharField(max_length=50, required=True, label="Nombre",
+                          widget = forms.TextInput(attrs={'style': 'width:100%;', 'placeholder': 'Bolívar, Dólar, Bitcoin...'}))
+  choices = (('FIAT', 'FIAT'), ('Crypto', 'Crypto'))
+  currency_type = forms.ChoiceField(required=True, choices=choices, label="Tipo de moneda",
+                                  widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
+
+  def __init__(self, *args, **kwargs):
+    super(NewCurrencyForm, self).__init__(*args, **kwargs)
+    for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+class NewExchangeRateForm(forms.Form):
+
+  def __init__(self,*args,**kwargs):
+      currencyChoices = kwargs.pop('currencyC')  
+
+      super(NewExchangeRateForm,self).__init__(*args,**kwargs)
+
+      for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+      # Set choices from argument.
+      self.fields['origin_currency'].choices = currencyChoices
+      self.fields['target_currency'].choices = currencyChoices
+
+  rate = forms.CharField(max_length=10, required=True, label="Tasa", 
+                        widget = forms.TextInput(attrs={'style': 'width:100%;', 'type': "number"}))
+  origin_currency = forms.ChoiceField(required=True, label="Moneda origen",
+                          widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
+  target_currency = forms.ChoiceField(required=True, label="Moneda destino",
+                                  widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
+    
 

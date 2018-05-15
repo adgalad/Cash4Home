@@ -6,6 +6,7 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth.forms import UserChangeForm as BaseUserChangeForm
 from django.utils.translation import gettext, gettext_lazy as _
 from .models import User
+from app.models import *
 
 class UserCreationForm(forms.ModelForm):
     """A form for creating new users. Includes all the required
@@ -79,5 +80,53 @@ class UserAdmin(BaseUserAdmin):
     ordering = ('email',)
     # filter_horizontal = ()
 
+class HolidayAdmin(admin.ModelAdmin):
+    pass
+
+class CurrencyAdmin(admin.ModelAdmin):
+    pass
+
+class ExchangeRateAdmin(admin.ModelAdmin):
+    pass
+
+class BankAdmin(admin.ModelAdmin):
+    pass
+
+class AccountAdmin(admin.ModelAdmin):
+    pass
+
+class AccountBelongsToAdmin(admin.ModelAdmin):
+    pass
+
+class OperationAdmin(admin.ModelAdmin):
+    pass
+
+class OperationGoesToAdmin(admin.ModelAdmin):
+    pass
+
+class TransactionAdmin(admin.ModelAdmin):
+    pass
+
+class RepurchaseAdmin(admin.ModelAdmin):
+    pass
+
+class RepurchaseCameFromAdmin(admin.ModelAdmin):
+    pass
+
+class ComissionAdmin(admin.ModelAdmin):
+    pass
+
 
 admin.site.register(User, UserAdmin)
+admin.site.register(Holiday, HolidayAdmin)
+admin.site.register(Currency, CurrencyAdmin)
+admin.site.register(ExchangeRate, ExchangeRateAdmin)
+admin.site.register(Bank, BankAdmin)
+admin.site.register(Account, AccountAdmin)
+admin.site.register(AccountBelongsTo, AccountBelongsToAdmin)
+admin.site.register(Operation, OperationAdmin)
+admin.site.register(OperationGoesTo, OperationGoesToAdmin)
+admin.site.register(Transaction, TransactionAdmin)
+admin.site.register(Repurchase, RepurchaseAdmin)
+admin.site.register(RepurchaseCameFrom, RepurchaseCameFromAdmin)
+admin.site.register(Comission, ComissionAdmin)

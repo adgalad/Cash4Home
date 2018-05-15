@@ -47,7 +47,16 @@ urlpatterns = [
     url(r'^index.html', views.home, name='home'),
     url(r'^company$', views.company, name="company"), # Solo por prueba
 
-    url(r'^accounts/profile/$', views.home, name="home") # Solo por prueba
+    url(r'^accounts/profile/$', views.home, name="home"), # Solo por prueba
+
+    #Admin
+    url(r'^add/currency/$', views.addCurrencies, name="addCurrencies"),
+    url(r'^all/currency/$', views.adminCurrencies, name="adminCurrencies"),
+    url(r'^edit/currency/(?P<_currency_id>\w+)', views.editCurrencies, name="editCurrencies"),
+
+    url(r'^add/exchange_rate/$', views.addExchangeRate, name="addExchangeRate"),
+    url(r'^all/exchange_rate/$', views.adminExchangeRate, name="adminExchangeRate"),
+    url(r'^edit/exchange_rate/(?P<_rate_id>\w+)', views.editExchangeRate, name="editExchangeRate"),
 ]
 
 handler404 = views.handler404
