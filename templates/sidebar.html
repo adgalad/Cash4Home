@@ -53,8 +53,14 @@
         </li>
         <li><a><i class="fa fa-bank"></i> Cuentas <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
-              <li><a href="#level1_1">Agregar</a>
-              <li><a href="#level1_1">Editar</a>
+              <li><a href="{% url 'addAccount' %}">Agregar</a>
+              <li><a href="{% url 'adminAccount' %}">Editar</a>
+          </ul>
+        </li>
+        <li><a><i class="fa fa-bank"></i> Bancos <span class="fa fa-chevron-down"></span></a>
+          <ul class="nav child_menu">
+              <li><a href="{% url 'addBank' %}">Agregar</a>
+              <li><a href="{% url 'adminBank' %}">Editar</a>
           </ul>
         </li>
         <li><a><i class="fa fa-users"></i> Usuarios <span class="fa fa-chevron-down"></span></a>

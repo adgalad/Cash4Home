@@ -46,4 +46,12 @@ urlpatterns = [
     url(r'^add/exchange_rate/$', views.addExchangeRate, name="addExchangeRate"),
     url(r'^all/exchange_rate/$', views.adminExchangeRate, name="adminExchangeRate"),
     url(r'^edit/exchange_rate/(?P<_rate_id>\w+)', views.editExchangeRate, name="editExchangeRate"),
+
+    url(r'^add/bank/$', views.addBank, name="addBank"),
+    url(r'^all/bank/$', views.adminBank, name="adminBank"),
+    url(r'^edit/bank/(?P<_bank_id>\w+)', views.editBank, name="editBank"),
+
+    url(r'^add/account/$', views.addAccount, name="addAccount"),
+    url(r'^all/account/$', views.adminAccount, name="adminAccount"),
+    url(r'^edit/account/(?P<_account_id>\w+)', views.editAccount, name="editAccount"),
 ]

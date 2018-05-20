@@ -107,27 +107,22 @@ def editCurrencies(request, _currency_id):
         # Raise 404 error
 
     if (request.method == 'POST'):
-        form = NewCurrencyForm(request.POST)
+        form = EditCurrencyForm(request.POST)
 
         if (form.is_valid()):
-            code = form.cleaned_data['code']
-            if (code != c.code):
-                if (Currency.objects.filter(code=code).exists()):
-                    msg = "El código de la moneda ingresado ya existe. Intente con uno diferente."
-
-                    return render(request, 'admin/editCurrency.html', {'form': form, 'msg': msg, 'c': c})
-                c.delete()
-                c = Currency()
-
-            c.code = code
             c.name = form.cleaned_data['name']
+            if (Currency.objects.filter(name=name).exists()):
+                msg = "El nombre de la moneda ingresado ya existe. Intente con uno diferente."
+
+                return render(request, 'admin/editCurrency.html', {'form': form, 'msg': msg, 'c': c})
+
             c.currency_type = form.cleaned_data['currency_type']
             c.save()
 
             msg = "La moneda se editó con éxito."
             return render(request, 'admin/editCurrency.html', {'form': form, 'msg': msg, 'c': c})
     else:    
-        form = NewCurrencyForm(initial={'code': c.code, 'name': c.name, 'currency_type': c.currency_type})
+        form = EditCurrencyForm(initial={'code': c.code, 'name': c.name, 'currency_type': c.currency_type})
 
     return render(request, 'admin/editCurrency.html', {'form': form, 'c': c})
 
@@ -218,3 +213,83 @@ def editExchangeRate(request, _rate_id):
                                         currencyC=allCurrencies)
 
     return render(request, 'admin/editExchangeRate.html', {'form': form})
+
+def addBank(request):
+    if (request.method == 'POST'):
+        form = NewBankForm(request.POST)
+
+        if (form.is_valid()):
+            name = form.cleaned_data['name']
+            country = form.cleaned_data['country']
+            swift = form.cleaned_data['swift']
+            aba = form.cleaned_data['aba']
+
+            if (Bank().objects.filter(swift=swift).exists()):
+                msg = "El SWIFT ingresado corresponde a otro banco. Ingrese un SWIFT correcto."
+                return render(request, 'admin/addBank.html', {'form': form, 'msg': msg})
+            if (Bank().objects.filter(aba=aba).exists()):
+                msg = "El ABA ingresado corresponde a otro banco. Ingrese un ABA correcto."
+                return render(request, 'admin/addBank.html', {'form': form, 'msg': msg})
+
+            new_bank = Bank()
+            new_bank.name = name.upper()
+            new_bank.country = country.upper()
+            new_bank.swift = swift
+            new_bank.aba = aba
+            new_bank.save()
+
+            msg = "El banco fue agregado con éxito."
+            return render(request, 'admin/addBank.html', {'form': form, 'msg': msg})
+    else:
+        form = NewBankForm()
+
+    return render(request, 'admin/addBank.html', {'form': form})
+
+def adminBank(request):
+    if (request.method == 'GET'):
+        all_banks = Bank.objects.all()
+
+        return render(request, 'admin/adminBank.html', {'banks': all_banks})
+
+def editBank(request, _bank_id):
+    try:
+        actualBank = Bank.objects.get(id=_bank_id)
+    except:
+        pass
+        # Raise 404 error
+
+    if (request.method == 'POST'):
+        form = EditBankForm(request.POST)
+
+        if (form.is_valid()):
+            country = form.cleaned_data['country']
+            name = form.cleaned_data['name']
+            aba = form.cleaned_data['aba']
+
+            if (Bank().objects.filter(aba=aba).exists()):
+                msg = "El ABA ingresado corresponde a otro banco. Ingrese un ABA correcto."
+                return render(request, 'admin/editBank.html', {'form': form, 'msg': msg})
+
+            actualBank.country = country.upper()
+            actualBank.name = name.upper()
+            actualBank.aba = aba
+            actualBank.save()
+
+            msg = "El banco fue editado con éxito."
+            return render(request, 'admin/editBank.html', {'form': form, 'msg': msg})
+    else:
+        form = EditBankForm()
+
+        return render(request, 'admin/editBank.html', {'form': form})
+
+def addAccount(request):
+    pass
+
+def adminAccount(request):
+    if (request.method == 'GET'):
+        all_accounts = Account().objects.all()
+
+        return render(request, 'admin/adminAccount.html', {'accounts': all_accounts})
+
+def editAccount(request):
+    pass
