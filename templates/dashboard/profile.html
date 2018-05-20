@@ -1,0 +1,77 @@
+{% extends "base_dashboard.html" %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <section style="height: 100px">
+      
+    </section>
+    <br>
+    <div class="list list-profile">
+      <div class="list-item">
+        <div class="row">
+          <div class="col-xs-3">
+            <p class="list-title">
+              <strong>Email</strong>
+            </p>
+          </div>
+          <div class="col-xs-7">
+            <p class="list-content"> {{user.email}} </p>
+          </div>
+          <div class="col-xs-2">
+            <div class="list-action">
+              <a href="">
+                <span>edit</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="list-item">
+        <div class="row">
+          <div class="col-xs-3">
+              <strong>Estatus</strong>
+          </div>
+          <div class="col-xs-7">
+            {% if user.verified %} 
+              <p style="color:green"><i class="fa fa-check"></i> Verificado</p>
+            {% else %}
+              <p style="color:red"><i class="fa fa-warning"></i> Falta verificación</p>
+            {% endif %}
+          </div>
+          {% if not user.verified %} 
+            <div class="col-xs-2">
+              <div class="list-action">
+                <a href="">
+                  <span>verificar</span>
+                </a>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="list-item">
+        <div class="row">
+          <div class="col-xs-3">
+              <strong>Nombre</strong>
+          </div>
+          <div class="col-xs-7">
+            <p> {{ user.first_name}}  </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="list-item last-child">
+        <div class="row">
+          <div class="col-xs-3">
+              <strong>Apellido</strong>
+          </div>
+          <div class="col-xs-7">
+            <p> {{ user.last_name}}  </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endblock content %}

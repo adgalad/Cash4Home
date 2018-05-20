@@ -1,16 +1,17 @@
-{% extends "app/base_site.html" %}
+{% extends "base_dashboard.html" %}
+{% load i18n %}
 
-{% block title %} Page 403 {% endblock title %}
+{% block title %} Inicio Sesión {% endblock title %}
 
 {% block stylesheets %}
   {{ block.super }}
+  <!-- Animate.css -->
+  <link href="/static/vendors/animate.css/animate.min.css" rel="stylesheet">
 {% endblock stylesheets %}
 
-{% block sidebar %}{% endblock sidebar %}
+{% block body_class %}login{% endblock body_class %}
 
-{% block top_navigation %}{% endblock top_navigation %}
-
-{% block content %}
+{% block body %}
   <div class="col-md-12">
     <div class="col-middle">
       <div class="text-center text-center">
@@ -18,26 +19,7 @@
         <h2>Access Denied</h2>
          <p>Full authentication is required to access this resource. <a href="#">Report this?</a>
         </p>
-        <div class="mid_center">
-          <h3>Search</h3>
-          <form>
-            <div class="col-xs-12 form-group pull-right top_search">
-              <div class="input-group">
-                <input type="text" class="form-control" placeholder="Search for...">
-                <span class="input-group-btn">
-                        <button class="btn btn-primary" type="button">Go!</button>
-                    </span>
-              </div>
-            </div>
-          </form>
-        </div>
       </div>
     </div>
   </div>
-{% endblock content %}
-
-{% block footer %}{% endblock footer %}
-
-{% block javascripts %}
-  {{ block.super }}
-{% endblock javascripts %}
+{% endblock body %}

@@ -1,0 +1,57 @@
+{% extends "base_dashboard.html"%}
+
+{% block title %} Crear Operación {% endblock title %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+          <h3>Mis cuentas de banco</h3>
+        </div>
+
+        <div class="title_right">
+          <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+<!--             <div class="input-group">
+              <input type="text" class="form-control" placeholder="Search for...">
+              <span class="input-group-btn">
+                        <button class="btn btn-default" type="button">Go!</button>
+                    </span>
+            </div> -->
+          </div>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+        <div class="x_panel">
+          <div class="x_content">
+            <h4>Cuentas fuera de Venezuela</h4>
+            <p>Estas son las cuentas de las cuales usted puede enviar dinero a Venezuela</p>
+            {% for message in messages %}
+            <br>
+            <div class="alert alert-warning" style="background-color: #d96d00; border-color: #d96d00; max-width: 500px; color:white">
+              {{ message }}
+            </div>
+            {% endfor %}
+            <form class="form-horizontal form-label-left" method="post" style="margin-left: 2%; max-width: 500px;">
+              {% csrf_token %}
+              {% for field in form %}
+                <div class="form-group has-feedback">
+                  <label>{{ field.label}}</label> 
+                  {{ field }}
+                </div>
+              {% endfor %}
+              <br>
+              <button class="btn btn-primary submit" type="submit">Crear</button>
+            </form>
+          </div>
+        </div>
+    </div>
+  </div>
+
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super}}
+  <!-- jQuery Smart Wizard -->
+  <script src="/static/vendors/jQuery-Smart-Wizard/js/jquery.smartWizard.js"></script>
+{% endblock javascripts %}

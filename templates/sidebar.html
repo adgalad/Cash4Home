@@ -1,6 +1,6 @@
 <div class="left_col scroll-view">
   <div class="navbar nav_title" style="border: 0;">
-    <a href="index.html" class="site_title" style="">
+    <a href="/" class="site_title" style="">
       <!-- <i class="logo"></i> -->
       <img style="float:left" src="/static/images/logo2.png" width="55px">
       <span style="padding-top: 20%; padding-left: 4%;">
@@ -10,22 +10,43 @@
   </div>
 
   <div class="clearfix"></div>
-
-  <br />
+  <hr>
 
   <!-- sidebar menu -->
   <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
-  <div class="menu_section">
-      <h3>Perfil</h3>
-      <ul class="nav side-menu">
-        <li><a><i class="fa fa-user"></i> Ver perfil</a></li>
-      </ul>
-    </div>
     <div class="menu_section">
-      <h3>Operaciones</h3>
+
+      <ul class="nav side-menu" align="right">
+        <li><a href="/logout"><i class="fa fa-sign-out pull-right"></i> Cerrar Sesión</a></li>
+      </ul>
+
       <ul class="nav side-menu">
-        <li><a><i class="fa fa-home"></i> Home <span class="fa fa-chevron-down"></span></a>
+        <li>
+          <a href="/">
+            <i class="fa fa-home"></i> Home
+          </a>
+        </li>
+      </ul>
+
+      <ul class="nav side-menu">
+        <li><a href="/user/profile"><i class="fa fa-user"></i> Ver perfil</a></li>
+      </ul>
+      <ul class="nav side-menu">
+        <li><a><i class="fa fa-bank"></i> Cuentas bancarias <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
+            <li><a href="/accounts">Ver cuentas</a></li>
+            <li><a href="/account/new?own=1">Añadir cuenta origen</a></li>
+            <li><a href="/account/new?own=0">Añadir cuenta destino</a></li>
+          </ul>
+        </li>
+      </ul>
+
+      <ul class="nav side-menu">
+        <li><a><i class="fa fa-home"></i> Operaciones <span class="fa fa-chevron-down"></span></a>
+          <ul class="nav child_menu">
+            <li><a href="/operation/new">Crear nueva</a></li>
+            <li><a href="#">Ver pendientes</a></li>
+            <li><a href="#">Ver historial</a></li>
           </ul>
         </li>
       </ul>

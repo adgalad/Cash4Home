@@ -13,10 +13,12 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import url,handler404, handler500
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from app import views
+
+
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -30,7 +32,16 @@ urlpatterns = [
     url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', auth_views.password_reset_confirm, name='password_reset_confirm'),
     url(r'^reset/done/$', auth_views.password_reset_complete, name='password_reset_complete'),
 
+    #User
+    url(r'^user/profile$', views.profile, name='profile'),
+    url(r'^operation/new$', views.createOperation, name='createOperation'),
+    url(r'^accounts$', views.accounts, name='accounts'),
+    url(r'^account/new$', views.createAccount, name='createAccount'),
+    url(r'^operation/uploadImage$', views.uploadImage, name='uploadImage'),
+
     
+
+
     url(r'^$', views.home, name='home'),
     url(r'^index$', views.home, name='home'),
     url(r'^index.html', views.home, name='home'),
@@ -55,3 +66,6 @@ urlpatterns = [
     url(r'^all/account/$', views.adminAccount, name="adminAccount"),
     url(r'^edit/account/(?P<_account_id>\w+)', views.editAccount, name="editAccount"),
 ]
+
+handler404 = views.handler404
+handler500 = views.handler500

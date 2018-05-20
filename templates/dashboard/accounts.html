@@ -1,0 +1,97 @@
+{% extends "base_dashboard.html"%}
+
+{% block title %} Crear Operación {% endblock title %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+          <h3>Mis cuentas de banco</h3>
+        </div>
+
+        <div class="title_right">
+          <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+<!--             <div class="input-group">
+              <input type="text" class="form-control" placeholder="Search for...">
+              <span class="input-group-btn">
+                        <button class="btn btn-default" type="button">Go!</button>
+                    </span>
+            </div> -->
+          </div>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+        <div class="x_panel">
+          <div class="x_content">
+            <h4>Cuentas propias</h4>
+            <p>Estas son las cuentas de las cuales usted puede enviar dinero como remesa</p>
+            <div class="table-responsive">
+              <table class="table table-striped jambo_table bulk_action">
+                <thead>
+                  <tr class="headings">
+                    <th class="column-title">Banco </th>
+                    <th class="column-title">Número de cuenta </th>
+                    <!-- <th class="column-title">Titular</th> -->
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {% for acc in origin %}
+                  <tr class="even pointer">
+                    <td class=" ">{{ acc.id_account.id_bank }}</td>
+                    <td class=" ">{{ acc.id_account.number }}</i></td>
+                    <!-- <td class=" ">John Blank L</td> -->
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              <div align="center">
+                <a href="account/new?own=1">
+                  <button type="button" class="btn btn-primary">Añadir cuenta</button>
+                </a>
+              </div>
+            </div>
+            <hr>
+            <h4>Cuentas para enviar</h4>
+            <p>Estas son las cuentas de sus parientes o amigos a quienes desea enviarle dinero</p>
+            <div class="table-responsive">
+              <table class="table table-striped jambo_table bulk_action">
+                <thead>
+                  <tr class="headings">
+                    <th class="column-title">Banco </th>
+                    <th class="column-title">Número de cuenta </th>
+                    <th class="column-title">Titular</th>
+                    <th class="column-title">Email</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {% for acc in dest %}
+                  <tr class="even pointer">
+                    <td class=" ">{{ acc.id_account.id_bank }}</td>
+                    <td class=" ">{{ acc.id_account.number }}</i></td>
+                    <td class=" ">{{ acc.owner }}</td>
+                    <td class=" ">{{ acc.email }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              <div align="center">
+                <a href="account/new?own=0">
+                  <button type="button" class="btn btn-primary">Añadir cuenta</button>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super}}
+  <!-- jQuery Smart Wizard -->
+  <script src="/static/vendors/jQuery-Smart-Wizard/js/jquery.smartWizard.js"></script>
+{% endblock javascripts %}

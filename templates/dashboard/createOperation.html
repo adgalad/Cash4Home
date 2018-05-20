@@ -1,0 +1,290 @@
+{% extends "base_dashboard.html"%}
+
+{% block title %} Crear Operación {% endblock title %}
+
+{% block content %}
+  <style type="text/css"> 
+    .stepContainer {
+      height: 100% !important;
+    }
+  </style>
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+          <h3>Crear Operación</h3>
+        </div>
+
+        <div class="title_right">
+          <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+<!--             <div class="input-group">
+              <input type="text" class="form-control" placeholder="Search for...">
+              <span class="input-group-btn">
+                        <button class="btn btn-default" type="button">Go!</button>
+                    </span>
+            </div> -->
+          </div>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+
+
+      <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+
+          <div class="x_content" >
+            <form class="form-horizontal form-label-left" id="form"name="form" method="post">
+              <!-- Smart Wizard -->
+              <div id="wizard" class="form_wizard wizard_horizontal">
+                <ul class="wizard_steps">
+                  <li>
+                    <a href="#step-1">
+                      <span class="step_no">1</span>
+                      <span class="step_descr">
+                                        Paso 1<br />
+                                        <small>Cuenta origen</small>
+                                    </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#step-2">
+                      <span class="step_no">2</span>
+                      <span class="step_descr">
+                                        Paso 2<br />
+                                        <small>Cuentas destino</small>
+                                    </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#step-3">
+                      <span class="step_no">3</span>
+                      <span class="step_descr">
+                                        Step 3<br />
+                                        <small>Confirmación</small>
+                                    </span>
+                    </a>
+                  </li>
+                </ul>
+                
+                {% csrf_token %}
+                <div id="step-1" style="padding-bottom: 80px;">
+                  <h2 class="StepTitle">¿Desde cuál de tus cuentas quieres enviar dinero?</h2>
+                  <br>
+
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                      
+                      {{form1.account}}
+                  </div>
+                  <div class="col-md-5 col-sm-5 col-xs-12">
+                    <p id="rateInformation">  </p>
+                  </div>
+                </div>
+                <div id="step-2">
+                  <h2 class="StepTitle">Elige a cuales cuentas en venezuela quieres enviar el dinero</h2>
+                  <hr>
+                  <div class="col-md-6 col-sm-6 col-xs-12 form-group">
+                    {% for form in form2 %}
+                      {% if form.error %}
+                        <div class="alert alert-warning" style="background-color: #6f9300; border-color: #6f9300">
+                          {{ form.error }}
+                        </div>
+                      {% endif %}
+                    {% endfor %}
+                    {% for form in form2 %}
+                      {% if form.error %}
+                      <div class="alert alert-warning" style="background-color: #6f9300; border-color: #6f9300">
+                        {{ form.non_field_errors }}
+                      </div>
+                      {% endif %}
+                    {% endfor %}
+
+                    <div class="col-md-8 col-sm-8 col-xs-6 form-group">
+                      <b>Enviar dinero a</b>
+                    </div>
+                    <div class="col-md-4 col-sm-4 col-xs-6 form-group">
+                      <b> Monto</b>
+                    </div>
+
+                    {% for form in form2 %}
+                    <br>
+                    <div class="col-md-8 col-sm-8 col-xs-6 form-group">
+                      {{ form.account }}
+                    </div>
+                    <div class="col-md-4 col-sm-4 col-xs-6 form-group">
+                      {{ form.amount }}
+                    </div>
+                    {% endfor %}
+                    
+                    <button id="add" type="button" onclick="addAccountInput()" class="btn btn-round btn-primary">
+                      <i class="fa fa-plus"></i> Agregar
+                    </button>
+                    <button id="delete" type="button" onclick="deleteAccountInput()" disabled class="btn btn-round btn-primary">
+                      <i class="fa fa-times"></i> Quitar
+                    </button>
+                  </div>
+                  <style type="text/css">
+                    td {
+                      font-size: 15px;
+                      width: 140px;
+                    }
+                    tr {
+                      border-bottom: 1px solid;
+                      height: 50px;
+                    }
+                  </style>
+                  <div class="col-md-6 col-sm-6 col-xs-12" align="center">
+                    <table style="width: 70%;">
+                      <tr> 
+                        <td><b>Monto a enviar:</b></td>
+                        <td id="amount"></td>
+                      </tr>
+
+                      <tr>
+                        <td><b>Comisión:</b></td>
+                        <td id="fee"></td>
+                      </tr>
+
+                      <tr>
+                        <td><b>Total neto:</b></td>
+                        <td id="net"></td>
+                      </tr>
+
+                      <tr>
+                        <td><b>Tasa de cambio:</b></td>
+                        <td id="rate"></td>
+                      </tr>
+
+                      <tr>
+                        <td><b>Total en VEF:</b></td>
+                        <td id="vef"></td>
+                      </tr>
+
+
+                    </table>
+                  </div>
+                </div>
+                <div id="step-3">
+                  <h2 class="StepTitle">Confirmacion</h2>
+                  <hr>
+                  <!-- {{ form.field.value|default_if_none:"" }} -->
+                  <div class="col-md-6 col-sm-6 col-xs-12" align="center">
+                    <form action="form_upload.html" class="dropzone"></form>
+                    <table style="width: 70%;">
+                      <tr> 
+                        <td><b>Cuenta origen</b></td>
+                        <td id="amount"> </td>
+                      </tr>
+
+                      <tr>
+                        <td><b>Comisión:</b></td>
+                        <td id="fee"></td>
+                      </tr>
+
+                      <tr>
+                        <td><b>Total neto:</b></td>
+                        <td id="net"></td>
+                      </tr>
+
+                      <tr>
+                        <td><b>Tasa de cambio:</b></td>
+                        <td id="rate"></td>
+                      </tr>
+
+                      <tr>
+                        <td><b>Total en VEF:</b></td>
+                        <td id="vef"></td>
+                      </tr>
+
+
+                    </table>
+                  </div>
+                </div>
+                <!-- End SmartWizard Content -->
+              </div>
+              <div class="clearfix"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super}}
+  <!-- jQuery Smart Wizard -->
+  <script src="/static/vendors/jQuery-Smart-Wizard/js/jquery.smartWizard.js"></script>
+  <script type="text/javascript">
+
+    const fee = parseFloat('{{ fee }}')
+    var currentInput = 0
+
+    function addAccountInput(){
+      if (currentInput < 4){
+        ++currentInput;
+        $('#id_form-'+currentInput+'-amount').parent().show()
+        $('#id_form-'+currentInput+'-account').parent().show()  
+        console.log("HOLA")
+      }
+      if (currentInput == 4){
+        $('#add').prop("disabled",true)
+      }
+      if (currentInput > 0){
+        $('#delete').prop("disabled",false)
+      }
+    }
+
+    function deleteAccountInput(){
+      if (currentInput > 0){
+        
+        $('#id_form-'+currentInput+'-amount').val(0.0).parent().hide()
+        $('#id_form-'+currentInput+'-account').val("").parent().hide()
+        --currentInput;
+        summary()
+      }
+      if (currentInput == 0){
+        $('#delete').prop("disabled",true)
+      }
+      if (currentInput < 4){
+        $('#add').prop("disabled",false)
+      }
+    }
+
+    for (var i = 0 ; i < 5 ; ++i){
+      summary = function(){
+        var total = 0;
+        for (var i = 0 ; i < 5 ; ++i){
+          var field = $('#id_form-'+i+'-amount')
+          if (field.parent().is(":visible")){
+            var v = parseInt(field.val())
+            total += isNaN(v) ? 0 : v
+          }
+        }
+        $('#fee').html(String(fee*100) + '%')
+        $('#amount').html("USD "+String(total))
+        $('#net').html("USD "+String(total*(1 - fee)))
+        $('#rate').html("800000 VEF/USD")
+        $('#vef').html("VEF " + String(total*( 1 - fee )*800000))
+
+      }
+
+      selectAccount = function(){
+        $('option').prop("disabled", false)
+        for (var i = 0 ; i <= currentInput ; ++i){
+          var value = $('#id_form-'+i+'-account').val()
+          if (value != "") $('option[value="' + String(value) + '"]').prop("disabled", true)
+        }
+      }
+      
+      $('#id_form-'+i+'-account').change(selectAccount)
+      var field = $('#id_form-'+i+'-amount')
+      field.keyup(summary).change(summary).val(0.0)
+      if (i > 0){
+        field.parent().hide()
+        $('#id_form-'+i+'-account').parent().hide()
+      }
+      summary()
+    }
+  </script>
+{% endblock javascripts %}

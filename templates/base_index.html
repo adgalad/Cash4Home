@@ -3,7 +3,39 @@
 <html lang="en">
 
   <head>
+    <style>
+      ul {
+          float:right;
+          list-style-type: none;
+          margin-left: 0px;
+          padding: 0;
+          overflow: hidden;
+      }
+      
+      ul.navbar-right{
+        margin-left: 0% !important;
+      }
 
+      li {
+          float: left;
+          margin-top: 10px;
+      }
+
+      li a {
+          display: block;
+          color: black !important;
+          font-size: 15px;
+          text-align: center;
+          /*margin-top: 10px;*/
+          padding: 20px 30px;
+          text-decoration: none;
+      }
+
+      li a:hover {
+          background-color: #6f9300 !important;
+          color:white !important;
+      }
+    </style>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
@@ -40,62 +72,30 @@
       <!-- Navbar links -->
       <div class="collapse navbar-collapse" id="collapsibleNavbar">
         
-       <style>
-            ul {
-                float:right;
-                list-style-type: none;
-                margin-left: 0px;
-                padding: 0;
-                overflow: hidden;
-            }
-            
-            ul.navbar-right{
-              margin-left: 50% !important;
-            }
-
-            li {
-                float: left;
-                margin-top: 10px;
-            }
-
-            li a {
-                display: block;
-                color: black !important;
-                font-size: 15px;
-                text-align: center;
-                /*margin-top: 10px;*/
-                padding: 20px 30px;
-                text-decoration: none;
-            }
-
-            li a:hover {
-                background-color: #6f9300 !important;
-                color:white !important;
-            }
-            </style>
-            <ul class="nav navbar-nav" layout="" layout-align-xs="start center">
+       
+            <ul class="nav navbar-nav" layout="" layout-align-xs="start center" style="width: 70%">
               <li>
-                <a href="/company" style="color:black !important">
-                  ¿Quienes somos?
+                <a href="/company">
+                  ¿Quiénes somos?
                 </a>
               </li>
               <li>
-                <a href="/company" style="color:black !important">
+                <a href="/company">
                   Contactenos
                 </a>
               </li>
               <li>
-                <a href="/company" style="color:black !important">
+                <a href="/company">
                   Preguntas Frecuentes
                 </a>
               </li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
               <li>
-                <a class="btn btn-primary" href="/login">Ingresar</a>
+                <a class="btn btn-primary1" href="/login">Ingresar</a>
               </li>
               <li>
-                <a class="btn btn-primary" style="background-color: white; color:#6f9300 !important; border-color: #6f9300; border-width: medium;" href="/signup">Registrarse  </a>
+                <a class="btn btn-primary2" href="/signup">Registrarse  </a>
               </li>
             </ul>
       </div> 

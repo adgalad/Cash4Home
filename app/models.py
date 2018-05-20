@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 from django.utils.translation import ugettext_lazy as _
+from django.core.validators import RegexValidator
 
 class MyUserManager(BaseUserManager):
     """
@@ -50,20 +51,24 @@ class User(AbstractBaseUser, PermissionsMixin):
             'Unselect this instead of deleting accounts.'
         ),
     )
+    
+    phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+
     is_superuser = models.BooleanField(default=False, help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status')
+    verified     = models.BooleanField(default=False)
     created_at   = models.DateTimeField(auto_now_add=True)
     updated_at   = models.DateTimeField(auto_now=True)
     first_name   = models.CharField(blank=True, max_length=30, verbose_name='first name')
     last_name    = models.CharField(blank=True, max_length=30, verbose_name='last name')
     address      = models.CharField(blank=True, max_length=64, verbose_name='address')
     id_number    = models.IntegerField(blank=True, verbose_name='ID number', default=0)
-    mobile_phone = models.CharField(blank=True, max_length=16, verbose_name='address')
-    id_front     = models.ImageField(upload_to=get_image_path, blank=True, null=True)
-    id_back      = models.ImageField(upload_to=get_image_path, blank=True, null=True)
-    selfie_image = models.ImageField(upload_to=get_image_path, blank=True, null=True)
-    service_image = models.ImageField(upload_to=get_image_path, blank=True, null=True)
+    mobile_phone = models.CharField(validators=[phone_regex], blank=True, max_length=16, verbose_name='mobile phone')
+    id_front     = models.ImageField(upload_to=get_image_path, null=True)
+    id_back      = models.ImageField(upload_to=get_image_path, null=True)
+    selfie_image = models.ImageField(upload_to=get_image_path, null=True)
+    service_image = models.ImageField(upload_to=get_image_path, null=True)
     user_choices = (('Cliente', 'Cliente'), ('Aliado-1', 'Aliado-1'), ('Aliado-2', 'Aliado-2'), ('Aliado-3', 'Aliado-3'), ('Operador', 'Operador'), ('Admin', 'Admin'))
-    user_type = models.CharField(choices=user_choices, max_length=9)
+    user_type = models.CharField(choices=user_choices, max_length=9, blank=True)
     referred_by = models.ForeignKey('self', null=True, blank=True)
 
     USERNAME_FIELD = 'email'
@@ -99,32 +104,49 @@ class ExchangeRate(models.Model):
     target_currency = models.ForeignKey(Currency, related_name='target_currency_pair')
 
 class Bank(models.Model):
-    swift = models.CharField(max_length=12, primary_key=True, unique=True)
+    swift = models.CharField(max_length=12, primary_key=True, unique=True, blank=True)
     country = models.CharField(max_length=70)
     name = models.CharField(max_length=100)
-    aba = models.CharField(max_length=10)
+    aba = models.CharField(max_length=10, null=True)
+
+    def __str__(self):
+        return self.name
     
 class Account(models.Model):
     number = models.CharField(max_length=270)
     is_client = models.BooleanField()
     choices = (('Origen', 'Origen'), ('Destino', 'Destino'))
-    use_type = models.CharField(choices=choices, max_length=8)
+    use_type = models.CharField(choices=choices, max_length=8, blank=True)
     id_bank = models.ForeignKey(Bank)
+
+
 
 class AccountBelongsTo(models.Model):
     # The primary key is the django id
     id_account = models.ForeignKey(Account)
     id_client = models.ForeignKey(User)
 
+    owner = models.CharField(max_length=64, null=True)
+    alias = models.CharField(max_length=32, null=True)
+    email = models.EmailField(null=True)
+    id_number = models.IntegerField(verbose_name='ID number', null=True)
+
     class Meta:
         unique_together = ('id_account', 'id_client')
 
+    def __str__(self):
+        account = self.id_account
+        name = str(account.id_bank) + " " + str(account.number)
+        if not self.alias is None:
+            name = self.alias + " (" + name + ")"
+        return name
+
 class Operation(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True)
-    fiat_amount = models.DecimalField(max_digits=40, decimal_places=40)
+    fiat_amount = models.DecimalField(max_digits=30, decimal_places=15)
     crypto_rate = models.FloatField(blank=True, null=True)
     status_choices = (('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
-                        ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'))
+                      ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'))
     status = models.CharField(choices=status_choices, max_length=20)
     exchanger = models.CharField(max_length=70, blank=True, null=True)
     date = models.DateTimeField()
@@ -174,3 +196,4 @@ class Comission(models.Model):
     choices = (('Pagado', 'Pagado'), ('Por pagar', 'Por pagar'), ('Pagado parcialmente', 'Pagado parcialmente'))
     status = models.CharField(choices=choices, max_length=20)
     remaining = models.DecimalField(max_digits=40, decimal_places=40)
+
