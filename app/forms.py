@@ -30,6 +30,10 @@ class SignUpForm(UserCreationForm):
     model = User
     fields = ('first_name', 'last_name', 'email', 'password1', 'password2', 'id_number', 'address', 'mobile_phone' )
 
+class ChangeEmailForm(forms.Form):
+  email = forms.EmailField(required=True, label=_(u"Email"))  
+
+
 
 class AuthenticationForm(forms.Form):
 
@@ -63,17 +67,20 @@ class BankAccountDestForm(BankAccountForm):
 
 
 
-
 class FromAccountForm(forms.Form):
-  account = forms.ModelChoiceField(queryset=None, label="Cuenta origen", required=True )
+  account = forms.ModelChoiceField(queryset=None, label="Cuenta origen", required=True)
+  currency = GroupedModelChoiceField(label=_('Moneda'), required=True, group_by_field='currency_type', queryset=Currency.objects.filter(currency_type='FIAT'))
 
   def __init__(self, *args, **kwargs):
     super(FromAccountForm, self).__init__(*args, **kwargs)
+
     for i in self.fields:
       self.fields[i].widget.attrs.update({'class' : 'form-control'})
 
   def setQueryset(self, queryset):
     self.fields['account'].queryset = queryset
+    for i in self.fields:
+      print(i)
     return self
 
 class ToAccountForm(forms.Form):

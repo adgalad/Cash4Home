@@ -6,6 +6,7 @@
  *     // code here
  * });
  */
+
 (function ($, sr) {
     // debouncing function from John Hann
     // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
@@ -929,7 +930,7 @@ function init_parsley () {
     validateFront()
   })
   var validateFront = function () {
-    if ($('#demo-form2').parsley().isValid() === true) {
+    if ($('#demo-form2') && $('#demo-form2').parsley() && $('#demo-form2').parsley().isValid() === true) {
       $('.bs-callout-info').removeClass('hidden')
       $('.bs-callout-warning').addClass('hidden')
     } else {
@@ -4407,135 +4408,135 @@ function init_echarts () {
           name: 'Botswana',
           value: 1969.341
         }, {
-              name: 'Central African Republic',
-              value: 4349.921
+          name: 'Central African Republic',
+          value: 4349.921
+        }, {
+          name: 'Canada',
+          value: 34126.24
+        }, {
+          name: 'Switzerland',
+          value: 7830.534
+        }, {
+          name: 'Chile',
+          value: 17150.76
+        }, {
+          name: 'China',
+          value: 1359821.465
+        }, {
+          name: 'Ivory Coast',
+          value: 60508.978
+        }, {
+          name: 'Cameroon',
+          value: 20624.343
+        }, {
+          name: 'Democratic Republic of the Congo',
+          value: 62191.161
+        }, {
+          name: 'Republic of the Congo',
+          value: 3573.024
+        }, {
+          name: 'Colombia',
+          value: 46444.798
+        }, {
+          name: 'Costa Rica',
+          value: 4669.685
+        }, {
+          name: 'Cuba',
+          value: 11281.768
+        }, {
+          name: 'Northern Cyprus',
+          value: 1.468
+        }, {
+          name: 'Cyprus',
+          value: 1103.685
+        }, {
+          name: 'Czech Republic',
+          value: 10553.701
+        }, {
+          name: 'Germany',
+          value: 83017.404
+        }, {
+          name: 'Djibouti',
+          value: 834.036
+        }, {
+          name: 'Denmark',
+          value: 5550.959
+        }, {
+          name: 'Dominican Republic',
+          value: 10016.797
+        }, {
+          name: 'Algeria',
+          value: 37062.82
+        }, {
+          name: 'Ecuador',
+          value: 15001.072
+        }, {
+          name: 'Egypt',
+          value: 78075.705
+        }, {
+          name: 'Eritrea',
+          value: 5741.159
+        }, {
+          name: 'Spain',
+          value: 46182.038
+        }, {
+          name: 'Estonia',
+          value: 1298.533
+        }, {
+          name: 'Ethiopia',
+          value: 87095.281
+        }, {
+          name: 'Finland',
+          value: 5367.693
+        }, {
+          name: 'Fiji',
+          value: 860.559
+        }, {
+          name: 'Falkland Islands',
+          value: 49.581
+        }, {
+          name: 'France',
+          value: 63230.866
+        }, {
+          name: 'Gabon',
+          value: 1556.222
+        }, {
+          name: 'United Kingdom',
+          value: 62066.35
+        }, {
+          name: 'Georgia',
+          value: 4388.674
+        }, {
+          name: 'Ghana',
+          value: 24262.901
+        }, {
+          name: 'Guinea',
+          value: 10876.033
+        }, {
+          name: 'Gambia',
+          value: 1680.64
+        }, {
+          name: 'Guinea Bissau',
+          value: 10876.033
+        }, {
+          name: 'Equatorial Guinea',
+          value: 696.167
+        }, {
+          name: 'Greece',
+          value: 11109.999
+        }, {
+          name: 'Greenland',
+          value: 56.546
+        }, {
+              name: 'Guatemala',
+              value: 14341.576
             }, {
-              name: 'Canada',
-              value: 34126.24
+              name: 'French Guiana',
+              value: 231.169
             }, {
-                name: 'Switzerland',
-                value: 7830.534
+                name: 'Guyana',
+                value: 786.126
               }, {
-                  name: 'Chile',
-                  value: 17150.76
-                }, {
-                  name: 'China',
-                  value: 1359821.465
-                }, {
-                  name: 'Ivory Coast',
-                  value: 60508.978
-                }, {
-                  name: 'Cameroon',
-                  value: 20624.343
-                }, {
-                  name: 'Democratic Republic of the Congo',
-                  value: 62191.161
-                }, {
-                  name: 'Republic of the Congo',
-                  value: 3573.024
-                }, {
-                  name: 'Colombia',
-                  value: 46444.798
-                }, {
-                  name: 'Costa Rica',
-                  value: 4669.685
-                }, {
-                  name: 'Cuba',
-                  value: 11281.768
-                }, {
-                  name: 'Northern Cyprus',
-                  value: 1.468
-                }, {
-                  name: 'Cyprus',
-                  value: 1103.685
-                }, {
-                  name: 'Czech Republic',
-                  value: 10553.701
-                }, {
-                  name: 'Germany',
-                  value: 83017.404
-                }, {
-                  name: 'Djibouti',
-                  value: 834.036
-                }, {
-                  name: 'Denmark',
-                  value: 5550.959
-                }, {
-                  name: 'Dominican Republic',
-                  value: 10016.797
-                }, {
-                  name: 'Algeria',
-                  value: 37062.82
-                }, {
-                  name: 'Ecuador',
-                  value: 15001.072
-                }, {
-                  name: 'Egypt',
-                  value: 78075.705
-                }, {
-                  name: 'Eritrea',
-                  value: 5741.159
-                }, {
-                  name: 'Spain',
-                  value: 46182.038
-                }, {
-                  name: 'Estonia',
-                  value: 1298.533
-                }, {
-                  name: 'Ethiopia',
-                  value: 87095.281
-                }, {
-                  name: 'Finland',
-                  value: 5367.693
-                }, {
-                  name: 'Fiji',
-                  value: 860.559
-                }, {
-                  name: 'Falkland Islands',
-                  value: 49.581
-                }, {
-                  name: 'France',
-                  value: 63230.866
-                }, {
-                  name: 'Gabon',
-                  value: 1556.222
-                }, {
-                  name: 'United Kingdom',
-                  value: 62066.35
-                }, {
-                  name: 'Georgia',
-                  value: 4388.674
-                }, {
-                  name: 'Ghana',
-                  value: 24262.901
-                }, {
-                  name: 'Guinea',
-                  value: 10876.033
-                }, {
-                  name: 'Gambia',
-                  value: 1680.64
-                }, {
-                  name: 'Guinea Bissau',
-                  value: 10876.033
-                }, {
-                  name: 'Equatorial Guinea',
-                  value: 696.167
-                }, {
-                  name: 'Greece',
-                  value: 11109.999
-                }, {
-                  name: 'Greenland',
-                  value: 56.546
-                }, {
-                  name: 'Guatemala',
-                  value: 14341.576
-                }, {
-                  name: 'French Guiana',
-                  value: 231.169
-                }, {
-                  name: 'Guyana',
-                  value: 786.126
-                }, {
                   name: 'Honduras',
                   value: 7621.204
                 }, {

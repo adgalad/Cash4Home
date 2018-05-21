@@ -4,13 +4,18 @@
 {% block content %}
 
   <div class="right_col" role="main">
-<!--     <section style=" height: 55px; background-color:#fece66; margin-top: 45px">
-      <div class="container" style="padding-left: 10px;">
-        Su cuenta no esta verificada. Para poder realizar una operación es necesario que verifique su cuenta.
-        <button class="btn btn-primary"> Verificar </button>
-      </div>
-    </section>   -->  
+    {% for message in messages %}
+      <section class="table-view {{message.tags}}">
+        <div class="container" style="display: table-cell; text-align: center; vertical-align: middle; padding-left: 15px;">
+            {% if 'safe' in message.tags %}
+              {{ message | safe }}
+            {% else %}
+              {{ message }}
+            {% endif %}
+        </div>
+      </section>   
+    {% endfor %} 
     <h1> INDEX </h1>
     <a href="/login">Login</a>
   </div>
-{% endblock %}
+{% endblock %} 
