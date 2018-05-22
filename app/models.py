@@ -118,8 +118,7 @@ class Account(models.Model):
     choices = (('Origen', 'Origen'), ('Destino', 'Destino'))
     use_type = models.CharField(choices=choices, max_length=8, blank=True)
     id_bank = models.ForeignKey(Bank)
-
-
+    id_currency = models.ForeignKey(Currency)
 
 class AccountBelongsTo(models.Model):
     # The primary key is the django id

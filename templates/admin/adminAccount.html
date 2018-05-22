@@ -41,13 +41,13 @@
                   </tr>
                 </thead>
                 <tbody>
-                  {% for b in banks %}
+                  {% for a in accounts %}
                     <tr>
-                      <td>{{ b.name }}</td>
-                      <td>{{ b.country }}</td>
-                      <td>{{ b.swift }}</td>  
-                      <td>{{ b.aba }}</td>
-                      <td><a href="{% url 'editBank' r.id %}"><i class="fa fa-edit"></i></a></td>
+                      <td>{{ a.number }}</td>
+                      <td>{{ a.is_client }}</td>
+                      <td>{{ a.use_type }}</td>  
+                      <td>{{ a.is_bank.name }}</td>
+                      <td><a href="{% url 'editAccount' a.id %}"><i class="fa fa-edit"></i></a></td>
                     </tr>
                   {% endfor %}
                 </tbody>

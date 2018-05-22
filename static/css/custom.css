@@ -875,8 +875,7 @@ a:focus {
     background: none
 }
 .nav li li.current-page a {
-    background-color: #6f9301; /* Esto lo puso Carlos */
-    color: #87a42e /* Esto lo puso Vicky */ /* CS: Ambos en conflicto. No se si jode algo */
+    color: #87a42e 
 }
 .nav.side-menu>li.active>a {
     text-shadow: rgba(0, 0, 0, 0.25) 0 -1px 0;
@@ -888,7 +887,6 @@ a:focus {
     font-weight: 500;
     color: black;
     margin-left: 0 !important;
-    line-height: 32px
 }
 .site_title {
     text-overflow: ellipsis;

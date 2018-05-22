@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url,handler404, handler500
+from django.conf.urls import url,handler404, handler500, handler403
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from app import views
@@ -65,7 +65,16 @@ urlpatterns = [
     url(r'^add/account/$', views.addAccount, name="addAccount"),
     url(r'^all/account/$', views.adminAccount, name="adminAccount"),
     url(r'^edit/account/(?P<_account_id>\w+)', views.editAccount, name="editAccount"),
+
+    url(r'^add/user/$', views.addUser, name="addUser"),
+    url(r'^all/user/$', views.adminUser, name="adminUser"),
+    url(r'^edit/user/(?P<_user_id>\w+)', views.editUser, name="editUser"),
+
+    url(r'^add/holiday/$', views.addHoliday, name="addHoliday"),
+    url(r'^all/holiday/$', views.adminHoliday, name="adminHoliday"),
+    url(r'^edit/holiday/(?P<_holiday_id>\w+)', views.editHoliday, name="editHoliday"),
 ]
 
 handler404 = views.handler404
+handler403 = views.handler403
 handler500 = views.handler500
