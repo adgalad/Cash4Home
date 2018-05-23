@@ -14,17 +14,6 @@
         <div class="title_left">
           <h3>Crear Operación</h3>
         </div>
-
-        <div class="title_right">
-          <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
-<!--             <div class="input-group">
-              <input type="text" class="form-control" placeholder="Search for...">
-              <span class="input-group-btn">
-                        <button class="btn btn-default" type="button">Go!</button>
-                    </span>
-            </div> -->
-          </div>
-        </div>
       </div>
       <div class="clearfix"></div>
 
@@ -59,7 +48,7 @@
                     <a href="#step-3">
                       <span class="step_no">3</span>
                       <span class="step_descr">
-                                        Step 3<br />
+                                        Paso 3<br />
                                         <small>Confirmación</small>
                                     </span>
                     </a>
@@ -68,7 +57,7 @@
                 
                 {% csrf_token %}
                 <div id="step-1" style="padding-bottom: 80px;">
-                  <h2 class="StepTitle">¿Desde cuál de tus cuentas quieres enviar dinero?</h2>
+                  <h4>¿Desde cuál de tus cuentas quieres enviar dinero?</h4>
                   <br>
 
                   <div class="col-md-12 col-sm-12 col-xs-12">
@@ -76,7 +65,7 @@
                       {{form1.account}}<br>
                     </div>
                   </div>
-                  <h2 class="StepTitle">¿A cuál moneda quieres enviar tu dinero?</h2>
+                  <h4>¿A cuál moneda quieres enviar tu dinero?</h4>
                   <br>
                   <div class="col-md-12 col-sm-12 col-xs-12">
                     <div class="col-md-2 col-sm-2 col-xs-6">
@@ -87,7 +76,7 @@
 
                 </div>
                 <div id="step-2">
-                  <h2 class="StepTitle">Elige a cuales cuentas quieres enviar el dinero</h2>
+                  <h3 class="StepTitle">Elige a cuales cuentas quieres enviar el dinero</h3>
                   <hr>
                   <div class="col-md-6 col-sm-6 col-xs-12 form-group">
                     {% for form in form2 %}

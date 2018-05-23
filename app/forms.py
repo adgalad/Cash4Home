@@ -51,6 +51,7 @@ class AuthenticationForm(forms.Form):
 class BankAccountForm(forms.Form):
   bank = GroupedModelChoiceField(label=_('Banco'), group_by_field='country', queryset=Bank.objects.all())
   number = forms.CharField(required=True, label=_(u"Número de cuenta"))
+  currency = forms.ModelChoiceField(label=_('Moneda'), required=True, queryset=Currency.objects.filter(currency_type='FIAT'))
 
   def __init__(self, *args, **kwargs):
     super(BankAccountForm, self).__init__(*args, **kwargs)
@@ -68,8 +69,8 @@ class BankAccountDestForm(BankAccountForm):
 
 
 class FromAccountForm(forms.Form):
-  account = forms.ModelChoiceField(queryset=None, label="Cuenta origen", required=True)
-  currency = GroupedModelChoiceField(label=_('Moneda'), required=True, group_by_field='currency_type', queryset=Currency.objects.filter(currency_type='FIAT'))
+  account = forms.ModelChoiceField(queryset=None,label="Cuenta origen", required=True)
+  currency = forms.ModelChoiceField(label=_('Moneda'), required=True, queryset=Currency.objects.filter(currency_type='FIAT'))
 
   def __init__(self, *args, **kwargs):
     super(FromAccountForm, self).__init__(*args, **kwargs)

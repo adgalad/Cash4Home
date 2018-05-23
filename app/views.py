@@ -5,7 +5,7 @@ from django.http import JsonResponse, Http404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, update_session_auth_hash
 from django.contrib.auth import logout as logout_auth
 from django.contrib.auth import login as login_auth
 from django.contrib.auth.forms import PasswordChangeForm
@@ -42,11 +42,11 @@ class PriceRetriever:
    
 def home(request):
   if request.user.is_authenticated():
-    print(request.user.canVerify())
-    if request.user.canVerify():
+    print(request.user.canVerify)
+    if request.user.canVerify:
       message = ''' Su cuenta no esta verificada. Para poder realizar una operación es necesario que verifique su cuenta.
             <a href=" '''+ reverse('userVerification') + '''"> 
-              <button class="btn btn-primary"> 
+              <button class="btn btn-default"> 
                 Verificar ahora 
               </button>
             </a>'''
@@ -72,6 +72,7 @@ def profile(request):
           request.user.email = email
           request.user.save()
           messages.error(request, "Su email ha sido actualizado.", extra_tags="alert-success")
+          update_session_auth_hash(request, passwordForm.user)
         else:
           messages.error(request, "El email que intento ingresar ya se encuentra asociado a otro usuario.", extra_tags="alert-warning")
       else:
@@ -89,7 +90,7 @@ def profile(request):
   return render(request, 'dashboard/profile.html')
 
 def userVerification(request):
-  if request.user.canVerify():
+  if request.user.canVerify:
     if request.method == 'POST':
       if 'file1' in request.FILES and 'file2' in request.FILES:
         file1 = request.FILES['file1']
@@ -231,7 +232,7 @@ def uploadImage(request, _operation_id):
   if operation.id_client.id != request.user.id:
     raise PermissionDenied
   elif operation.status != "Falta verificacion":
-    messages.error(request, 'Esta operacion ya fue verificada', extra_tags="alert-error")
+    messages.error(request, 'Esta operación ya fue verificada', extra_tags="alert-error")
     return render(request, 'dashboard/uploadImage.html', {"id": _operation_id})  
 
   if request.method == 'POST':
@@ -323,6 +324,7 @@ def logout(request):
   return redirect("/")
 
 def login(request):
+  if request.user: redirect('/')
   if request.method == 'POST':
     form = AuthenticationForm(request.POST)
     if form.is_valid():

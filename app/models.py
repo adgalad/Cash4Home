@@ -85,6 +85,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.email
 
+    @property
     def canVerify(self):
         return not (self.verified or self.id_front or self.selfie_image)
 
