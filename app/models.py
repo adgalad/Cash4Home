@@ -196,3 +196,6 @@ class Comission(models.Model):
     status = models.CharField(choices=choices, max_length=20)
     remaining = models.DecimalField(max_digits=40, decimal_places=40)
 
+class Country(models.Model):
+    name = models.CharField(max_length=70, primary_key=True, unique=True)
+    status = models.BooleanField(default=True)

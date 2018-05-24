@@ -389,8 +389,11 @@ def editExchangeRate(request, _rate_id):
     return render(request, 'admin/editExchangeRate.html', {'form': form})
 
 def addBank(request):
+    tmpCountries = Country.objects.all()
+    allCountries = [(tmp.name, tmp.name) for tmp in tmpCountries]
+
     if (request.method == 'POST'):
-        form = NewBankForm(request.POST)
+        form = NewBankForm(request.POST, countriesC=allCountries)
 
         if (form.is_valid()):
             name = form.cleaned_data['name']
@@ -407,7 +410,7 @@ def addBank(request):
 
             new_bank = Bank()
             new_bank.name = name.upper()
-            new_bank.country = country.upper()
+            new_bank.country = country
             new_bank.swift = swift
             new_bank.aba = aba
             new_bank.save()
@@ -415,7 +418,7 @@ def addBank(request):
             msg = "El banco fue agregado con éxito."
             return render(request, 'admin/addBank.html', {'form': form, 'msg': msg})
     else:
-        form = NewBankForm()
+        form = NewBankForm(countriesC=allCountries)
 
     return render(request, 'admin/addBank.html', {'form': form})
 
@@ -426,13 +429,16 @@ def adminBank(request):
         return render(request, 'admin/adminBank.html', {'banks': all_banks})
 
 def editBank(request, _bank_id):
+    tmpCountries = Country.objects.all()
+    allCountries = [(tmp.name, tmp.name) for tmp in tmpCountries]
+
     try:
         actualBank = Bank.objects.get(swift=_bank_id)
     except:
         raise Http404
 
     if (request.method == 'POST'):
-        form = EditBankForm(request.POST)
+        form = EditBankForm(request.POST, countriesC=allCountries)
 
         if (form.is_valid()):
             country = form.cleaned_data['country']
@@ -452,7 +458,7 @@ def editBank(request, _bank_id):
             return render(request, 'admin/editBank.html', {'form': form, 'msg': msg})
     else:
         form = EditBankForm(initial={'name': actualBank.name, 'country': actualBank.country, 'swift':_bank_id,
-                                      'aba': actualBank.aba})
+                                      'aba': actualBank.aba}, countriesC=allCountries)
 
         return render(request, 'admin/editBank.html', {'form': form})
 
@@ -513,17 +519,44 @@ def editAccount(request, _account_id):
 
 
 def addUser(request):
-    pass
+    if (request.method == 'POST'):
+        form = SignUpForm(request.POST)
+
+        if (form.is_valid()):
+            form.save()
+
+            msg = "El usuario fue agregado con éxito."
+            return render(request, 'admin/addUser.html', {'form': form, 'msg': msg})
+    else:
+        form = SignUpForm()
+
+        return render(request, 'admin/addUser.html', {'form': form, 'msg': msg})
 
 def adminUser(request):
-    pass
+    if (request.method == 'GET'):
+        all_users = User.objects.all()
 
-def editUser(request):
-    pass
+        return render(request, 'admin/adminUser.html', {'users': all_users})
+
+def editUser(request, _user_id):
+    try:
+        actualUser = User.objects.get(id=_user_id)
+    except:
+        raise Http404
+
+    if (request.method == 'POST'):
+        pass
+    else:
+        pass
+
+    return render(request, 'admin/editUser.html')
 
 def addHoliday(request):
+    tmpCountries = Country.objects.all()
+    allCountries = [(tmp.name, tmp.name) for tmp in tmpCountries]
+
     if (request.method == 'POST'):
-        form = NewHolidayForm(request.POST)
+        form = NewHolidayForm(request.POST, countriesC=allCountries)
 
         if (form.is_valid()):
             date = form.cleaned_data['date']
@@ -543,7 +576,7 @@ def addHoliday(request):
             msg = "El feriado fue agregado con éxito."
             return render(request, 'admin/addHoliday.html', {'form': form, 'msg': msg})
     else:
-        form = NewHolidayForm()
+        form = NewHolidayForm(countriesC=allCountries)
 
     return render(request, 'admin/addHoliday.html', {'form': form})
 
@@ -559,8 +592,11 @@ def editHoliday(request, _holiday_id):
     except:
         raise Http404
 
+    tmpCountries = Country.objects.all()
+    allCountries = [(tmp.name, tmp.name) for tmp in tmpCountries]
+
     if (request.method == 'POST'):
-        form = NewHolidayForm(request.POST)
+        form = NewHolidayForm(request.POST, countriesC=allCountries)
 
         if (form.is_valid()):
             date = form.cleaned_data['date']
@@ -582,6 +618,69 @@ def editHoliday(request, _holiday_id):
             return render(request, 'admin/editHoliday.html', {'form': form, 'msg': msg})
     else:
         form = NewHolidayForm(initial={'date': actualHoliday.date, 'description': actualHoliday.description,
-                                        'country': actualHoliday.country})
+                                        'country': actualHoliday.country}, countriesC=allCountries)
 
     return render(request, 'admin/editHoliday.html', {'form': form})
+
+def addCountry(request):
+    if (request.method == 'POST'):
+        form = NewCountryForm(request.POST)
+
+        if (form.is_valid()):
+            name = form.cleaned_data['name']
+            status = form.cleaned_data['status']
+
+            if (Country.objects.filter(name=name).exists()):
+                msg = "Ya existe un país con ese nombre. Ingrese otro."
+                return render(request, 'admin/addCountry.html', {'form': form, 'msg': msg})
+
+            new_country = Country()
+            new_country.name = name
+            new_country.status = int(status)
+            new_country.save()
+
+            msg = "El país fue agregado con éxito."
+            return render(request, 'admin/addCountry.html', {'form': form, 'msg': msg})
+    else:
+        form = NewCountryForm()
+
+    return render(request, 'admin/addCountry.html', {'form': form})
+
+def adminCountry(request):
+    if (request.method == 'GET'):
+        all_countries = Country.objects.all()
+
+        return render(request, 'admin/adminCountry.html', {'countries': all_countries})
+
+def editCountry(request, _country_id):
+    try:
+        actualCountry = Country.objects.get(name=_country_id)
+    except:
+        raise Http404
+
+    if (request.method == 'POST'):
+        form = NewCountryForm(request.POST)
+
+        if (form.is_valid()):
+            name = form.cleaned_data['name']
+            status = form.cleaned_data['status']
+
+            if (name != actualCountry.name):
+                if (Country.objects.filter(name=name).exists()):
+                    msg = "Ya existe un país con ese nombre. Ingrese otro"
+                    return render(request, 'admin/editCountry.html', {'form': form, 'msg': msg})
+
+                actualCountry.delete()
+                actualCountry = Country()
+
+            actualCountry.name = name
+            actualCountry.status = int(status)
+
+            msg = "El país fue editado con éxito."
+            return render(request, 'admin/editCountry.html', {'form': form, 'msg': msg})
+    else:
+        form = NewCountryForm(initial={'name': actualCountry.name})
+
+    return render(request, 'admin/editCountry.html', {'form': form})
+
+

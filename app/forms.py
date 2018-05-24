@@ -139,29 +139,36 @@ class NewExchangeRateForm(forms.Form):
     
 class NewBankForm(forms.Form):
 
-    name = forms.CharField(max_length=100, required=True, label="Nombre", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
-    country = forms.CharField(max_length=70, required=True, label="País", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
-    swift = forms.CharField(max_length=12, required=True, label="SWIFT", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
-    aba = forms.CharField(max_length=10, required=True, label="ABA", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+  name = forms.CharField(max_length=100, required=True, label="Nombre", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+  country = forms.ChoiceField(required=True, label="País", widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
+  swift = forms.CharField(max_length=12, required=True, label="SWIFT", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+  aba = forms.CharField(max_length=10, required=True, label="ABA", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
 
+  def __init__(self, *args, **kwargs):
+    countriesChoices = kwargs.pop('countriesC') 
 
-    def __init__(self, *args, **kwargs):
-      super(NewBankForm, self).__init__(*args, **kwargs)
-      for i in self.fields:
-          self.fields[i].widget.attrs.update({'class' : 'form-control'})
+    super(NewBankForm, self).__init__(*args, **kwargs)
+    for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+    self.fields['country'].choices = countriesChoices
 
 class EditBankForm(forms.Form):
 
-    name = forms.CharField(max_length=100, required=True, label="Nombre", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
-    country = forms.CharField(max_length=70, required=True, label="País", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
-    swift = forms.CharField(max_length=12, required=True, label="SWIFT", widget = forms.TextInput(attrs={'style': 'width:100%;', 'readonly':'readonly'}))
-    aba = forms.CharField(max_length=10, required=True, label="ABA", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+  name = forms.CharField(max_length=100, required=True, label="Nombre", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+  country = forms.ChoiceField(required=True, label="País", widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
+  swift = forms.CharField(max_length=12, required=True, label="SWIFT", widget = forms.TextInput(attrs={'style': 'width:100%;', 'readonly':'readonly'}))
+  aba = forms.CharField(max_length=10, required=True, label="ABA", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
 
 
-    def __init__(self, *args, **kwargs):
-      super(EditBankForm, self).__init__(*args, **kwargs)
-      for i in self.fields:
-          self.fields[i].widget.attrs.update({'class' : 'form-control'})
+  def __init__(self, *args, **kwargs):
+    countriesChoices = kwargs.pop('countriesC')
+
+    super(EditBankForm, self).__init__(*args, **kwargs)
+    for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+    self.fields['country'].choices = countriesChoices
 
 class NewAccountForm(forms.Form):
 
@@ -202,9 +209,27 @@ class NewHolidayForm(forms.Form):
   date = forms.DateField(label = "Fecha", required = True, widget = DateInput(), input_formats = ['%d/%m/%Y'])
   description = forms.CharField(label="Descripción", required=True, max_length=140,
                                     widget = forms.TextInput(attrs={'style': 'width:100%;'}))
-  country = forms.CharField(label="País", required=True, max_length=70, widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+  country = forms.ChoiceField(label="País", required=True, widget = forms.Select(attrs={'style': 'width:100%;'}))
 
   def __init__(self, *args, **kwargs):
+      countriesChoices = kwargs.pop('countriesC')
+      
       super(NewHolidayForm, self).__init__(*args, **kwargs)
+      for i in self.fields:
+          self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+      self.fields['country'].choices = countriesChoices
+
+class NewCountryForm(forms.Form):
+
+  name = forms.CharField(label="Nombre", required=True, max_length=70, widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+  status_choices = (('0', 'Inactivo',), ('1', 'Activo'))
+  status = forms.ChoiceField(required = True,
+                    widget=forms.RadioSelect(attrs={'style': 'width:100%; background-color:white'}), 
+                    label = "Estado",
+                    choices=status_choices)
+
+  def __init__(self, *args, **kwargs):
+      super(NewCountryForm, self).__init__(*args, **kwargs)
       for i in self.fields:
           self.fields[i].widget.attrs.update({'class' : 'form-control'})
