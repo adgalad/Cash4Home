@@ -50,7 +50,7 @@
                       <tr>
                         <td>{{ o.code }}</td>
                         <td>{{ o.id_account }} </td>
-                        <td>{{ o.id_account.id_bank.currency}} {{ o.fiat_amount | floatformat:-2 }}</td>
+                        <td>{{ o.id_account.id_currency}} {{ o.fiat_amount | floatformat:-2 }}</td>
                         <td>{{ o.date }}</td>
                         {% if o.status == "Falta verificacion" %}
                           <td style="color: red;">
@@ -94,7 +94,7 @@
                       <tr>
                         <td>{{ o.code }}</td>
                         <td>{{ o.id_account }} </td>
-                        <td>{{ o.id_account.id_bank.currency}} {{ o.fiat_amount | floatformat:-2 }}</td>
+                        <td>{{ o.id_account.id_currency}} {{ o.fiat_amount | floatformat:-2 }}</td>
                         <td>{{ o.date }}</td>
                         {% if o.status == "Falta verificacion" %}
                           <td style="color: red;">

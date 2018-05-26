@@ -35,9 +35,12 @@ urlpatterns = [
     #User
     url(r'^user/profile$', views.profile, name='profile'),
     url(r'^user/verification$', views.userVerification, name='userVerification'),
-    url(r'^operation/new$', views.createOperation, name='createOperation'),
+   
+   
     url(r'^accounts$', views.accounts, name='accounts'),
     url(r'^account/new$', views.createAccount, name='createAccount'),
+    
+    url(r'^operation/new$', views.createOperation, name='createOperation'),
     url(r'^operation/verify/(?P<_operation_id>\w+)$', views.uploadImage, name='verifyOperation'),
     url(r'^operation/pending$', views.pendingOperations, name='pendingOperations'),
     url(r'^operation/(?P<_operation_id>\w+)/details$', views.operationModal, name='operationModal'),
@@ -60,8 +63,25 @@ urlpatterns = [
     url(r'^add/exchange_rate/$', views.addExchangeRate, name="addExchangeRate"),
     url(r'^all/exchange_rate/$', views.adminExchangeRate, name="adminExchangeRate"),
     url(r'^edit/exchange_rate/(?P<_rate_id>\w+)', views.editExchangeRate, name="editExchangeRate"),
+
+    url(r'^add/bank/$', views.addBank, name="addBank"),
+    url(r'^all/bank/$', views.adminBank, name="adminBank"),
+    url(r'^edit/bank/(?P<_bank_id>\w+)', views.editBank, name="editBank"),
+
+    url(r'^add/account/$', views.addAccount, name="addAccount"),
+    url(r'^all/account/$', views.adminAccount, name="adminAccount"),
+    url(r'^edit/account/(?P<_account_id>\w+)', views.editAccount, name="editAccount"),
+
+    url(r'^add/user/$', views.addUser, name="addUser"),
+    url(r'^all/user/$', views.adminUser, name="adminUser"),
+    url(r'^edit/user/(?P<_user_id>\w+)', views.editUser, name="editUser"),
+
+    url(r'^add/holiday/$', views.addHoliday, name="addHoliday"),
+    url(r'^all/holiday/$', views.adminHoliday, name="adminHoliday"),
+    url(r'^edit/holiday/(?P<_holiday_id>\w+)', views.editHoliday, name="editHoliday"),
 ]
 
 handler403 = views.handler403
 handler404 = views.handler404
+handler403 = views.handler403
 handler500 = views.handler500

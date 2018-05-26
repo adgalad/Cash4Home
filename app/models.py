@@ -119,7 +119,7 @@ class Bank(models.Model):
     country = models.CharField(max_length=70)
     name = models.CharField(max_length=100)
     aba = models.CharField(max_length=10, null=True)
-    currency = models.ForeignKey(Currency, related_name='accept_currency', null=True)
+
 
     def __str__(self):
         return self.name
@@ -130,10 +130,10 @@ class Account(models.Model):
     choices = (('Origen', 'Origen'), ('Destino', 'Destino'))
     use_type = models.CharField(choices=choices, max_length=8, blank=True)
     id_bank = models.ForeignKey(Bank)
+    id_currency = models.ForeignKey(Currency)
 
     def __str__(self):
         return str(self.id_bank) + " " + str(self.number)
-
 
 
 class AccountBelongsTo(models.Model):

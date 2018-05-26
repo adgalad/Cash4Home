@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from app.models import *
 from django.utils.translation import ugettext as _
 from app.customWidgets import *
+from functools import partial
 
 class SignUpForm(UserCreationForm):
 
@@ -46,12 +47,11 @@ class AuthenticationForm(forms.Form):
         self.fields[i].widget.attrs.update({'class' : 'form-control', 'placeholder': self.fields[i].label})
                 
 
-
-
 class BankAccountForm(forms.Form):
-  bank = GroupedModelChoiceField(label=_('Banco'), group_by_field='country', queryset=Bank.objects.all())
-  number = forms.CharField(required=True, label=_(u"Número de cuenta"))
-  currency = forms.ModelChoiceField(label=_('Moneda'), required=True, queryset=Currency.objects.filter(currency_type='FIAT'))
+  bank = GroupedModelChoiceField(label=_('Banco*'), group_by_field='country', queryset=Bank.objects.all().exclude(country="Venezuela"))
+  number = forms.CharField(required=True, label=_(u"Número de cuenta*"))
+  router = forms.CharField(required=False, label=_(u"Número ABA (Solo para banco en EEUU)"))
+  id_currency = forms.ModelChoiceField(label=_('Moneda*'), required=True, queryset=Currency.objects.filter(currency_type='FIAT'))
 
   def __init__(self, *args, **kwargs):
     super(BankAccountForm, self).__init__(*args, **kwargs)
@@ -60,12 +60,11 @@ class BankAccountForm(forms.Form):
       self.fields[i].widget.attrs.update({'class' : 'form-control'})
 
 class BankAccountDestForm(BankAccountForm):
-  owner = forms.CharField(required=True, label=_(u"Nombre del titular"))
-  id_number = forms.CharField(max_length=30, required=True, label=_(u'Número de identificación'))
-  email = forms.EmailField(required=True, label=_(u"Email del titular"))
+  bank = ModelChoiceField(label=_('Banco*'), required=True, queryset=Bank.objects.filter(country="Venezuela"))
+  owner = forms.CharField(required=True, label=_(u"Nombre del titular*"))
+  id_number = forms.CharField(max_length=30, required=True, label=_(u'Número de identificación*'))
+  email = forms.EmailField(required=True, label=_(u"Email del titular*"))
   alias = forms.CharField(required=False, label=_(u"Alias"))
-
-
 
 
 class FromAccountForm(forms.Form):
@@ -74,7 +73,6 @@ class FromAccountForm(forms.Form):
 
   def __init__(self, *args, **kwargs):
     super(FromAccountForm, self).__init__(*args, **kwargs)
-
     for i in self.fields:
       self.fields[i].widget.attrs.update({'class' : 'form-control'})
 
@@ -98,10 +96,6 @@ class ToAccountForm(forms.Form):
     return self
 
 
-
-
-
-
 class NewCurrencyForm(forms.Form):
 
   code = forms.CharField(max_length=10, required=True, label="Código", 
@@ -114,6 +108,21 @@ class NewCurrencyForm(forms.Form):
 
   def __init__(self, *args, **kwargs):
     super(NewCurrencyForm, self).__init__(*args, **kwargs)
+    for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+class EditCurrencyForm(forms.Form):
+
+  code = forms.CharField(max_length=10, required=True, label="Código", 
+                        widget = forms.TextInput(attrs={'style': 'width:100%;', 'placeholder': 'VEF, USD, BTC...', 'readonly':'readonly'})) # VEF, USD, BTC
+  name = forms.CharField(max_length=50, required=True, label="Nombre",
+                          widget = forms.TextInput(attrs={'style': 'width:100%;', 'placeholder': 'Bolívar, Dólar, Bitcoin...'}))
+  choices = (('FIAT', 'FIAT'), ('Crypto', 'Crypto'))
+  currency_type = forms.ChoiceField(required=True, choices=choices, label="Tipo de moneda",
+                                  widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
+
+  def __init__(self, *args, **kwargs):
+    super(EditCurrencyForm, self).__init__(*args, **kwargs)
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
 
@@ -138,4 +147,74 @@ class NewExchangeRateForm(forms.Form):
   target_currency = forms.ChoiceField(required=True, label="Moneda destino",
                                   widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
     
+class NewBankForm(forms.Form):
 
+    name = forms.CharField(max_length=100, required=True, label="Nombre", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+    country = forms.CharField(max_length=70, required=True, label="País", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+    swift = forms.CharField(max_length=12, required=True, label="SWIFT", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+    aba = forms.CharField(max_length=10, required=True, label="ABA", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+
+
+    def __init__(self, *args, **kwargs):
+      super(NewBankForm, self).__init__(*args, **kwargs)
+      for i in self.fields:
+          self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+class EditBankForm(forms.Form):
+
+    name = forms.CharField(max_length=100, required=True, label="Nombre", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+    country = forms.CharField(max_length=70, required=True, label="País", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+    swift = forms.CharField(max_length=12, required=True, label="SWIFT", widget = forms.TextInput(attrs={'style': 'width:100%;', 'readonly':'readonly'}))
+    aba = forms.CharField(max_length=10, required=True, label="ABA", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+
+
+    def __init__(self, *args, **kwargs):
+      super(EditBankForm, self).__init__(*args, **kwargs)
+      for i in self.fields:
+          self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+class NewAccountForm(forms.Form):
+
+    def __init__(self,*args,**kwargs):
+      currencyChoices = kwargs.pop('currencyC') 
+      bankChoices = kwargs.pop('bankC') 
+
+      super(NewAccountForm,self).__init__(*args,**kwargs)
+
+      for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+      # Set choices from argument.
+      self.fields['bank'].choices = bankChoices
+      self.fields['currency'].choices = currencyChoices
+
+    number = forms.CharField(max_length=270, required=True, label="Número de cuenta", widget = forms.TextInput(attrs={'style': 'width:100%;'}))  
+    choices_third = (('Cliente', 'Cliente'), ('Aliado', 'Aliado'), ('Terceros', 'Terceros'))
+    is_thirds = forms.ChoiceField(choices=choices_third, required=True, label="Dueño de la cuenta",
+                                    widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
+    choices_use = (('Origen', 'Origen'), ('Destino', 'Destino'))
+    use_type = forms.ChoiceField(choices=choices_use, required=True, label="Tipo de uso",
+                                    widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
+    bank = forms.ChoiceField(required=True, label="Banco",
+                                    widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
+    currency = forms.ChoiceField(required=True, label="Moneda",
+                                    widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
+
+    #Third one owner case
+    owner = forms.CharField(max_length=64, required=False, label="Titular de la cuenta", widget = forms.TextInput(attrs={'style': 'width:100%;'}))  
+    alias = forms.CharField(max_length=32, required=False, label="Alias", widget = forms.TextInput(attrs={'style': 'width:100%;'}))  
+    email = forms.EmailField(required=False, label="E-mail del titular")
+    id_number = forms.IntegerField(required=False, label="Número de identificación del titular")
+
+class NewHolidayForm(forms.Form):
+  DateInput = partial(forms.DateInput, {'class': 'datepicker'})
+
+  date = forms.DateField(label = "Fecha", required = True, widget = DateInput(), input_formats = ['%d/%m/%Y'])
+  description = forms.CharField(label="Descripción", required=True, max_length=140,
+                                    widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+  country = forms.CharField(label="País", required=True, max_length=70, widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+
+  def __init__(self, *args, **kwargs):
+      super(NewHolidayForm, self).__init__(*args, **kwargs)
+      for i in self.fields:
+          self.fields[i].widget.attrs.update({'class' : 'form-control'})

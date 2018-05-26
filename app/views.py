@@ -40,9 +40,31 @@ class PriceRetriever:
     uphold_USD_ETH = askUpholdPair(uphold, "USDETH")
 
    
+########## ERROR HANDLING ##########
+
+#---- Vista para manejar Error 404 - Not found ----#
+def handler404(request):
+    response = render(request, 'error_handling/404.html')
+    response.status_code = 404
+    return response
+
+#---- Vista para manejar Error 403 - Permission denied ----#
+def handler403(request):
+    response = render(request, 'error_handling/403.html')
+    response.status_code = 403
+    return response
+
+#---- Vista para manejar Error 500 - Internal server error ----#
+def handler500(request):
+    response = render(request, 'error_handling/500.html')
+    response.status_code = 500
+    return response
+
+########## FIN ERROR HANDLING ##########
+
+
 def home(request):
   if request.user.is_authenticated():
-    print(request.user.canVerify)
     if request.user.canVerify:
       message = ''' Su cuenta no esta verificada. Para poder realizar una operación es necesario que verifique su cuenta.
             <a href=" '''+ reverse('userVerification') + '''"> 
@@ -99,7 +121,7 @@ def userVerification(request):
           request.user.id_front = file1
           request.user.selfie_image = file2
           request.user.save()
-          return render(request, 'dashboard/verificationConfirmation.html')      
+          return render(request, 'dashboard/userVerificationConfirmation.html')      
         else:
           messages.error(request, 'Solo puede subir imagenes PNG y JPG.', extra_tags="alert-error")
       else:
@@ -122,14 +144,14 @@ def createOperation(request):
   fromAccs = {}
   for i in queryset1:
     fromAccs[i.id_account.id] = { 
-      'currency':str(i.id_account.id_bank.currency),
+      'currency':str(i.id_account.id_currency),
       'name': str(i)
     }
 
   toAccs = {}
   for i in queryset2:
     toAccs[i.id_account.id] = {
-      'currency':str(i.id_account.id_bank.currency),
+      'currency':str(i.id_account.id_currency),
       'name': str(i)
     }
 
@@ -164,7 +186,7 @@ def createOperation(request):
           break
 
       if ok:
-        fromCurrency = fromAccount.id_account.id_bank.currency
+        fromCurrency = fromAccount.id_account.id_currency
         toCurrency = form1.cleaned_data['currency']
         rate = rates[str(fromCurrency) + "/" + str(toCurrency)]
         operation = Operation(fiat_amount = total,
@@ -181,8 +203,13 @@ def createOperation(request):
         operation.save()
         for i in toAccounts:
           OperationGoesTo(operation_code = operation, number_account = i[0].id_account, amount = i[1] ).save()
-
-        return redirect("/")
+        
+        return render(request, 'dashboard/operationConfirmation.html', {
+                        'bank_name': fromAccount.id_account.id_bank.name,
+                        'bank_account': 1012366452,
+                        'bank_aba': fromAccount.id_account.id_bank.aba,
+                        'amount': "%s %s"%(fromCurrency, total),
+                        'operationID': operation.code})
 
   else:
     form1 = FromAccountForm().setQueryset(queryset1)
@@ -214,7 +241,6 @@ def pendingOperations(request):
 
 
 def operationModal(request, _operation_id):
-  print(_operation_id)
   operation = Operation.objects.get(code=_operation_id)
   ogt = OperationGoesTo.objects.filter(operation_code = operation)
   if operation:
@@ -227,8 +253,6 @@ def uploadImage(request, _operation_id):
   
   try: operation = Operation.objects.get(code=_operation_id)
   except: raise Http404
-  print(operation.id_client.id != request.user.id)
-  print(operation.status != "Falta verificacion")
   if operation.id_client.id != request.user.id:
     raise PermissionDenied
   elif operation.status != "Falta verificacion":
@@ -287,9 +311,13 @@ def createAccount(request):
       number = form.cleaned_data.get('number')
       bank = form.cleaned_data.get('bank')
       acc = Account.objects.filter(number=number, id_bank=bank)
-      print(number, bank)
+      currency = form.cleaned_data.get('id_currency')
       if acc.count() == 0:
-        acc = Account(number=number, id_bank=bank, use_type="Origen" if own else "Destino", is_client=True)
+        acc = Account(number=number,
+                      id_bank=bank,
+                      id_currency=currency,
+                      use_type="Origen" if own else "Destino",
+                      is_client=True)
       else:
         acc = acc[0]
         acc.is_client = own
@@ -305,6 +333,7 @@ def createAccount(request):
         email = form.cleaned_data.get('email').lower()
         alias = form.cleaned_data.get('alias')
         owner = form.cleaned_data.get('owner').title()
+
         id_number = form.cleaned_data.get('id_number')
         AccountBelongsTo.objects.create(id_client=request.user, 
                                         id_account=acc,
@@ -317,7 +346,7 @@ def createAccount(request):
       return redirect('accounts')
   else:
     form = form() 
-  return render(request, 'dashboard/createAccount.html', {"form": form})
+  return render(request, 'dashboard/createAccount.html', {"form": form, 'own':own})
 
 def logout(request):
   logout_auth(request)
@@ -331,7 +360,6 @@ def login(request):
       email = form.cleaned_data.get('email')
       raw_password = form.cleaned_data.get('password1')
       user = authenticate(username=email, password=raw_password)
-      print(user, email, raw_password)
       if user is not None:
         # if user.is_active:
         login_auth(request, user)
@@ -400,31 +428,25 @@ def editCurrencies(request, _currency_id):
     try:
         c = Currency.objects.get(code=_currency_id)
     except:
-        pass
-        # Raise 404 error
+        raise Http404
 
     if (request.method == 'POST'):
-        form = NewCurrencyForm(request.POST)
+        form = EditCurrencyForm(request.POST)
 
         if (form.is_valid()):
-            code = form.cleaned_data['code']
-            if (code != c.code):
-                if (Currency.objects.filter(code=code).exists()):
-                    msg = "El código de la moneda ingresado ya existe. Intente con uno diferente."
-
-                    return render(request, 'admin/editCurrency.html', {'form': form, 'msg': msg, 'c': c})
-                c.delete()
-                c = Currency()
-
-            c.code = code
             c.name = form.cleaned_data['name']
+            if (Currency.objects.filter(name=name).exists()):
+                msg = "El nombre de la moneda ingresado ya existe. Intente con uno diferente."
+
+                return render(request, 'admin/editCurrency.html', {'form': form, 'msg': msg, 'c': c})
+
             c.currency_type = form.cleaned_data['currency_type']
             c.save()
 
             msg = "La moneda se editó con éxito."
             return render(request, 'admin/editCurrency.html', {'form': form, 'msg': msg, 'c': c})
     else:    
-        form = NewCurrencyForm(initial={'code': c.code, 'name': c.name, 'currency_type': c.currency_type})
+        form = EditCurrencyForm(initial={'code': c.code, 'name': c.name, 'currency_type': c.currency_type})
 
     return render(request, 'admin/editCurrency.html', {'form': form, 'c': c})
 
@@ -475,8 +497,7 @@ def editExchangeRate(request, _rate_id):
     try:
         actualRate = ExchangeRate.objects.get(id=_rate_id)
     except:
-        pass
-        # Raise 404 error
+        raise Http404
 
     tmpCurrencies = Currency.objects.all()
     allCurrencies = [(tmp.code, tmp.code) for tmp in tmpCurrencies]
@@ -516,13 +537,201 @@ def editExchangeRate(request, _rate_id):
 
     return render(request, 'admin/editExchangeRate.html', {'form': form})
 
+def addBank(request):
+    if (request.method == 'POST'):
+        form = NewBankForm(request.POST)
+
+        if (form.is_valid()):
+            name = form.cleaned_data['name']
+            country = form.cleaned_data['country']
+            swift = form.cleaned_data['swift']
+            aba = form.cleaned_data['aba']
+
+            if (Bank().objects.filter(swift=swift).exists()):
+                msg = "El SWIFT ingresado corresponde a otro banco. Ingrese un SWIFT correcto."
+                return render(request, 'admin/addBank.html', {'form': form, 'msg': msg})
+            if (Bank().objects.filter(aba=aba).exists()):
+                msg = "El ABA ingresado corresponde a otro banco. Ingrese un ABA correcto."
+                return render(request, 'admin/addBank.html', {'form': form, 'msg': msg})
+
+            new_bank = Bank()
+            new_bank.name = name.upper()
+            new_bank.country = country.upper()
+            new_bank.swift = swift
+            new_bank.aba = aba
+            new_bank.save()
+
+            msg = "El banco fue agregado con éxito."
+            return render(request, 'admin/addBank.html', {'form': form, 'msg': msg})
+    else:
+        form = NewBankForm()
+
+    return render(request, 'admin/addBank.html', {'form': form})
 
 
-def handler403(request):
-  return render(request,'error_handling/page_403.html')
+def adminBank(request):
+    if (request.method == 'GET'):
+        all_banks = Bank.objects.all()
 
-def handler404(request):
-  return render(request,'error_handling/page_404.html')
+        return render(request, 'admin/adminBank.html', {'banks': all_banks})
 
-def handler500(request):
-  return render(request,'error_handling/page_500.html')
+def editBank(request, _bank_id):
+    try:
+        actualBank = Bank.objects.get(swift=_bank_id)
+    except:
+        raise Http404
+
+    if (request.method == 'POST'):
+        form = EditBankForm(request.POST)
+
+        if (form.is_valid()):
+            country = form.cleaned_data['country']
+            name = form.cleaned_data['name']
+            aba = form.cleaned_data['aba']
+
+            if (Bank().objects.filter(aba=aba).exists()):
+                msg = "El ABA ingresado corresponde a otro banco. Ingrese un ABA correcto."
+                return render(request, 'admin/editBank.html', {'form': form, 'msg': msg})
+
+            actualBank.country = country.upper()
+            actualBank.name = name.upper()
+            actualBank.aba = aba
+            actualBank.save()
+
+            msg = "El banco fue editado con éxito."
+            return render(request, 'admin/editBank.html', {'form': form, 'msg': msg})
+    else:
+        form = EditBankForm(initial={'name': actualBank.name, 'country': actualBank.country, 'swift':_bank_id,
+                                      'aba': actualBank.aba})
+
+        return render(request, 'admin/editBank.html', {'form': form})
+
+def addAccount(request):
+    tmp_banks = Bank.objects.all()
+    all_banks = [(tmp.swift, tmp.name) for tmp in tmp_banks]
+    tmp_currencies = Currency.objects.all()
+    all_currencies = [(tmp.code, tmp.name) for tmp in tmp_currencies]
+
+    if (request.method == 'POST'):
+        form = NewAccountForm(request.POST, currencyC=all_currencies, bankC=all_banks)
+
+        if (form.is_valid()):
+            number = form.cleaned_data['number']
+            is_thirds = forms.cleaned_data['is_thirds']
+            use_type = forms.cleaned_data['use_type']
+            bank = Bank.objects.get(swift=form.cleaned_data['bank'])
+            currency = Currency.objects.get(code=form.cleaned_data['currency'])
+
+            if (Account.objects.filter(number=number,bank=bank).exists()):
+                msg = "La cuenta que ingresaste ya existe en ese banco."
+                return render(request, 'admin/addAccount.html', {'form': form, 'msg': msg})
+
+            new_account = Account()
+            new_account.number = number
+            new_account.is_client = (is_thirds == 'Cliente')
+            new_account.id_bank = bank
+            new_account.id_currency = currency
+            new_account.save()
+
+            belongs_to = AccountBelongsTo()
+            belongs_to.id_account = new_account
+            #Falta el cliente
+            if (is_thirds == 'Terceros'):
+                belongs_to.owner = form.cleaned_data['owner']
+                belongs_to.alias = form.cleaned_data['alias']
+                belongs_to.email = form.cleaned_data['email']
+                belongs_to.id_number = form.cleaned_data['id_number']
+
+            belongs_to.save()
+
+            msg = "La cuenta fue agregada con éxito."
+            return render(request, 'admin/addAccount.html', {'form': form, 'msg': msg})
+
+    else:
+        form = NewAccountForm(currencyC=all_currencies, bankC=all_banks)
+
+    return render(request, 'admin/addAccount.html', {'form': form})
+
+def adminAccount(request):
+    if (request.method == 'GET'):
+        all_accounts = Account().objects.all()
+
+        return render(request, 'admin/adminAccount.html', {'accounts': all_accounts})
+
+def editAccount(request, _account_id):
+    pass
+
+
+def addUser(request):
+    pass
+
+def adminUser(request):
+    pass
+
+def editUser(request):
+    pass
+
+def addHoliday(request):
+    if (request.method == 'POST'):
+        form = NewHolidayForm(request.POST)
+
+        if (form.is_valid()):
+            date = form.cleaned_data['date']
+            description = form.cleaned_data['description']
+            country = form.cleaned_data['country']
+
+            if (Holiday.objects.filter(date=date, country=country).exists()):
+                msg = ("Ya existe un feriado para ese día en %s.", country)
+                return render(request, 'admin/addHoliday.html', {'form': form, 'msg': msg})
+
+            new_holiday = Holiday()
+            new_holiday.date = date
+            new_holiday.description = description
+            new_holiday.country = country
+            new_holiday.save()
+
+            msg = "El feriado fue agregado con éxito."
+            return render(request, 'admin/addHoliday.html', {'form': form, 'msg': msg})
+    else:
+        form = NewHolidayForm()
+
+    return render(request, 'admin/addHoliday.html', {'form': form})
+
+def adminHoliday(request):
+    if (request.method == 'GET'):
+        holidays = Holiday.objects.all()
+
+        return render(request, 'admin/adminHoliday.html', {'holidays': holidays})
+
+def editHoliday(request, _holiday_id):
+    try:
+        actualHoliday = Holiday.objects.get(id=_holiday_id)
+    except:
+        raise Http404
+
+    if (request.method == 'POST'):
+        form = NewHolidayForm(request.POST)
+
+        if (form.is_valid()):
+            date = form.cleaned_data['date']
+            description = form.cleaned_data['description']
+            country = form.cleaned_data['country']
+
+            if ((actualHoliday.date != date) or (actualHoliday.country != country)):
+                if (Holiday.objects.filter(date=date, country=country)):
+                    msg = ("Ya existe un feriado para ese día en %s.", country)
+                    return render(request, 'admin/editHoliday.html', {'form': form, 'msg': msg})        
+
+            actualHoliday.date = date
+            actualHoliday.description = description
+            actualHoliday.country = country
+
+            actualHoliday.save()
+
+            msg = "El feriado fue editado con éxito."
+            return render(request, 'admin/editHoliday.html', {'form': form, 'msg': msg})
+    else:
+        form = NewHolidayForm(initial={'date': actualHoliday.date, 'description': actualHoliday.description,
+                                        'country': actualHoliday.country})
+
+    return render(request, 'admin/editHoliday.html', {'form': form})
