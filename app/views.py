@@ -463,13 +463,11 @@ def editBank(request, _bank_id):
         return render(request, 'admin/editBank.html', {'form': form})
 
 def addAccount(request):
-    tmp_banks = Bank.objects.all()
-    all_banks = [(tmp.swift, tmp.name) for tmp in tmp_banks]
     tmp_currencies = Currency.objects.all()
     all_currencies = [(tmp.code, tmp.name) for tmp in tmp_currencies]
 
     if (request.method == 'POST'):
-        form = NewAccountForm(request.POST, currencyC=all_currencies, bankC=all_banks)
+        form = NewAccountForm(request.POST, currencyC=all_currencies)
 
         if (form.is_valid()):
             number = form.cleaned_data['number']
@@ -504,7 +502,7 @@ def addAccount(request):
             return render(request, 'admin/addAccount.html', {'form': form, 'msg': msg})
 
     else:
-        form = NewAccountForm(currencyC=all_currencies, bankC=all_banks)
+        form = NewAccountForm(currencyC=all_currencies)
 
     return render(request, 'admin/addAccount.html', {'form': form})
 
@@ -514,8 +512,56 @@ def adminAccount(request):
 
         return render(request, 'admin/adminAccount.html', {'accounts': all_accounts})
 
-def editAccount(request, _account_id):
-    pass
+def editAccount(request, _account_id, _client_id):
+    try:
+        actualAccount = Account.objects.get(id=_account_id)
+    except:
+        raise Http404
+
+    tmp_currencies = Currency.objects.all()
+    all_currencies = [(tmp.code, tmp.name) for tmp in tmp_currencies]
+
+    if (request.method == 'POST'):
+        form = NewAccountForm(request.POST, currencyC=allCurrencies)
+
+        if (form.is_valid()):
+            number = form.cleaned_data['number']
+            is_thirds = forms.cleaned_data['is_thirds']
+            use_type = forms.cleaned_data['use_type']
+            bank = Bank.objects.get(swift=form.cleaned_data['bank'])
+            currency = Currency.objects.get(code=form.cleaned_data['currency'])
+
+            if (Account.objects.filter(number=number,bank=bank).exists()):
+                msg = "La cuenta que ingresaste ya existe en ese banco."
+                return render(request, 'admin/editAccount.html', {'form': form, 'msg': msg})
+
+            actualAccount.number = number
+            actualAccount.id_bank = bank
+            actualAccount.id_currency = currency
+
+            belongTo = AccountBelongsTo.objects.filter(id_account=actualAccount, id_client=_client_id)
+            if (is_thirds == 'Terceros'):
+                belongs_to.owner = form.cleaned_data['owner']
+                belongs_to.alias = form.cleaned_data['alias']
+                belongs_to.email = form.cleaned_data['email']
+                belongs_to.id_number = form.cleaned_data['id_number']
+
+            elif ((is_thirds != 'Terceros') and (belongTo.owner != None)):
+                belongs_to.owner = None
+                belongs_to.alias = None
+                belongs_to.email = None
+                belongs_to.id_number = None
+
+            belongTo.save()
+
+            actualAccount.is_client = (is_thirds == 'Cliente')
+            actualAccount.save()
+            #Falta el cliente
+
+    else:
+        form = NewAccountForm(currencyC=allCurrencies)
+
+    return render(request, 'admin/editAccount.html', {'form': form})
 
 
 def addUser(request):
@@ -564,7 +610,7 @@ def addHoliday(request):
             country = form.cleaned_data['country']
 
             if (Holiday.objects.filter(date=date, country=country).exists()):
-                msg = ("Ya existe un feriado para ese día en %s.", country)
+                msg = "Ya existe un feriado para ese día en " + country
                 return render(request, 'admin/addHoliday.html', {'form': form, 'msg': msg})
 
             new_holiday = Holiday()
@@ -605,7 +651,7 @@ def editHoliday(request, _holiday_id):
 
             if ((actualHoliday.date != date) or (actualHoliday.country != country)):
                 if (Holiday.objects.filter(date=date, country=country)):
-                    msg = ("Ya existe un feriado para ese día en %s.", country)
+                    msg = "Ya existe un feriado para ese día en " + country
                     return render(request, 'admin/editHoliday.html', {'form': form, 'msg': msg})        
 
             actualHoliday.date = date

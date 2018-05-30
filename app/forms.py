@@ -174,7 +174,6 @@ class NewAccountForm(forms.Form):
 
     def __init__(self,*args,**kwargs):
       currencyChoices = kwargs.pop('currencyC') 
-      bankChoices = kwargs.pop('bankC') 
 
       super(NewAccountForm,self).__init__(*args,**kwargs)
 
@@ -182,7 +181,6 @@ class NewAccountForm(forms.Form):
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
 
       # Set choices from argument.
-      self.fields['bank'].choices = bankChoices
       self.fields['currency'].choices = currencyChoices
 
     number = forms.CharField(max_length=270, required=True, label="Número de cuenta", widget = forms.TextInput(attrs={'style': 'width:100%;'}))  
@@ -192,8 +190,7 @@ class NewAccountForm(forms.Form):
     choices_use = (('Origen', 'Origen'), ('Destino', 'Destino'))
     use_type = forms.ChoiceField(choices=choices_use, required=True, label="Tipo de uso",
                                     widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
-    bank = forms.ChoiceField(required=True, label="Banco",
-                                    widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
+    bank = GroupedModelChoiceField(label=_('Banco'), group_by_field='country', queryset=Bank.objects.all())
     currency = forms.ChoiceField(required=True, label="Moneda",
                                     widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
 
@@ -204,7 +201,7 @@ class NewAccountForm(forms.Form):
     id_number = forms.IntegerField(required=False, label="Número de identificación del titular")
 
 class NewHolidayForm(forms.Form):
-  DateInput = partial(forms.DateInput, {'class': 'datepicker'})
+  DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
 
   date = forms.DateField(label = "Fecha", required = True, widget = DateInput(), input_formats = ['%d/%m/%Y'])
   description = forms.CharField(label="Descripción", required=True, max_length=140,
@@ -233,3 +230,13 @@ class NewCountryForm(forms.Form):
       super(NewCountryForm, self).__init__(*args, **kwargs)
       for i in self.fields:
           self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+class NewUserForm(forms.Form):
+
+  first_name = forms.CharField(max_length=30, required=True, label='Nombre')
+  last_name = forms.CharField(max_length=30, required=True, label='Apellido')
+  mobile_phone = forms.RegexField(regex=r'^\+?1?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
+  address = forms.CharField(max_length=30, required=True, label='Dirección')
+  id_number = forms.CharField(max_length=30, required=True, label='Número de identificación')
+  user_choices = (('Cliente', 'Cliente'), ('Aliado-1', 'Aliado-1'), ('Aliado-2', 'Aliado-2'), ('Aliado-3', 'Aliado-3'), ('Operador', 'Operador'), ('Admin', 'Admin'))
+  user_type = forms.ChoiceField(choices=user_choices, required=True)
