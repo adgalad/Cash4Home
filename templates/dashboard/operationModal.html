@@ -1,0 +1,104 @@
+{% extends "base_dashboard.html" %}
+{% load i18n %}
+{% load mathfilters %}
+{% block title %} Detalle de la operación {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <!-- Animate.css -->
+  <link href="/static/vendors/animate.css/animate.min.css" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block body_class %}login{% endblock body_class %}
+
+{% block body %}
+
+  <div class="modal-dialog modal-lg openModal" id="modal" style="max-width: 30%; min-width: 200px">
+
+    <div class="modal-content" style="padding: 4%; background-color: white !important;">
+      <div class="table-responsive-sm" style="z-index:19999 !important;">
+        <!-- <div class="container"> -->
+        <div class="col-xs-12" style="margin-bottom: 50px;">
+          <div class="text-center admin_content">
+            <h3>Detalles de la operación</h3>
+          </div>
+        </div>
+        <style type="text/css">
+          td {
+            font-size: 13px;
+            width: 140px;
+          }
+          tr {
+            /*border-bottom: 1px grey solid;*/
+            height: 50px;
+          }
+
+          td.td-from {
+            font-size: 16 !important;
+          }
+        </style>
+        <table style="width: 100%;">
+          <tr> 
+            <td><b>Código:</b></td>
+            <td> {{ operation.code }}</td>
+          </tr>
+
+          <tr>
+            <td><b>Monto enviado</b></td>
+            <td>{{ operation.id_account.id_bank.currency}} {{ operation.fiat_amount | floatformat:-2 }}</td>
+          </tr>
+
+          <tr>
+            <td><b>Cuenta origen</b></td>
+            <td> {{ operation.id_account }}</td>
+          </tr>
+
+          <tr>
+            <td><b>Fecha</b></td>
+            <td> {{ operation.date }}</td>
+          </tr>
+
+          <tr>
+            <td><b>Estatus</b></td>
+            {% if operation.status == "Falta verificacion" %}
+              <td style="color: red;">
+                <i class="fa fa-warning"></i>
+                <a href='{% url "verifyOperation" operation.code %}' style="color: red; text-decoration: underline;"> 
+                  Falta verificar
+                </a>
+              </td>  
+            {% else %}
+              <td>{{ operation.status }}</td>  
+            {% endif %}
+          </tr>
+
+
+        </table>
+        <br>
+        <h2> Cuentas destino </h2>
+        <hr>
+        <table style="width: 100%;">
+          {% for o in ogt %}
+            <tr> 
+              <td> {{ o.number_account }}</td>
+              <td>
+                {{ operation.id_account.id_bank.currency}} {{ o.amount | floatformat:-2 }}
+                <br>
+                ({{ o.number_account.id_bank.currency}} {{ o.amount | mul:operation.exchange_rate | floatformat:-2 }})
+              </td>
+            </tr>
+
+          {% endfor %}
+
+        </table>
+
+
+        <br><br>
+        <div align="center" style="padding-bottom: 4%">
+          <a class="btn btn-primary" data-dismiss="modal"> Cerrar </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+{% endblock body %}

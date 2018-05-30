@@ -22,7 +22,7 @@
       <div class="animate form login_form">
         <section class="login_content">
           {% for message in messages %}
-          <div class="alert alert-warning" style="background-color: #6f9300; border-color: #6f9300">
+          <div class="alert {{ message.tags }}">
             {{ message }}
           </div>
           {% endfor %}
@@ -55,5 +55,16 @@
       </div>
     </div>
   </div>
+  <script type="text/javascript">
+    function localBitcoin () {
+      var xhttp = new XMLHttpRequest()
+      xhttp.open('GET', 'https://localbitcoins.com//bitcoinaverage/ticker-all-currencies/', true)
+      xhttp.setRequestHeader('Content-type', 'application/json')
+      xhttp.send()
+      var response = JSON.parse(xhttp.responseText)
+      console.log(response)
+    }
+    localBitcoin()
+  </script>
 {% endblock body %}
 

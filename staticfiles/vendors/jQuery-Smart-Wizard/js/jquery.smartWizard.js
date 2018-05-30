@@ -21,8 +21,8 @@ function SmartWizard (target, options) {
   this.elmStepContainer = $('<div></div>').addClass('stepContainer')
   this.loader = $('<div>Loading</div>').addClass('loader')
   this.buttons = {
-    next: $('<button class="btn btn-primary">' + options.labelNext + '</button>').addClass('buttonNext'),
-    previous: $('<button class="btn btn-primary">' + options.labelPrevious + '</button>').addClass('buttonPrevious'),
+    next: $('<button class="btn btn-primary" type="button">' + options.labelNext + '</button>').addClass('buttonNext'),
+    previous: $('<button class="btn btn-primary" type="button">' + options.labelPrevious + '</button>').addClass('buttonPrevious'),
     finish: $('<button class="btn submit" type="submit">' + options.labelFinish + '</button>').addClass('buttonFinish')
   }
 
@@ -303,7 +303,8 @@ function SmartWizard (target, options) {
      */
 
   SmartWizard.prototype.goForward = function () {
-    if (this.curStepIdx == 0 && !$('#id_account').val()) {
+    summary()
+    if (this.curStepIdx == 0 && (!$('#id_account').val() || !$('#id_currency').val())) {
       return
     } else if (this.curStepIdx == 1) {
       for (var i = 0; i <= currentInput; ++i) {

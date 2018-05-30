@@ -39,9 +39,8 @@
       <ul class="nav side-menu">
         <li><a><i class="fa fa-home"></i> Operaciones <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
-            <li><a href="/operation/new">Crear nueva</a></li>
-            <li><a href="#">Ver pendientes</a></li>
-            <li><a href="#">Ver historial</a></li>
+            <li><a href="{% url 'createOperation' %}">Crear nueva</a></li>
+            <li><a href="{% url 'pendingOperations' %}">Operaciones realizadas</a></li>
           </ul>
         </li>
       </ul>

@@ -5,6 +5,9 @@ html , body{
 
 }
 
+.noBorder {
+    border: 0px solid;
+}
 
 .full-width {
 
@@ -15,6 +18,20 @@ html , body{
 .full-height{
  height:100%;
  }
+
+section.alert-info,
+section.alert-success,
+section.alert-warning,
+section.alert-error {
+    display:table;
+    width:100% !important;
+    min-height: 50px;
+}
+
+section > div.container {
+    
+}
+
 
 .btn-primary {
     color: white;
@@ -4152,23 +4169,31 @@ ul.verticle_bars li {
 .alert-success {
     color: #ffffff;
     background-color: rgba(38, 185, 154, 0.88);
-    border-color: rgba(38, 185, 154, 0.88)
+    border-color: rgba(38, 185, 154, 0.88);
+    width: fit-content;
+    font-weight: bold;
 }
 .alert-info {
-    color: #E9EDEF;
+    color: #ffffff;
     background-color: rgba(52, 152, 219, 0.88);
-    border-color: rgba(52, 152, 219, 0.88)
+    border-color: rgba(52, 152, 219, 0.88);
+    width: fit-content;
+    font-weight: bold;
 }
 .alert-warning {
-    color: #E9EDEF;
+    color: #ffffff;
     background-color: rgba(243, 156, 18, 0.88);
-    border-color: rgba(243, 156, 18, 0.88)
+    border-color: rgba(243, 156, 18, 0.88);
+    width: fit-content;
+    font-weight: bold;
 }
 .alert-danger,
 .alert-error {
-    color: #E9EDEF;
+    color: #ffffff;
     background-color: rgba(231, 76, 60, 0.88);
-    border-color: rgba(231, 76, 60, 0.88)
+    border-color: rgba(231, 76, 60, 0.88);
+    width: fit-content;
+    font-weight: bold;
 }
 .ui-pnotify.dark .ui-pnotify-container {
     color: #E9EDEF;

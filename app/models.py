@@ -4,7 +4,9 @@ from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 from django.utils.translation import ugettext_lazy as _
 from django.core.validators import RegexValidator
-
+import os
+from django.utils import timezone
+import random
 class MyUserManager(BaseUserManager):
     """
     A custom user manager to deal with emails as unique identifiers for auth
@@ -34,7 +36,7 @@ class MyUserManager(BaseUserManager):
         return self._create_user(email, password, **extra_fields)
 
 def get_image_path(instance, filename):
-    return os.path.join('photos', str(instance.id), filename)
+    return os.path.join('photos', str(instance), filename)
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, null=True)
@@ -83,6 +85,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.email
 
+    def canVerify(self):
+        return not (self.verified or self.id_front or self.selfie_image)
+
 
 class Holiday(models.Model):
     #The primary key is the django id
@@ -96,18 +101,24 @@ class Currency(models.Model):
     choices = (('FIAT', 'FIAT'), ('Crypto', 'Crypto'))
     currency_type = models.CharField(choices=choices, max_length=7)
 
+    def __str__(self):
+        return self.code
+
 class ExchangeRate(models.Model):
     # The primary key is the django id
     rate = models.FloatField()
     date = models.DateTimeField()
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_pair')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_pair')
+    def __str__(self):
+        return str(self.origin_currency) + "/" + str(self.target_currency)
 
 class Bank(models.Model):
     swift = models.CharField(max_length=12, primary_key=True, unique=True, blank=True)
     country = models.CharField(max_length=70)
     name = models.CharField(max_length=100)
     aba = models.CharField(max_length=10, null=True)
+    currency = models.ForeignKey(Currency, related_name='accept_currency', null=True)
 
     def __str__(self):
         return self.name
@@ -119,6 +130,9 @@ class Account(models.Model):
     use_type = models.CharField(choices=choices, max_length=8, blank=True)
     id_bank = models.ForeignKey(Bank)
     id_currency = models.ForeignKey(Currency)
+
+    def __str__(self):
+        return str(self.id_bank) + " " + str(self.number)
 
 class AccountBelongsTo(models.Model):
     # The primary key is the django id
@@ -134,17 +148,23 @@ class AccountBelongsTo(models.Model):
         unique_together = ('id_account', 'id_client')
 
     def __str__(self):
-        account = self.id_account
-        name = str(account.id_bank) + " " + str(account.number)
+        name = str(self.id_account)
         if not self.alias is None:
             name = self.alias + " (" + name + ")"
         return name
 
+def pkgenOperation():
+    return "Op"+str(round(timezone.now().timestamp()))+str(random.randint(0,10000))
+
+def pkgenTransaction():
+    return "Tx"+str(round(timezone.now().timestamp()))+str(random.randint(0,10000))
+
+
 class Operation(models.Model):
-    code = models.CharField(max_length=100, primary_key=True, unique=True)
+    code = models.CharField(max_length=100, primary_key=True, unique=True, default=pkgenOperation)
     fiat_amount = models.DecimalField(max_digits=30, decimal_places=15)
     crypto_rate = models.FloatField(blank=True, null=True)
-    status_choices = (('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
+    status_choices = (('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
                       ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'))
     status = models.CharField(choices=status_choices, max_length=20)
     exchanger = models.CharField(max_length=70, blank=True, null=True)
@@ -159,12 +179,13 @@ class OperationGoesTo(models.Model):
     # The primary key is the django id
     operation_code = models.ForeignKey(Operation)
     number_account = models.ForeignKey(Account)
+    amount = models.FloatField(blank=True, null=True)
 
     class Meta:
         unique_together = ('operation_code', 'number_account')
 
 class Transaction(models.Model):
-    code = models.CharField(max_length=100, primary_key=True, unique=True)
+    code = models.CharField(max_length=100, primary_key=True, unique=True, default=pkgenTransaction)
     date = models.DateTimeField()
     choices = (('TO', 'TO'), ('TD', 'TD'), ('TE', 'TE')) #TO-Transaccion origen, TD-Transaccion destino, TC-transaccion crypto
     operation_type = models.CharField(choices=choices, max_length=3)

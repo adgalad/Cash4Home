@@ -34,10 +34,13 @@ urlpatterns = [
 
     #User
     url(r'^user/profile$', views.profile, name='profile'),
+    url(r'^user/verification$', views.userVerification, name='userVerification'),
     url(r'^operation/new$', views.createOperation, name='createOperation'),
     url(r'^accounts$', views.accounts, name='accounts'),
     url(r'^account/new$', views.createAccount, name='createAccount'),
-    url(r'^operation/uploadImage$', views.uploadImage, name='uploadImage'),
+    url(r'^operation/verify/(?P<_operation_id>\w+)$', views.uploadImage, name='verifyOperation'),
+    url(r'^operation/pending$', views.pendingOperations, name='pendingOperations'),
+    url(r'^operation/(?P<_operation_id>\w+)/details$', views.operationModal, name='operationModal'),
 
     
 
@@ -79,6 +82,7 @@ urlpatterns = [
     url(r'^edit/country/(?P<_country_id>\w+)', views.editCountry, name="editCountry"),
 ]
 
+handler403 = views.handler403
 handler404 = views.handler404
 handler403 = views.handler403
 handler500 = views.handler500

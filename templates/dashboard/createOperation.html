@@ -71,28 +71,35 @@
                   <h2 class="StepTitle">¿Desde cuál de tus cuentas quieres enviar dinero?</h2>
                   <br>
 
-                  <div class="col-md-6 col-sm-6 col-xs-12">
-                      
-                      {{form1.account}}
+                  <div class="col-md-12 col-sm-12 col-xs-12">
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                      {{form1.account}}<br>
+                    </div>
                   </div>
-                  <div class="col-md-5 col-sm-5 col-xs-12">
-                    <p id="rateInformation">  </p>
+                  <h2 class="StepTitle">¿A cuál moneda quieres enviar tu dinero?</h2>
+                  <br>
+                  <div class="col-md-12 col-sm-12 col-xs-12">
+                    <div class="col-md-2 col-sm-2 col-xs-6">
+                      {{ form1.currency }}
+                    </div>
                   </div>
+                  
+
                 </div>
                 <div id="step-2">
-                  <h2 class="StepTitle">Elige a cuales cuentas en venezuela quieres enviar el dinero</h2>
+                  <h2 class="StepTitle">Elige a cuales cuentas quieres enviar el dinero</h2>
                   <hr>
                   <div class="col-md-6 col-sm-6 col-xs-12 form-group">
                     {% for form in form2 %}
                       {% if form.error %}
-                        <div class="alert alert-warning" style="background-color: #6f9300; border-color: #6f9300">
+                        <div class="alert alert-error">
                           {{ form.error }}
                         </div>
                       {% endif %}
                     {% endfor %}
                     {% for form in form2 %}
                       {% if form.error %}
-                      <div class="alert alert-warning" style="background-color: #6f9300; border-color: #6f9300">
+                      <div class="alert alert-error">
                         {{ form.non_field_errors }}
                       </div>
                       {% endif %}
@@ -124,38 +131,44 @@
                   </div>
                   <style type="text/css">
                     td {
-                      font-size: 15px;
+                      font-size: 13px;
                       width: 140px;
                     }
-                    tr {
+/*                    tr.bottom {
                       border-bottom: 1px solid;
+                    }*/
+                    tr {
                       height: 50px;
                     }
+
+                    td.td-from {
+                      font-size: 16 !important;
+                    }
                   </style>
-                  <div class="col-md-6 col-sm-6 col-xs-12" align="center">
+                  <div class="col-md-5 col-sm-6 col-xs-12" align="center">
                     <table style="width: 70%;">
-                      <tr> 
+                      <tr class="bottom"> 
                         <td><b>Monto a enviar:</b></td>
                         <td id="amount"></td>
                       </tr>
 
-                      <tr>
+                      <tr class="bottom">
                         <td><b>Comisión:</b></td>
                         <td id="fee"></td>
                       </tr>
 
-                      <tr>
+                      <tr class="bottom">
                         <td><b>Total neto:</b></td>
                         <td id="net"></td>
                       </tr>
 
-                      <tr>
+                      <tr class="bottom">
                         <td><b>Tasa de cambio:</b></td>
                         <td id="rate"></td>
                       </tr>
 
-                      <tr>
-                        <td><b>Total en VEF:</b></td>
+                      <tr class="bottom">
+                        <td><b id="amountIn">Total en VEF:</b></td>
                         <td id="vef"></td>
                       </tr>
 
@@ -164,35 +177,55 @@
                   </div>
                 </div>
                 <div id="step-3">
-                  <h2 class="StepTitle">Confirmacion</h2>
-                  <hr>
-                  <!-- {{ form.field.value|default_if_none:"" }} -->
-                  <div class="col-md-6 col-sm-6 col-xs-12" align="center">
-                    <form action="form_upload.html" class="dropzone"></form>
+                  <div class="col-md-6 col-sm-12 col-xs-12">
+                    <div class="text-center">
+                      <h3>Cuenta Origen </h3>
+                      <hr>
+                    </div>
+                    <table style="width: 100%;">
+                      <tr>  
+                        <td id="td-from" align="center"> </td>
+                      </tr>
+                    </table>
+                    <div class="text-center">
+                      <h3>Cuentas destino</h3>
+                      <hr>
+                    </div>
+                    <table style="width: 100%;" id="toAccTable">
+
+
+
+                    </table>
+                  </div>
+                  <div class="col-md-5 col-sm-12 col-xs-12" align="center">
+                    <div class="text-center">
+                      <h3>Resumen</h3>
+                      <hr>
+                    </div>
                     <table style="width: 70%;">
-                      <tr> 
-                        <td><b>Cuenta origen</b></td>
-                        <td id="amount"> </td>
+                      <tr class="bottom"> 
+                        <td><b>Monto a enviar:</b></td>
+                        <td id="amount2"> </td>
                       </tr>
 
-                      <tr>
+                      <tr class="bottom">
                         <td><b>Comisión:</b></td>
-                        <td id="fee"></td>
+                        <td id="fee2"></td>
                       </tr>
 
-                      <tr>
+                      <tr class="bottom">
                         <td><b>Total neto:</b></td>
-                        <td id="net"></td>
+                        <td id="net2"></td>
                       </tr>
 
-                      <tr>
+                      <tr class="bottom">
                         <td><b>Tasa de cambio:</b></td>
-                        <td id="rate"></td>
+                        <td id="rate2"></td>
                       </tr>
 
-                      <tr>
-                        <td><b>Total en VEF:</b></td>
-                        <td id="vef"></td>
+                      <tr class="bottom">
+                        <td><b id="amountIn2">Total en VEF:</b></td>
+                        <td id="vef2"></td>
                       </tr>
 
 
@@ -216,75 +249,10 @@
   <!-- jQuery Smart Wizard -->
   <script src="/static/vendors/jQuery-Smart-Wizard/js/jquery.smartWizard.js"></script>
   <script type="text/javascript">
-
     const fee = parseFloat('{{ fee }}')
-    var currentInput = 0
-
-    function addAccountInput(){
-      if (currentInput < 4){
-        ++currentInput;
-        $('#id_form-'+currentInput+'-amount').parent().show()
-        $('#id_form-'+currentInput+'-account').parent().show()  
-        console.log("HOLA")
-      }
-      if (currentInput == 4){
-        $('#add').prop("disabled",true)
-      }
-      if (currentInput > 0){
-        $('#delete').prop("disabled",false)
-      }
-    }
-
-    function deleteAccountInput(){
-      if (currentInput > 0){
-        
-        $('#id_form-'+currentInput+'-amount').val(0.0).parent().hide()
-        $('#id_form-'+currentInput+'-account').val("").parent().hide()
-        --currentInput;
-        summary()
-      }
-      if (currentInput == 0){
-        $('#delete').prop("disabled",true)
-      }
-      if (currentInput < 4){
-        $('#add').prop("disabled",false)
-      }
-    }
-
-    for (var i = 0 ; i < 5 ; ++i){
-      summary = function(){
-        var total = 0;
-        for (var i = 0 ; i < 5 ; ++i){
-          var field = $('#id_form-'+i+'-amount')
-          if (field.parent().is(":visible")){
-            var v = parseInt(field.val())
-            total += isNaN(v) ? 0 : v
-          }
-        }
-        $('#fee').html(String(fee*100) + '%')
-        $('#amount').html("USD "+String(total))
-        $('#net').html("USD "+String(total*(1 - fee)))
-        $('#rate').html("800000 VEF/USD")
-        $('#vef').html("VEF " + String(total*( 1 - fee )*800000))
-
-      }
-
-      selectAccount = function(){
-        $('option').prop("disabled", false)
-        for (var i = 0 ; i <= currentInput ; ++i){
-          var value = $('#id_form-'+i+'-account').val()
-          if (value != "") $('option[value="' + String(value) + '"]').prop("disabled", true)
-        }
-      }
-      
-      $('#id_form-'+i+'-account').change(selectAccount)
-      var field = $('#id_form-'+i+'-amount')
-      field.keyup(summary).change(summary).val(0.0)
-      if (i > 0){
-        field.parent().hide()
-        $('#id_form-'+i+'-account').parent().hide()
-      }
-      summary()
-    }
+    const toAccs = JSON.parse('{{ toAccs | safe }}')
+    const fromAccs = JSON.parse('{{ fromAccs | safe }}')
+    const rate = JSON.parse('{{ rate | safe }}')
   </script>
+  <script src="/static/js/createOperation.js"></script>
 {% endblock javascripts %}
