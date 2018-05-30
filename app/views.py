@@ -196,7 +196,8 @@ def createOperation(request):
                               id_account = fromAccount.id_account,
                               exchange_rate = rate,
                               origin_currency = fromCurrency,
-                              target_currency = toCurrency
+                              target_currency = toCurrency,
+                              date_creation = datetime.datetime.now()
                             )
         operation.save()
         for i in toAccounts:

@@ -72,6 +72,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     user_choices = (('Cliente', 'Cliente'), ('Aliado-1', 'Aliado-1'), ('Aliado-2', 'Aliado-2'), ('Aliado-3', 'Aliado-3'), ('Operador', 'Operador'), ('Admin', 'Admin'))
     user_type = models.CharField(choices=user_choices, max_length=9, blank=True)
     referred_by = models.ForeignKey('self', null=True, blank=True)
+    canBuyDollar = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     objects = MyUserManager()
@@ -174,6 +175,10 @@ class Operation(models.Model):
     exchange_rate = models.FloatField()
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_used')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_used')
+    date_creation = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+
+    #Falta trigger de tiempo
 
 class OperationGoesTo(models.Model):
     # The primary key is the django id
@@ -220,3 +225,40 @@ class Comission(models.Model):
 class Country(models.Model):
     name = models.CharField(max_length=70, primary_key=True, unique=True)
     status = models.BooleanField(default=True)
+
+class CanSendTo(models.Model):
+    # The primary key is the django id
+    origin_bank = models.ForeignKey(Bank, related_name='origin_bank')
+    target_bank = models.ForeignKey(Bank, related_name='target_bank')
+
+    class Meta:
+        unique_together = ('origin_bank', 'target_bank')
+
+class OperationStateChange(models.Model):
+    # The primary key is the django id
+    date = models.DateTimeField()
+    user = models.ForeignKey(User)
+    status_choices = (('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
+                      ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'))
+    original_status = models.CharField(choices=status_choices, max_length=20)
+
+class Exchanger(models.Model):
+    name = models.CharField(max_length=140, primary_key=True, unique=True)
+    is_active = models.BooleanField(default=True)
+
+class ExchangerAccepts(models.Model):
+    # The primary key is the django id
+    exchanger = models.ForeignKey(Exchanger)
+    currency = models.ForeignKey(Currency)
+    amount_acc = models.DecimalField(max_digits=30, decimal_places=15)
+
+class BoxClosure(models.Model):
+    # The primary key is the django id
+    date = models.DateTimeField()
+    user = models.ForeignKey(User)
+    currency = models.ForeignKey(Currency)
+    exchanger = models.ForeignKey(Exchanger)
+    final_amount = models.DecimalField(max_digits=30, decimal_places=15)
+
+    class Meta:
+        unique_together = ('date', 'exchanger', 'currency')
