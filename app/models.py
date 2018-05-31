@@ -175,10 +175,13 @@ class Operation(models.Model):
     exchange_rate = models.FloatField()
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_used')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_used')
-    date_creation = models.DateTimeField()
+    date_ending = models.DateTimeField()
     is_active = models.BooleanField(default=True)
 
-    #Falta trigger de tiempo
+    def save(self, *args, **kwargs):
+        if (self.pk):
+            self.is_active = (self.date < self.date_ending)
+        super(Chatbot, self).save(*args, **kwargs)
 
 class OperationGoesTo(models.Model):
     # The primary key is the django id
