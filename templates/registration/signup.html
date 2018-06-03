@@ -22,6 +22,7 @@
             {% csrf_token %}
             <h1>Crear cuenta</h1>
             {% for field in form %}
+                {{ field.label }}
                 {{ field }}
                 {% for error in field.errors %}
                   <p style="color: red">{{ error }}</p>

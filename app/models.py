@@ -63,7 +63,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name   = models.CharField(blank=True, max_length=30, verbose_name='first name')
     last_name    = models.CharField(blank=True, max_length=30, verbose_name='last name')
     address      = models.CharField(blank=True, max_length=64, verbose_name='address')
-    id_number    = models.IntegerField(blank=True, verbose_name='ID number', default=0)
+    id_number    = models.CharField(blank=True, verbose_name='ID number', default=0, max_length=70)
     mobile_phone = models.CharField(validators=[phone_regex], blank=True, max_length=16, verbose_name='mobile phone')
     id_front     = models.ImageField(upload_to=get_image_path, null=True)
     id_back      = models.ImageField(upload_to=get_image_path, null=True)
@@ -73,6 +73,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     user_type = models.CharField(choices=user_choices, max_length=9, blank=True)
     referred_by = models.ForeignKey('self', null=True, blank=True)
     canBuyDollar = models.BooleanField(default=False)
+    country = models.CharField(max_length=70)
 
     USERNAME_FIELD = 'email'
     objects = MyUserManager()

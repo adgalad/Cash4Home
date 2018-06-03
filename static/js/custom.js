@@ -1664,12 +1664,12 @@ function init_daterangepicker_single_call () {
     singleDatePicker: true,
     singleClasses: 'picker_2',
     "locale": {
-        "format": "MM/DD/YYYY",
+        "format": "DD/MM/YYYY",
         "separator": " - ",
-        "applyLabel": "Apply",
-        "cancelLabel": "Cancel",
-        "fromLabel": "From",
-        "toLabel": "To",
+        "applyLabel": "Aplicar",
+        "cancelLabel": "Cancelar",
+        "fromLabel": "Desde",
+        "toLabel": "Hasta",
         "customRangeLabel": "Custom",
         "daysOfWeek": [
             "Do",

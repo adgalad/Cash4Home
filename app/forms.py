@@ -10,13 +10,18 @@ class SignUpForm(UserCreationForm):
   first_name = forms.CharField(max_length=30, required=True, label='Nombre')
   last_name = forms.CharField(max_length=30, required=True, label='Apellido')
   mobile_phone = forms.RegexField(regex=r'^\+?1?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
+  country = forms.ChoiceField(required=True, label="País de residencia")
   address = forms.CharField(max_length=30, required=True, label='Dirección')
   id_number = forms.CharField(max_length=30, required=True, label='Número de identificación')
 
   def __init__(self, *args, **kwargs):
+    countriesChoices = kwargs.pop('countriesC') 
+
     super(SignUpForm, self).__init__(*args, **kwargs)
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control', 'placeholder': self.fields[i].label})
+
+    self.fields['country'].choices = countriesChoices
   
   def clean_email(self):
     return self.cleaned_data['email'].lower()
@@ -29,7 +34,7 @@ class SignUpForm(UserCreationForm):
 
   class Meta:
     model = User
-    fields = ('first_name', 'last_name', 'email', 'password1', 'password2', 'id_number', 'address', 'mobile_phone' )
+    fields = ('first_name', 'last_name', 'email', 'password1', 'password2', 'id_number', 'country', 'address', 'mobile_phone' )
 
 class ChangeEmailForm(forms.Form):
   email = forms.EmailField(required=True, label=_(u"Email"))  
@@ -236,15 +241,42 @@ class NewCountryForm(forms.Form):
 
   def __init__(self, *args, **kwargs):
       super(NewCountryForm, self).__init__(*args, **kwargs)
-      for i in self.fields:
-          self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+      self.fields['name'].widget.attrs.update({'class' : 'form-control'})
+      self.fields['status'].widget.attrs.update({'class' : 'flat'})
+
 
 class NewUserForm(forms.Form):
 
   first_name = forms.CharField(max_length=30, required=True, label='Nombre')
   last_name = forms.CharField(max_length=30, required=True, label='Apellido')
-  mobile_phone = forms.RegexField(regex=r'^\+?1?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
-  address = forms.CharField(max_length=30, required=True, label='Dirección')
   id_number = forms.CharField(max_length=30, required=True, label='Número de identificación')
+  email = forms.EmailField(required=True, label=_(u"Email"))  
+  mobile_phone = forms.RegexField(regex=r'^\+?1?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
+  country = forms.ChoiceField(required=True, label="País de residencia")
+  address = forms.CharField(max_length=30, required=True, label='Dirección')
   user_choices = (('Cliente', 'Cliente'), ('Aliado-1', 'Aliado-1'), ('Aliado-2', 'Aliado-2'), ('Aliado-3', 'Aliado-3'), ('Operador', 'Operador'), ('Admin', 'Admin'))
-  user_type = forms.ChoiceField(choices=user_choices, required=True)
+  user_type = forms.ChoiceField(choices=user_choices, required=True, label="Tipo de usuario")
+  referred_by = forms.ChoiceField(label='Referido por', required=True)
+  choices_buy = ((True, 'Si'), (False, 'No'))
+  canBuyDollar = forms.ChoiceField(choices=choices_buy, label='¿Puede comprar dólares?', required=True)
+
+  def __init__(self, *args, **kwargs):
+    alliesChoices = kwargs.pop('alliesC') 
+    countriesChoices = kwargs.pop('countriesC') 
+
+    super(NewUserForm, self).__init__(*args, **kwargs)
+    for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+    self.fields['referred_by'].choices = alliesChoices
+    self.fields['country'].choices = countriesChoices
+  
+  def clean_email(self):
+    return self.cleaned_data['email'].lower()
+  
+  def clean_first_name(self):
+    return self.cleaned_data['first_name'].title()
+  
+  def clean_last_name(self):
+    return self.cleaned_data['last_name'].title()
