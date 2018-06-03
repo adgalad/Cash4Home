@@ -4387,3 +4387,7 @@ table thead .checkbox.radio { margin-top:-7px;margin-top:-21px; }
     background: linear-gradient(right, #6f9301 0%, #fff 100%);
     left: 0
 }
+
+.flat li {
+    display: inline;
+}

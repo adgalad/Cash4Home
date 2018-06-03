@@ -261,7 +261,8 @@ class NewUserForm(forms.Form):
   user_type = forms.ChoiceField(choices=user_choices, required=True, label="Tipo de usuario")
   referred_by = forms.ChoiceField(label='Referido por', required=True)
   choices_buy = ((True, 'Si'), (False, 'No'))
-  canBuyDollar = forms.ChoiceField(choices=choices_buy, label='¿Puede comprar dólares?', required=True)
+  canBuyDollar = forms.ChoiceField(choices=choices_buy, label='¿Puede comprar dólares?', required=True, 
+                                    widget=forms.RadioSelect(attrs={'style': 'width:100%; background-color:white'}))
 
   def __init__(self, *args, **kwargs):
     alliesChoices = kwargs.pop('alliesC') 
@@ -270,6 +271,7 @@ class NewUserForm(forms.Form):
     super(NewUserForm, self).__init__(*args, **kwargs)
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
+        self.fields['canBuyDollar'].widget.attrs.update({'class' : 'flat'})
 
     self.fields['referred_by'].choices = alliesChoices
     self.fields['country'].choices = countriesChoices
