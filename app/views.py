@@ -611,16 +611,10 @@ def addBank(request):
             msg = "El banco fue agregado con éxito."
             messages.error(request, msg, extra_tags="alert-success")
     else:
-<<<<<<< HEAD
-        form = NewBankForm()
+
+      form = NewBankForm(countriesC=allCountries)
 
     return render(request, 'admin/addBank.html', {'form': form})
-
-=======
-        form = NewBankForm(countriesC=allCountries)
-
-    return render(request, 'admin/addBank.html', {'form': form})
->>>>>>> vicky
 
 def adminBank(request):
     if (request.method == 'GET'):
