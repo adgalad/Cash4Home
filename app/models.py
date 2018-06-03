@@ -172,12 +172,14 @@ class Operation(models.Model):
     exchanger = models.CharField(max_length=70, blank=True, null=True)
     date = models.DateTimeField()
     id_client = models.ForeignKey(User)
-    id_account = models.ForeignKey(Account) # Origin account from the client
+    id_account = models.ForeignKey(Account, related_name='account_client_origin') # Origin account from the client
     exchange_rate = models.FloatField()
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_used')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_used')
     date_ending = models.DateTimeField()
     is_active = models.BooleanField(default=True)
+    account_allie_origin = models.ForeignKey(Account, related_name='account_allie_origin')
+    account_allie_target = models.ForeignKey(Account, related_name='account_allie_target')
 
     def save(self, *args, **kwargs):
         if (self.pk):
