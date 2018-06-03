@@ -754,6 +754,7 @@ def addUser(request):
 
             new_user.first_name = form.clean_first_name()
             new_user.last_name = form.clean_last_name()
+            new_user.email = new_mail
             new_user.mobile_phone = form.cleaned_data['mobile_phone']
             new_user.country = form.cleaned_data['country']
             new_user.address = form.cleaned_data['address']
@@ -774,7 +775,7 @@ def addUser(request):
     else:
         form = NewUserForm(alliesC=allAllies, countriesC=allCountries)
 
-        return render(request, 'admin/addUser.html', {'form': form})
+    return render(request, 'admin/addUser.html', {'form': form})
 
 def adminUser(request):
     if (request.method == 'GET'):
@@ -985,4 +986,10 @@ def editCountry(request, _country_id):
         form = NewCountryForm(initial={'name': actualCountry.name})
 
     return render(request, 'admin/editCountry.html', {'form': form})
+
+def operationalDashboard(request):
+    if (request.method == 'GET'):
+        if (request.user.user_type == 'Operador'):
+            #actualOperations = Operation.objects.filter()
+            pass
 

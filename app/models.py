@@ -182,7 +182,7 @@ class Operation(models.Model):
     def save(self, *args, **kwargs):
         if (self.pk):
             self.is_active = (self.date < self.date_ending)
-        super(Chatbot, self).save(*args, **kwargs)
+        super(Operation, self).save(*args, **kwargs)
 
 class OperationGoesTo(models.Model):
     # The primary key is the django id
