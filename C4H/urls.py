@@ -36,14 +36,15 @@ urlpatterns = [
     url(r'^user/profile$', views.profile, name='profile'),
     url(r'^user/verification$', views.userVerification, name='userVerification'),
    
+    url(r'^activateEmail/(?P<token>.+)$', views.activateEmail, name="activateEmail"),
    
     url(r'^accounts$', views.accounts, name='accounts'),
     url(r'^account/new$', views.createAccount, name='createAccount'),
     
     url(r'^operation/new$', views.createOperation, name='createOperation'),
-    url(r'^operation/verify/(?P<_operation_id>\w+)$', views.uploadImage, name='verifyOperation'),
+    url(r'^operation/verify/(?P<_operation_id>.+)$', views.uploadImage, name='verifyOperation'),
     url(r'^operation/pending$', views.pendingOperations, name='pendingOperations'),
-    url(r'^operation/(?P<_operation_id>\w+)/details$', views.operationModal, name='operationModal'),
+    url(r'^operation/(?P<_operation_id>.+)/details$', views.operationModal, name='operationModal'),
 
     
 

@@ -239,7 +239,6 @@
 
 {% block javascripts %}
   {{ block.super}}
-  <script src="/static/vendors/jQuery-Smart-Wizard/js/jquery.smartWizard.js"></script>
   <script type="text/javascript">
     const fee = parseFloat('{{ fee }}')
     const toAccs = JSON.parse('{{ toAccs | safe }}')
@@ -250,6 +249,7 @@
         changeCurrency()
     });
     
+
   </script>
   <script src="/static/js/createOperation.js"></script>
 {% endblock javascripts %}

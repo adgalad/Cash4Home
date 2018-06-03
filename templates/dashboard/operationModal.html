@@ -42,7 +42,7 @@
 
           <tr>
             <td><b>Monto enviado</b></td>
-            <td>{{ operation.id_account.id_currency}} {{ operation.fiat_amount | floatformat:-2 }}</td>
+            <td>{{ operation.id_account.id_currency}} {{ operation.fiat_amount | currency }}</td>
           </tr>
 
           <tr>
@@ -79,9 +79,9 @@
             <tr> 
               <td> {{ o.number_account }}</td>
               <td>
-                {{ operation.id_account.id_currency}} {{ o.amount | floatformat:-2 }}
+                {{ operation.id_account.id_currency}} {{ o.amount | currency }}
                 <br>
-                ({{ o.number_account.id_currency}} {{ o.amount | mul:operation.exchange_rate | floatformat:-2 }})
+                ({{ o.number_account.id_currency}} {{ o.amount | mul:operation.exchange_rate | currency }})
               </td>
             </tr>
 

@@ -54,7 +54,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         ),
     )
     
-    phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+    phone_regex = RegexValidator(regex=r'^\+?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
 
     is_superuser = models.BooleanField(default=False, help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status')
     verified     = models.BooleanField(default=False)
@@ -157,14 +157,14 @@ class AccountBelongsTo(models.Model):
 
 
 def pkgenOperation():
-    return "Op"+str(round(timezone.now().timestamp()))+str(random.randint(0,10000))
+    return "MT-"
 
 def pkgenTransaction():
     return "Tx"+str(round(timezone.now().timestamp()))+str(random.randint(0,10000))
 
 
 class Operation(models.Model):
-    code = models.CharField(max_length=100, primary_key=True, unique=True, default=pkgenOperation)
+    code = models.CharField(max_length=100, primary_key=True, unique=True)
     fiat_amount = models.DecimalField(max_digits=30, decimal_places=15)
     crypto_rate = models.FloatField(blank=True, null=True)
     status_choices = (('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
@@ -177,6 +177,13 @@ class Operation(models.Model):
     exchange_rate = models.FloatField()
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_used')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_used')
+
+    def save(self, fromCountry, toCountry, date, *args, **kwargs):
+        
+        self.code = "MT-%s-%s-%s-%s"%(fromCountry, toCountry, date.strftime("%d%m%Y"), Operation.objects.all().count())
+        print(self.code)
+        super(Operation, self).save(*args, **kwargs)
+        return self.code
 
 class OperationGoesTo(models.Model):
     # The primary key is the django id
@@ -219,4 +226,6 @@ class Comission(models.Model):
     choices = (('Pagado', 'Pagado'), ('Por pagar', 'Por pagar'), ('Pagado parcialmente', 'Pagado parcialmente'))
     status = models.CharField(choices=choices, max_length=20)
     remaining = models.DecimalField(max_digits=40, decimal_places=40)
+
+
 

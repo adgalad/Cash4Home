@@ -9,7 +9,7 @@ class SignUpForm(UserCreationForm):
 
   first_name = forms.CharField(max_length=30, required=True, label='Nombre')
   last_name = forms.CharField(max_length=30, required=True, label='Apellido')
-  mobile_phone = forms.RegexField(regex=r'^\+?1?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
+  mobile_phone = forms.RegexField(regex=r'^\+?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
   address = forms.CharField(max_length=30, required=True, label='Dirección')
   id_number = forms.CharField(max_length=30, required=True, label='Número de identificación')
 
