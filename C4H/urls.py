@@ -80,6 +80,10 @@ urlpatterns = [
     url(r'^add/holiday/$', views.addHoliday, name="addHoliday"),
     url(r'^all/holiday/$', views.adminHoliday, name="adminHoliday"),
     url(r'^edit/holiday/(?P<_holiday_id>\w+)', views.editHoliday, name="editHoliday"),
+
+    url(r'^add/country/$', views.addCountry, name="addCountry"),
+    url(r'^all/country/$', views.adminCountry, name="adminCountry"),
+    url(r'^edit/country/(?P<_country_id>\w+)', views.editCountry, name="editCountry"),
 ]
 
 handler403 = views.handler403

@@ -63,7 +63,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name   = models.CharField(blank=True, max_length=30, verbose_name='first name')
     last_name    = models.CharField(blank=True, max_length=30, verbose_name='last name')
     address      = models.CharField(blank=True, max_length=64, verbose_name='address')
-    id_number    = models.IntegerField(blank=True, verbose_name='ID number', default=0)
+    id_number    = models.CharField(blank=True, verbose_name='ID number', default=0, max_length=70)
     mobile_phone = models.CharField(validators=[phone_regex], blank=True, max_length=16, verbose_name='mobile phone')
     id_front     = models.ImageField(upload_to=get_image_path, null=True)
     id_back      = models.ImageField(upload_to=get_image_path, null=True)
@@ -72,6 +72,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     user_choices = (('Cliente', 'Cliente'), ('Aliado-1', 'Aliado-1'), ('Aliado-2', 'Aliado-2'), ('Aliado-3', 'Aliado-3'), ('Operador', 'Operador'), ('Admin', 'Admin'))
     user_type = models.CharField(choices=user_choices, max_length=9, blank=True)
     referred_by = models.ForeignKey('self', null=True, blank=True)
+    canBuyDollar = models.BooleanField(default=False)
+    country = models.CharField(max_length=70)
 
     USERNAME_FIELD = 'email'
     objects = MyUserManager()
@@ -135,7 +137,6 @@ class Account(models.Model):
     def __str__(self):
         return str(self.id_bank) + " " + str(self.number)
 
-
 class AccountBelongsTo(models.Model):
     # The primary key is the django id
     id_account = models.ForeignKey(Account)
@@ -154,7 +155,6 @@ class AccountBelongsTo(models.Model):
         if not self.alias is None:
             name = self.alias + " (" + name + ")"
         return name
-
 
 def pkgenOperation():
     return "MT-"
@@ -177,6 +177,13 @@ class Operation(models.Model):
     exchange_rate = models.FloatField()
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_used')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_used')
+    date_ending = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        if (self.pk):
+            self.is_active = (self.date < self.date_ending)
+        super(Chatbot, self).save(*args, **kwargs)
 
     def save(self, fromCountry, toCountry, date, *args, **kwargs):
         
@@ -228,4 +235,43 @@ class Comission(models.Model):
     remaining = models.DecimalField(max_digits=40, decimal_places=40)
 
 
+class Country(models.Model):
+    name = models.CharField(max_length=70, primary_key=True, unique=True)
+    status = models.BooleanField(default=True)
 
+class CanSendTo(models.Model):
+    # The primary key is the django id
+    origin_bank = models.ForeignKey(Bank, related_name='origin_bank')
+    target_bank = models.ForeignKey(Bank, related_name='target_bank')
+
+    class Meta:
+        unique_together = ('origin_bank', 'target_bank')
+
+class OperationStateChange(models.Model):
+    # The primary key is the django id
+    date = models.DateTimeField()
+    user = models.ForeignKey(User)
+    status_choices = (('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
+                      ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'))
+    original_status = models.CharField(choices=status_choices, max_length=20)
+
+class Exchanger(models.Model):
+    name = models.CharField(max_length=140, primary_key=True, unique=True)
+    is_active = models.BooleanField(default=True)
+
+class ExchangerAccepts(models.Model):
+    # The primary key is the django id
+    exchanger = models.ForeignKey(Exchanger)
+    currency = models.ForeignKey(Currency)
+    amount_acc = models.DecimalField(max_digits=30, decimal_places=15)
+
+class BoxClosure(models.Model):
+    # The primary key is the django id
+    date = models.DateTimeField()
+    user = models.ForeignKey(User)
+    currency = models.ForeignKey(Currency)
+    exchanger = models.ForeignKey(Exchanger)
+    final_amount = models.DecimalField(max_digits=30, decimal_places=15)
+
+    class Meta:
+        unique_together = ('date', 'exchanger', 'currency')

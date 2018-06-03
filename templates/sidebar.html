@@ -85,8 +85,14 @@
         </li>
         <li><a><i class="fa fa-users"></i> Usuarios <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
-              <li><a href="#">Agregar</a>
-              <li><a href="#">Editar</a>
+              <li><a href="{% url 'addUser' %}">Agregar</a>
+              <li><a href="{% url 'adminUser' %}">Editar</a>
+          </ul>
+        </li>
+        <li><a><i class="fa fa-globe"></i> Países <span class="fa fa-chevron-down"></span></a>
+          <ul class="nav child_menu">
+              <li><a href="{% url 'addCountry' %}">Agregar</a>
+              <li><a href="{% url 'adminCountry' %}">Editar</a>
           </ul>
         </li>
       </ul>
