@@ -9,7 +9,7 @@ class SignUpForm(UserCreationForm):
 
   first_name = forms.CharField(max_length=30, required=True, label='Nombre')
   last_name = forms.CharField(max_length=30, required=True, label='Apellido')
-  mobile_phone = forms.RegexField(regex=r'^\+?1?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
+  mobile_phone = forms.RegexField(regex=r'^\+?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
   country = forms.ChoiceField(required=True, label="País de residencia")
   address = forms.CharField(max_length=30, required=True, label='Dirección')
   id_number = forms.CharField(max_length=30, required=True, label='Número de identificación')
@@ -53,8 +53,10 @@ class AuthenticationForm(forms.Form):
                 
 
 class BankAccountForm(forms.Form):
-  bank = GroupedModelChoiceField(label=_('Banco'), group_by_field='country', queryset=Bank.objects.all())
-  number = forms.CharField(required=True, label=_(u"Número de cuenta"))
+  bank = GroupedModelChoiceField(label=_('Banco*'), group_by_field='country', queryset=Bank.objects.all().exclude(country="Venezuela"))
+  number = forms.CharField(required=True, label=_(u"Número de cuenta*"))
+  router = forms.CharField(required=False, label=_(u"Número ABA (Solo para banco en EEUU)"))
+  id_currency = forms.ModelChoiceField(label=_('Moneda*'), required=True, queryset=Currency.objects.filter(currency_type='FIAT'))
 
   def __init__(self, *args, **kwargs):
     super(BankAccountForm, self).__init__(*args, **kwargs)
@@ -63,19 +65,19 @@ class BankAccountForm(forms.Form):
       self.fields[i].widget.attrs.update({'class' : 'form-control'})
 
 class BankAccountDestForm(BankAccountForm):
-  owner = forms.CharField(required=True, label=_(u"Nombre del titular"))
-  id_number = forms.CharField(max_length=30, required=True, label=_(u'Número de identificación'))
-  email = forms.EmailField(required=True, label=_(u"Email del titular"))
+  bank = ModelChoiceField(label=_('Banco*'), required=True, queryset=Bank.objects.filter(country="Venezuela"))
+  owner = forms.CharField(required=True, label=_(u"Nombre del titular*"))
+  id_number = forms.CharField(max_length=30, required=True, label=_(u'Número de identificación*'))
+  email = forms.EmailField(required=True, label=_(u"Email del titular*"))
   alias = forms.CharField(required=False, label=_(u"Alias"))
 
 
 class FromAccountForm(forms.Form):
-  account = forms.ModelChoiceField(queryset=None, label="Cuenta origen", required=True)
-  currency = GroupedModelChoiceField(label=_('Moneda'), required=True, group_by_field='currency_type', queryset=Currency.objects.filter(currency_type='FIAT'))
+  account = forms.ModelChoiceField(queryset=None,label="Cuenta origen", required=True)
+  currency = forms.ModelChoiceField(label=_('Moneda'), required=True, queryset=Currency.objects.filter(currency_type='FIAT'))
 
   def __init__(self, *args, **kwargs):
     super(FromAccountForm, self).__init__(*args, **kwargs)
-
     for i in self.fields:
       self.fields[i].widget.attrs.update({'class' : 'form-control'})
 

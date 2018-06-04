@@ -38,7 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'mathfilters',
+    'django_cron',
     'app',
+]
+
+CRON_CLASSES = [
+    "app.cron.UpdateBTCPrice",
+    # ...
 ]
 
 MIDDLEWARE = [

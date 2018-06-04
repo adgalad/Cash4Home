@@ -18,11 +18,8 @@
     <div class="modal-content" style="padding: 4%; background-color: white !important;">
       <div class="table-responsive-sm" style="z-index:19999 !important;">
         <!-- <div class="container"> -->
-        <div class="col-xs-12" style="margin-bottom: 50px;">
-          <div class="text-center admin_content">
-            <h3>Detalles de la operación</h3>
-          </div>
-        </div>
+        
+        <h3>Detalles de la operación</h3>
         <style type="text/css">
           td {
             font-size: 13px;
@@ -45,7 +42,7 @@
 
           <tr>
             <td><b>Monto enviado</b></td>
-            <td>{{ operation.id_account.id_bank.currency}} {{ operation.fiat_amount | floatformat:-2 }}</td>
+            <td>{{ operation.id_account.id_currency}} {{ operation.fiat_amount | currency }}</td>
           </tr>
 
           <tr>
@@ -82,9 +79,9 @@
             <tr> 
               <td> {{ o.number_account }}</td>
               <td>
-                {{ operation.id_account.id_bank.currency}} {{ o.amount | floatformat:-2 }}
+                {{ operation.id_account.id_currency}} {{ o.amount | currency }}
                 <br>
-                ({{ o.number_account.id_bank.currency}} {{ o.amount | mul:operation.exchange_rate | floatformat:-2 }})
+                ({{ o.number_account.id_currency}} {{ o.amount | mul:operation.exchange_rate | currency }})
               </td>
             </tr>
 

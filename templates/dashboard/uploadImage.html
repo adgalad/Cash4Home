@@ -11,6 +11,11 @@
 {% block content %}
   <div class="right_col" role="main">
     <div class="">
+      <div class="page-title">
+        <div class="title_left">
+          <h3>Verificar operación</h3>
+        </div>
+      </div>
       <div class="clearfix"></div>
 
       <div class="row">
@@ -18,16 +23,13 @@
 
         <div class="col-md-12 col-sm-12 col-xs-12">
           <div class="x_panel">
-            <div class="x_title">
-              <h1>Verificar operación</h1>
-            </div>
             <div class="x_content">
               {% for message in messages %}
                 <div class="alert {{ message.tags }}">
                   {{ message }}
                 </div>
               {% endfor %}
-              <h2> Suba una imagen o comprobante con el cual podamos verificar que realizó la transferencia</h2>
+              <p> Suba una imagen o comprobante con el cual podamos verificar que realizó la transferencia</p>
               
                 
               <form id="upload" action="{% url 'verifyOperation' id %}" method="post" enctype="multipart/form-data">
@@ -44,14 +46,14 @@
                     <div class="col-xs-12 col-sm-12 col-md-6" style="height: 300px; width: 400px; display: table;">
                       <div style="display: table-cell; vertical-align: middle;">
                         <div style="display: flex; align-items: center; justify-content: center;">
-                          <img width="100%" id="img" src="/static/images/placeholder.png" alt="your image"/>
+                          <img width="100%" class="imageUpload" id="img" src="/static/images/placeholder.png" alt="your image"/>
                         </div>
                       </div>
                     </div>
                   </a>
                 </div>
                 <br>
-                <a href="{% url 'home' %}"><button type="button" class="btn btn-primary">Cancelar</button></a>
+                <a href="{% url 'pendingOperations' %}"><button type="button" class="btn btn-primary">Cancelar</button></a>
                 <button type="submit" class="btn btn-primary">Continuar</button>
               </form>
             </div>

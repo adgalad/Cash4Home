@@ -6,6 +6,8 @@
   {{ block.super }}
   <!-- Animate.css -->
   <link href="/static/vendors/animate.css/animate.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/phoneCode/intlTelInput.css">
+  <!-- <link rel="stylesheet" href="/static/css/phoneCode/demo.css"> -->
 {% endblock stylesheets %}
 
 {% block body_class %}login{% endblock body_class %}
@@ -22,13 +24,19 @@
             {% csrf_token %}
             <h1>Crear cuenta</h1>
             {% for field in form %}
+<<<<<<< HEAD
+                  {{ field }}
+=======
                 {{ field.label }}
                 {{ field }}
+>>>>>>> vicky
                 {% for error in field.errors %}
                   <p style="color: red">{{ error }}</p>
                 {% endfor %}
             {% endfor %}
-            <button class="btn btn-primary submit" type="submit">Registrarse</button>
+            <input id="phone" name="phone" class="form-control" type="tel" placeholder="Número de teléfono ( Ej 2125834456 )">
+
+            <button id="submit" class="btn btn-primary submit" type="submit">Registrarse</button>
           </form>
           <div class="clearfix"></div>
 
@@ -49,5 +57,42 @@
       </div>
     </div>
   </div>
+
+
+{% block javascripts %}
+  {{ block.super }}
+  <!-- Chart.js -->
+  <script src="/static/js/phoneCode/intlTelInput.min.js"></script>
+  <script>
+    $("#phone").intlTelInput({
+      // allowDropdown: false,
+      // autoHideDialCode: false,
+      // autoPlaceholder: "off",
+      // dropdownContainer: "body",
+      // excludeCountries: ["us"],
+      // formatOnDisplay: false,
+      // geoIpLookup: function(callback) {
+      //   $.get("http://ipinfo.io", function() {}, "jsonp").always(function(resp) {
+      //     var countryCode = (resp && resp.country) ? resp.country : "";
+      //     callback(countryCode);
+      //   });
+      // },
+      // hiddenInput: "full_number",
+      // initialCountry: "auto",
+      // nationalMode: false,
+      // onlyCountries: ['us', 'gb', 'ch', 'ca', 'do'],
+      // placeholderNumberType: "MOBILE",
+      // preferredCountries: ['cn', 'jp'],
+      // separateDialCode: true,
+      utilsScript: "build/js/utils.js"
+    });
+    $("#id_mobile_phone").attr('type', 'hidden')
+    $('#submit').click(function(){
+      var code = $("#phone").intlTelInput("getSelectedCountryData")['dialCode']
+      $("#id_mobile_phone").val('+' + code + $("#phone").val())
+    })
+  </script>
+
+{% endblock javascripts %}
 {% endblock body %}
 

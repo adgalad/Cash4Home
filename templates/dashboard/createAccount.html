@@ -7,7 +7,7 @@
     <div class="">
       <div class="page-title">
         <div class="title_left">
-          <h3>Mis cuentas de banco</h3>
+          <h3>Añadir una cuenta de banco</h3>
         </div>
 
         <div class="title_right">
@@ -24,8 +24,13 @@
       <div class="clearfix"></div>
         <div class="x_panel">
           <div class="x_content">
-            <h4>Cuentas fuera de Venezuela</h4>
-            <p>Estas son las cuentas de las cuales usted puede enviar dinero a Venezuela</p>
+            {% if own %}
+            <h4>Cuenta origen</h4>
+            <p>Introduzca los datos de su cuenta, desde la cual quiere enviar dinero para remesas.</p>
+            {% else %}
+            <h4>Cuenta destino</h4>
+            <p>Introduzca los datos de la cuenta de su familiar, amigo o propia a la cual quiere enviar dinero en Venezuela.</p>
+            {% endif %}
             {% for message in messages %}
             <br>
             <div class="alert alert-warning" style="background-color: #d96d00; border-color: #d96d00; max-width: 500px; color:white">

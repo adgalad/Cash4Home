@@ -4361,7 +4361,14 @@ table thead .checkbox.radio { margin-top:-7px;margin-top:-21px; }
 .fa-bars:hover {
     color: #dedede !important   ;
 }
-
+.imageUpload{
+    border-radius: 5%;
+    border: gray 1px solid;
+}
+.admin_content{
+    margin-left: 10%;
+    margin-right: 10%;
+}
 .admin_content h3:before,
 .admin_content h3:after {
     content: "";

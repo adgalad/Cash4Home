@@ -5,11 +5,12 @@ from django.http import JsonResponse, Http404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, update_session_auth_hash
 from django.contrib.auth import logout as logout_auth
 from django.contrib.auth import login as login_auth
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
+from django.core.mail import send_mail
 from django.forms import formset_factory
 from io import BytesIO
 from django.utils import timezone
@@ -19,26 +20,15 @@ import time
 from app.forms import *
 from app.models import *
 import requests
+
+from C4H.settings import MEDIA_ROOT, STATIC_ROOT, EMAIL_HOST_USER
+from app.cron import BTCPrice
+from app.encryptation import encrypt, decrypt
+
 from django.db.models import Q
 
 
-## Pair: BTCUSD, USDBTC, DASHUSD, etc
-class PriceRetriever:
-  def __init__(self):
-    self.localbitcoins = json.loads(requests.get('https://localbitcoins.com//bitcoinaverage/ticker-all-currencies/').content)
-    self.uphold = json.loads(requests.get('https://api.uphold.com/v0/ticker').content)
 
-  def askUpholdPair(request, pair):
-    for i in self.uphold:
-      if i['pair'] == pair:
-        return i['ask']
-
-  def getPriceInformation():
-    localbitcoins_BTC_USD = self.localbitcoins["USD"]["avg_12h"]
-    uphold_BTC_USD = askUpholdPair(uphold, "BTCUSD")
-    uphold_USD_BTC = askUpholdPair(uphold, "USDBTC")
-    uphold_ETH_USD = askUpholdPair(uphold, "ETHUSD")
-    uphold_USD_ETH = askUpholdPair(uphold, "USDETH")
 
 ########## ERROR HANDLING ##########
 
@@ -61,19 +51,40 @@ def handler500(request):
     return response
 
 ########## FIN ERROR HANDLING ##########
-   
+
+
+def activateEmail(request, token):
+  
+  try:
+    decrypted = decrypt(token)
+  except: 
+    raise PermissionDenied
+
+
+  info = json.loads(decrypted)
+  if not ('operation' in info and info['operation'] == 'activateUserByEmail'):
+    raise PermissionDenied
+
+  user = User.objects.filter(id=info['id'], email=info['email']).first()
+  user.is_active = True
+  user.save()
+  return redirect('/')
+
 def home(request):
   if request.user.is_authenticated():
-    print(request.user.canVerify())
-    if request.user.canVerify():
-      message = ''' Su cuenta no esta verificada. Para poder realizar una operación es necesario que verifique su cuenta.
+    if request.user.canVerify:
+      message = ''' <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+            Su cuenta no esta verificada. Para poder realizar una operación es necesario que verifique su cuenta.
             <a href=" '''+ reverse('userVerification') + '''"> 
-              <button class="btn btn-primary"> 
+              <button class="btn btn-default"> 
                 Verificar ahora 
               </button>
             </a>'''
-      messages.error(request, message, extra_tags="safe alert-warning")
-    return render(request, 'dashboard.html')
+      messages.error(request, message, extra_tags="safe alert alert-warning alert-dismissible fade in")
+    file = open(os.path.join(MEDIA_ROOT, "BTCPrice.json"), "r")
+    prices = json.loads(file.read())
+    print(prices)
+    return render(request, 'dashboard/dashboard_operator.html', {'prices': prices})
   else:
     return render(request, 'index.html')
 
@@ -94,6 +105,7 @@ def profile(request):
           request.user.email = email
           request.user.save()
           messages.error(request, "Su email ha sido actualizado.", extra_tags="alert-success")
+          update_session_auth_hash(request, passwordForm.user)
         else:
           messages.error(request, "El email que intentó ingresar ya se encuentra asociado a otro usuario.", extra_tags="alert-warning")
       else:
@@ -111,16 +123,19 @@ def profile(request):
   return render(request, 'dashboard/profile.html')
 
 def userVerification(request):
-  if request.user.canVerify():
+  if request.user.canVerify:
     if request.method == 'POST':
       if 'file1' in request.FILES and 'file2' in request.FILES:
         file1 = request.FILES['file1']
         file2 = request.FILES['file2']
-        if file1.name.endswith(('.png', 'jpeg', 'jpg')) and file2.name.endswith(('.png', 'jpeg', 'jpg')):
-          request.user.id_front = file1
-          request.user.selfie_image = file2
+        file3 = request.FILES['file3']
+        if file1.name.lower().endswith(('.png', '.jpeg', '.jpg')) and file2.name.lower().endswith(('.png', '.jpeg', '.jpg')) and file3.name.lower().endswith(('.png', '.jpeg', '.jpg')):
+          request.user.service_image = file1
+          request.user.id_front = file2
+          request.user.selfie_image = file3
+
           request.user.save()
-          return render(request, 'dashboard/verificationConfirmation.html')      
+          return render(request, 'dashboard/userVerificationConfirmation.html')      
         else:
           messages.error(request, 'Solo puede subir imágenes PNG y JPG.', extra_tags="alert-error")
       else:
@@ -143,14 +158,14 @@ def createOperation(request):
   fromAccs = {}
   for i in queryset1:
     fromAccs[i.id_account.id] = { 
-      'currency':str(i.id_account.id_bank.currency),
+      'currency':str(i.id_account.id_currency),
       'name': str(i)
     }
 
   toAccs = {}
   for i in queryset2:
     toAccs[i.id_account.id] = {
-      'currency':str(i.id_account.id_bank.currency),
+      'currency':str(i.id_account.id_currency),
       'name': str(i)
     }
 
@@ -185,7 +200,7 @@ def createOperation(request):
           break
 
       if ok:
-        fromCurrency = fromAccount.id_account.id_bank.currency
+        fromCurrency = fromAccount.id_account.id_currency
         toCurrency = form1.cleaned_data['currency']
         rate = rates[str(fromCurrency) + "/" + str(toCurrency)]
         operation = Operation(fiat_amount = total,
@@ -200,11 +215,20 @@ def createOperation(request):
                               target_currency = toCurrency,
                               date_creation = datetime.datetime.now()
                             )
-        operation.save()
+        file = open(os.path.join(STATIC_ROOT, "countries.json"), "r")
+        countries = json.loads(file.read())
+        file.close()
+
+        operation.save(countries[fromAccount.id_account.id_bank.country], countries[toAccounts[0][0].id_account.id_bank.country], timezone.now())
         for i in toAccounts:
           OperationGoesTo(operation_code = operation, number_account = i[0].id_account, amount = i[1] ).save()
-
-        return redirect("/")
+        
+        return render(request, 'dashboard/operationConfirmation.html', {
+                        'bank_name': fromAccount.id_account.id_bank.name,
+                        'bank_account': 1012366452,
+                        'bank_aba': fromAccount.id_account.id_bank.aba,
+                        'amount': "%s %s"%(fromCurrency, total),
+                        'operationID': operation.code})
 
   else:
     form1 = FromAccountForm().setQueryset(queryset1)
@@ -236,7 +260,6 @@ def pendingOperations(request):
 
 
 def operationModal(request, _operation_id):
-  print(_operation_id)
   operation = Operation.objects.get(code=_operation_id)
   ogt = OperationGoesTo.objects.filter(operation_code = operation)
   if operation:
@@ -249,12 +272,10 @@ def uploadImage(request, _operation_id):
   
   try: operation = Operation.objects.get(code=_operation_id)
   except: raise Http404
-  print(operation.id_client.id != request.user.id)
-  print(operation.status != "Falta verificacion")
   if operation.id_client.id != request.user.id:
     raise PermissionDenied
   elif operation.status != "Falta verificacion":
-    messages.error(request, 'Esta operacion ya fue verificada', extra_tags="alert-error")
+    messages.error(request, 'Esta operación ya fue verificada', extra_tags="alert-error")
     return render(request, 'dashboard/uploadImage.html', {"id": _operation_id})  
 
   if request.method == 'POST':
@@ -309,9 +330,13 @@ def createAccount(request):
       number = form.cleaned_data.get('number')
       bank = form.cleaned_data.get('bank')
       acc = Account.objects.filter(number=number, id_bank=bank)
-      print(number, bank)
+      currency = form.cleaned_data.get('id_currency')
       if acc.count() == 0:
-        acc = Account(number=number, id_bank=bank, use_type="Origen" if own else "Destino", is_client=True)
+        acc = Account(number=number,
+                      id_bank=bank,
+                      id_currency=currency,
+                      use_type="Origen" if own else "Destino",
+                      is_client=True)
       else:
         acc = acc[0]
         acc.is_client = own
@@ -327,6 +352,7 @@ def createAccount(request):
         email = form.cleaned_data.get('email').lower()
         alias = form.cleaned_data.get('alias')
         owner = form.cleaned_data.get('owner').title()
+
         id_number = form.cleaned_data.get('id_number')
         AccountBelongsTo.objects.create(id_client=request.user, 
                                         id_account=acc,
@@ -339,20 +365,20 @@ def createAccount(request):
       return redirect('accounts')
   else:
     form = form() 
-  return render(request, 'dashboard/createAccount.html', {"form": form})
+  return render(request, 'dashboard/createAccount.html', {"form": form, 'own':own})
 
 def logout(request):
   logout_auth(request)
   return redirect("/")
 
 def login(request):
+  if request.user: redirect('/')
   if request.method == 'POST':
     form = AuthenticationForm(request.POST)
     if form.is_valid():
       email = form.cleaned_data.get('email')
       raw_password = form.cleaned_data.get('password1')
       user = authenticate(username=email, password=raw_password)
-      print(user, email, raw_password)
       if user is not None:
         # if user.is_active:
         login_auth(request, user)
@@ -365,23 +391,32 @@ def login(request):
   return render(request, 'registration/login.html', {'form': form})
 
 def signup(request):
-    tmpCountries = Country.objects.all()
-    allCountries = [(tmp.name, tmp.name) for tmp in tmpCountries]
-    allCountries.append(('Otro', 'Otro'))
+  tmpCountries = Country.objects.all()
+  allCountries = [(tmp.name, tmp.name) for tmp in tmpCountries]
+  allCountries.append(('Otro', 'Otro'))
 
-    if request.method == 'POST':
-        form = SignUpForm(request.POST, countriesC=allCountries)
-        if form.is_valid():
-            form.save()
-            email = form.cleaned_data.get('email')
-            raw_password = form.cleaned_data.get('password1')
-            user = authenticate(username=email, password=raw_password)
-            login_auth(request, user)
-            return redirect('/')
-    else:
-        form = SignUpForm(countriesC=allCountries)
-
-    return render(request, 'registration/signup.html', {'form': form})
+  if request.method == 'POST':
+    form = SignUpForm(request.POST, countriesC=allCountries)
+    if form.is_valid():
+      form.save()
+      email = form.cleaned_data.get('email')
+      raw_password = form.cleaned_data.get('password1')
+      user = authenticate(username=email, password=raw_password)
+      user.is_active = False
+      user.save()
+      login_auth(request, user)
+      token = {
+        'email': email,
+        'id': user.id,
+        'operation': 'activateUserByEmail'
+      }
+      token = encrypt(str.encode(json.dumps(token)))
+      message = "https://0.0.0.0:8000/activateEmail/" + token
+      send_mail(subject="Verificacion de correo electrónico", message=message, from_email=EMAIL_HOST_USER, recipient_list=[email])
+      return redirect('/')
+  else:
+    form = SignUpForm(countriesC=allCountries)
+  return render(request, 'registration/signup.html', {'form': form})
 
 
 # Admin views
@@ -576,7 +611,8 @@ def addBank(request):
             msg = "El banco fue agregado con éxito."
             messages.error(request, msg, extra_tags="alert-success")
     else:
-        form = NewBankForm(countriesC=allCountries)
+
+      form = NewBankForm(countriesC=allCountries)
 
     return render(request, 'admin/addBank.html', {'form': form})
 
