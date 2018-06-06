@@ -3,17 +3,17 @@
 {% load mathfilters %}
 {% block title %} Detalle de la operación {% endblock title %}
 
+{% block meta %}
+{% endblock meta %}
 {% block stylesheets %}
-  {{ block.super }}
   <!-- Animate.css -->
-  <link href="/static/vendors/animate.css/animate.min.css" rel="stylesheet">
 {% endblock stylesheets %}
 
 {% block body_class %}login{% endblock body_class %}
 
 {% block body %}
 
-  <div class="modal-dialog modal-lg openModal" id="modal" style="max-width: 30%; min-width: 200px">
+  <div class="modal-dialog modal-lg openModal" id="modal" style="max-width: 40%; min-width: 300px">
 
     <div class="modal-content" style="padding: 4%; background-color: white !important;">
       <div class="table-responsive-sm" style="z-index:19999 !important;">
@@ -41,22 +41,32 @@
           </tr>
 
           <tr>
-            <td><b>Monto enviado</b></td>
-            <td>{{ operation.id_account.id_currency}} {{ operation.fiat_amount | currency }}</td>
+            <td><b>Monto enviado:</b></td>
+            <td>{{ operation.origin_currency }} {{ operation.fiat_amount | currency }}</td>
+          </tr>
+          
+          <tr>
+            <td><b>Monto a recibir:</b></td>
+            <td>{{ operation.target_currency }} {{ operation.fiat_amount | mul:operation.exchange_rate | currency }}</td>
           </tr>
 
           <tr>
-            <td><b>Cuenta origen</b></td>
+            <td><b>Tasa {{ operation.origin_currency }}/{{ operation.target_currency }}:</b></td>
+            <td> {{ operation.exchange_rate | currency }} </td>
+          </tr>
+
+          <tr>
+            <td><b>Cuenta origen:</b></td>
             <td> {{ operation.id_account }}</td>
           </tr>
 
           <tr>
-            <td><b>Fecha</b></td>
+            <td><b>Fecha:</b></td>
             <td> {{ operation.date }}</td>
           </tr>
 
           <tr>
-            <td><b>Estatus</b></td>
+            <td><b>Estatus:</b></td>
             {% if operation.status == "Falta verificacion" %}
               <td style="color: red;">
                 <i class="fa fa-warning"></i>
@@ -92,10 +102,13 @@
 
         <br><br>
         <div align="center" style="padding-bottom: 4%">
-          <a class="btn btn-primary" data-dismiss="modal"> Cerrar </a>
+          <a id="closeModal" class="btn btn-primary" data-dismiss="modal" href="{% url 'pendingOperations' %}"> Cerrar </a>
         </div>
 
       </div>
     </div>
   </div>
 {% endblock body %}
+{% block javascripts %}
+
+{% endblock javascripts %}

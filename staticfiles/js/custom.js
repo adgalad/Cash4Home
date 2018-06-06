@@ -1660,9 +1660,42 @@ function init_daterangepicker_single_call () {
   }, function (start, end, label) {
     console.log(start.toISOString(), end.toISOString(), label)
   })
-  $('#single_cal2').daterangepicker({
+  $('#id_date').daterangepicker({
     singleDatePicker: true,
-    singleClasses: 'picker_2'
+    singleClasses: 'picker_2',
+    "locale": {
+        "format": "DD/MM/YYYY",
+        "separator": " - ",
+        "applyLabel": "Aplicar",
+        "cancelLabel": "Cancelar",
+        "fromLabel": "Desde",
+        "toLabel": "Hasta",
+        "customRangeLabel": "Custom",
+        "daysOfWeek": [
+            "Do",
+            "Lu",
+            "Mar",
+            "Miér",
+            "Jue",
+            "Vi",
+            "Sa"
+        ],
+        "monthNames": [
+            "Enero",
+            "Febrero",
+            "Marzo",
+            "Abril",
+            "Mayo",
+            "Junio",
+            "Julio",
+            "Agosto",
+            "Septiembre",
+            "Octubre",
+            "Noviembre",
+            "Diciembre"
+        ],
+        "firstDay": 1
+      }
   }, function (start, end, label) {
     console.log(start.toISOString(), end.toISOString(), label)
   })

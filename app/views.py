@@ -8,7 +8,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, update_session_auth_hash
 from django.contrib.auth import logout as logout_auth
 from django.contrib.auth import login as login_auth
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.forms import PasswordChangeForm
+from django.template import loader
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.forms import formset_factory
@@ -20,8 +22,8 @@ import time
 from app.forms import *
 from app.models import *
 import requests
-
-from C4H.settings import MEDIA_ROOT, STATIC_ROOT, EMAIL_HOST_USER
+import datetime
+from C4H.settings import MEDIA_ROOT, STATIC_ROOT, EMAIL_HOST_USER, DEFAULT_DOMAIN, DEFAULT_FROM_EMAIL
 from app.cron import BTCPrice
 from app.encryptation import encrypt, decrypt
 
@@ -68,7 +70,8 @@ def activateEmail(request, token):
   user = User.objects.filter(id=info['id'], email=info['email']).first()
   user.is_active = True
   user.save()
-  return redirect('/')
+  messages.error(request,'Su correo electrónico ha sido validado exitosamente.', extra_tags="alert-success")
+  return redirect('/login')
 
 def home(request):
   if request.user.is_authenticated():
@@ -83,7 +86,6 @@ def home(request):
       messages.error(request, message, extra_tags="safe alert alert-warning alert-dismissible fade in")
     file = open(os.path.join(MEDIA_ROOT, "BTCPrice.json"), "r")
     prices = json.loads(file.read())
-    print(prices)
     return render(request, 'dashboard/dashboard_operator.html', {'prices': prices})
   else:
     return render(request, 'index.html')
@@ -129,7 +131,10 @@ def userVerification(request):
         file1 = request.FILES['file1']
         file2 = request.FILES['file2']
         file3 = request.FILES['file3']
-        if file1.name.lower().endswith(('.png', '.jpeg', '.jpg')) and file2.name.lower().endswith(('.png', '.jpeg', '.jpg')) and file3.name.lower().endswith(('.png', '.jpeg', '.jpg')):
+        ok  = file1.name.lower().endswith(('.png', '.jpeg', '.jpg'))
+        ok &= file2.name.lower().endswith(('.png', '.jpeg', '.jpg'))
+        ok &= file3.name.lower().endswith(('.png', '.jpeg', '.jpg'))
+        if ok:
           request.user.service_image = file1
           request.user.id_front = file2
           request.user.selfie_image = file3
@@ -145,31 +150,29 @@ def userVerification(request):
     return redirect('/')
 
 def createOperation(request):
-  abt = AccountBelongsTo.objects.filter(id_client=request.user.id)
-  queryset1 = abt.filter(email__isnull=True)
-  queryset2 = abt.exclude(email__isnull=True)
-
+  abt        = AccountBelongsTo.objects.filter(id_client=request.user.id)
+  fee        = 0.01
+  rates      = {}
+  toAccs     = {}
+  fromAccs   = {}
+  queryset1  = abt.filter(email__isnull=True)
+  queryset2  = abt.exclude(email__isnull=True)
   ToAccountFormSet = formset_factory(ToAccountForm)
   
-  rates = {}
   for i in ExchangeRate.objects.all():
     rates[str(i)] = i.rate
 
-  fromAccs = {}
   for i in queryset1:
     fromAccs[i.id_account.id] = { 
       'currency':str(i.id_account.id_currency),
       'name': str(i)
     }
 
-  toAccs = {}
   for i in queryset2:
     toAccs[i.id_account.id] = {
       'currency':str(i.id_account.id_currency),
       'name': str(i)
     }
-
-  fee = 0.01
 
   if request.method == 'POST':
     POST = request.POST.copy()
@@ -213,16 +216,56 @@ def createOperation(request):
                               exchange_rate = rate,
                               origin_currency = fromCurrency,
                               target_currency = toCurrency,
-                              date_creation = datetime.datetime.now()
+                              date_ending = timezone.now()+datetime.timedelta(seconds=90*60) # 90 minutos
                             )
         file = open(os.path.join(STATIC_ROOT, "countries.json"), "r")
         countries = json.loads(file.read())
         file.close()
 
-        operation.save(countries[fromAccount.id_account.id_bank.country], countries[toAccounts[0][0].id_account.id_bank.country], timezone.now())
+        operation.save(fromAccount.id_account.id_bank.country.iso_code, toAccounts[0][0].id_account.id_bank.country.iso_code, timezone.now())
         for i in toAccounts:
           OperationGoesTo(operation_code = operation, number_account = i[0].id_account, amount = i[1] ).save()
         
+          
+        plain_message = 'Se ha creado una operación para el envio de %s %s desde su cuenta %s'%(fromCurrency, total, fromAccount.id_account) 
+        
+        message = '''
+          Se ha creado exitosamente una operación para el envio de:<br>
+          <div align="center">
+            <h4><b> %s %s </b><h4>
+          </div>
+          <br>
+          Una vez que haya transferido los fondos desde su cuenta de banco <b>%s</b>, deberá subir una imagen del comprobante de la transferencia con la cual nuestro equipo podra verificar la operación.<br><br>
+          Cuando los fondos hayan caido en las cuentas a las que envió dinero, se le avisara por correo electrónico que la operación fue completada.<br><br>
+
+          <div align="center">
+            <a href="%s">
+              <button class="btn btn-primary">
+                Ver detalles de la operación 
+              </button>
+            </a>
+          </div>
+
+          <br><br>
+          Sinceramente,<br>
+          Equipo de soporte de Cash4Home
+        '''%(fromCurrency, total, fromAccount.id_account, DEFAULT_DOMAIN+'operation/pending?operation=' + operation.code)
+
+        html_message = loader.render_to_string(
+                'registration/base_email.html',
+                {
+                    'message': message,
+                    'tittle':  'Sea ha creado la operación exitosamente.',
+                    'url': DEFAULT_DOMAIN,
+                }
+            )
+        send_mail(subject        = "Verificación de correo electrónico",
+                  message        = plain_message,
+                  html_message   = html_message,
+                  from_email     = DEFAULT_FROM_EMAIL,
+                  recipient_list = [request.user.email])
+
+
         return render(request, 'dashboard/operationConfirmation.html', {
                         'bank_name': fromAccount.id_account.id_bank.name,
                         'bank_account': 1012366452,
@@ -258,9 +301,10 @@ def pendingOperations(request):
   complete = operations.filter(status="Fondos transferidos")
   return render(request, 'dashboard/pendingOperations.html', {'pendingOperations':pending, 'completeOperations':complete}) 
 
-
+@login_required(login_url="/login/")
 def operationModal(request, _operation_id):
-  operation = Operation.objects.get(code=_operation_id)
+  try: operation = Operation.objects.get(code=_operation_id, id_client=request.user.id)
+  except: raise PermissionDenied
   ogt = OperationGoesTo.objects.filter(operation_code = operation)
   if operation:
     return render(request, 'dashboard/operationModal.html', {'operation':operation, 'ogt': ogt}) 
@@ -301,7 +345,7 @@ def uploadImage(request, _operation_id):
 
 
 
-@login_required
+@login_required(login_url="/login/")
 def accounts(request):
 
   abt = AccountBelongsTo.objects.filter(id_client=request.user.id)
@@ -312,7 +356,7 @@ def accounts(request):
       origin.append(i)
     else:
       dest.append(i)
-
+  
   return render(request, 'dashboard/accounts.html', {'origin':origin, 'dest':dest})
 
 
@@ -367,6 +411,25 @@ def createAccount(request):
     form = form() 
   return render(request, 'dashboard/createAccount.html', {"form": form, 'own':own})
 
+
+
+def password_reset(request):
+  if request.method == "POST":
+    form = ChangeEmailForm(request.POST)
+    if form.is_valid():
+      email = form.cleaned_data.get('email')
+      try: user = User.objects.get(email=email)
+      except: user = None
+
+      if user is None:
+        messages.error(request,'El correo que ingresó no se encuentra registrado.', extra_tags="alert-warning")
+        return render(request, 'registration/password_reset_form.html', {'form': form})
+      elif not user.is_active:
+        messages.error(request,'La cuenta asociada a este correo no se encuentra activa.', extra_tags="alert-warning")
+        return render(request, 'registration/password_reset_form.html', {'form': form})
+
+  return auth_views.password_reset(request, password_reset_form=MyPasswordResetForm)
+
 def logout(request):
   logout_auth(request)
   return redirect("/")
@@ -382,21 +445,82 @@ def login(request):
       if user is not None:
         # if user.is_active:
         login_auth(request, user)
-        return redirect('/')
+        print(request.POST.get('next','/'))
+        return redirect(request.POST.get('next','/'))
       else:
-        messages.error(request,'El correo electrónico o la contraseña son inválidos.', extra_tags="alert-error")
-        return redirect('login')
+        user = User.objects.get(email= email)
+        if not (user is None or user.is_active):
+          msg = 'Debe verificar su correo electronico antes de poder ingresar. <a href="' + reverse('resendEmailVerification') + '">Validar correo</a>'
+          messages.error(request, msg, extra_tags="safe alert-warning")
+        else:
+          messages.error(request,'El correo electrónico o la contraseña son inválidos.', extra_tags="alert-error")
+    else:
+      messages.error(request,'El correo electrónico o la contraseña son inválidos.', extra_tags="alert-error")
+    return redirect('login')
   else:
     form = AuthenticationForm()
+
   return render(request, 'registration/login.html', {'form': form})
 
+def sendEmailValidation(user):
+  token = {
+    'email': user.email,
+    'id': user.id,
+    'operation': 'activateUserByEmail'
+  }
+  token = encrypt(str.encode(json.dumps(token)))
+
+  link = DEFAULT_DOMAIN+"activateEmail/" + token
+  plain_message = 'Para validar tu correo electronico, porfavor ingresa al siguiente correo: ' + link
+  
+  message = '''
+    Gracias por elegirnos<br><br>
+    Para poder ingresar al sistema, es necesario que valide su correo electrónico ingresando al siguiente enlace: <br><br>
+    <a href="%s"> Validar correo </a>
+    <br><br><br>
+    Sinceramente,<br>
+    Equipo de soporte de Cash4Home
+  '''%(link)
+
+  html_message = loader.render_to_string(
+          'registration/base_email.html',
+          {
+              'message': message,
+              'tittle':  'Bienvenido, ' + user.get_full_name(),
+              'url': DEFAULT_DOMAIN,
+          }
+      )
+  send_mail(subject="Verificación de correo electrónico", message=plain_message, html_message=html_message, from_email=DEFAULT_FROM_EMAIL, recipient_list=[user.email])
+
+def resendEmailVerification(request):
+  if request.method == 'POST':
+    form = ChangeEmailForm(request.POST)
+    if form.is_valid():
+      email = form.cleaned_data.get('email')
+      
+      try: user = User.objects.get(email=email)
+      except: user = None
+      
+      if user is None:
+        messages.error(request,'El correo electrónico que ingresó es inválido.', extra_tags="alert-warning")
+      elif user.is_active:
+        messages.error(request,'Este correo electrónico ya se encuentra verificado.', extra_tags="alert-warning")
+      else:
+        sendEmailValidation(user)
+        messages.error(request,'Se envió la validación a su correo electrónico.', extra_tags="alert-success")
+        return redirect('/login')
+
+    else:
+      messages.error(request,'El correo electrónico que ingresó es inválido.', extra_tags="alert-warning")
+  else:
+    form = ChangeEmailForm()
+  return render(request, 'registration/resendEmailVerification.html', {'form': form})
+
+
 def signup(request):
-  tmpCountries = Country.objects.all()
-  allCountries = [(tmp.name, tmp.name) for tmp in tmpCountries]
-  allCountries.append(('Otro', 'Otro'))
 
   if request.method == 'POST':
-    form = SignUpForm(request.POST, countriesC=allCountries)
+    form = SignUpForm(request.POST)
     if form.is_valid():
       form.save()
       email = form.cleaned_data.get('email')
@@ -405,17 +529,10 @@ def signup(request):
       user.is_active = False
       user.save()
       login_auth(request, user)
-      token = {
-        'email': email,
-        'id': user.id,
-        'operation': 'activateUserByEmail'
-      }
-      token = encrypt(str.encode(json.dumps(token)))
-      message = "https://0.0.0.0:8000/activateEmail/" + token
-      send_mail(subject="Verificacion de correo electrónico", message=message, from_email=EMAIL_HOST_USER, recipient_list=[email])
+      sendEmailValidation(user)
       return redirect('/')
   else:
-    form = SignUpForm(countriesC=allCountries)
+    form = SignUpForm()
   return render(request, 'registration/signup.html', {'form': form})
 
 
@@ -580,11 +697,10 @@ def editExchangeRate(request, _rate_id):
     return render(request, 'admin/editExchangeRate.html', {'form': form})
 
 def addBank(request):
-    tmpCountries = Country.objects.all()
-    allCountries = [(tmp.name, tmp.name) for tmp in tmpCountries]
+
 
     if (request.method == 'POST'):
-        form = NewBankForm(request.POST, countriesC=allCountries)
+        form = NewBankForm(request.POST)
 
         if (form.is_valid()):
             name = form.cleaned_data['name']
@@ -612,7 +728,7 @@ def addBank(request):
             messages.error(request, msg, extra_tags="alert-success")
     else:
 
-      form = NewBankForm(countriesC=allCountries)
+      form = NewBankForm()
 
     return render(request, 'admin/addBank.html', {'form': form})
 
@@ -623,8 +739,7 @@ def adminBank(request):
         return render(request, 'admin/adminBank.html', {'banks': all_banks})
 
 def editBank(request, _bank_id):
-    tmpCountries = Country.objects.all()
-    allCountries = [(tmp.name, tmp.name) for tmp in tmpCountries]
+
 
     try:
         actualBank = Bank.objects.get(swift=_bank_id)
@@ -632,7 +747,7 @@ def editBank(request, _bank_id):
         raise Http404
 
     if (request.method == 'POST'):
-        form = EditBankForm(request.POST, countriesC=allCountries)
+        form = EditBankForm(request.POST)
 
         if (form.is_valid()):
             country = form.cleaned_data['country']
@@ -653,7 +768,7 @@ def editBank(request, _bank_id):
             messages.error(request, msg, extra_tags="alert-success")
     else:
         form = EditBankForm(initial={'name': actualBank.name, 'country': actualBank.country, 'swift':_bank_id,
-                                      'aba': actualBank.aba}, countriesC=allCountries)
+                                      'aba': actualBank.aba})
 
         return render(request, 'admin/editBank.html', {'form': form})
 
@@ -765,12 +880,10 @@ def addUser(request):
     tmpAllies = User.objects.filter(Q(user_type='Aliado-1') | Q(user_type='Aliado-2') | Q(user_type='Aliado-3'))
     allAllies = [(tmp.id, tmp.first_name + ' ' + tmp.last_name + ' - ' + str(tmp.id_number)) for tmp in tmpAllies]
     allAllies.append(('Ninguno', 'Ninguno'))
-    tmpCountries = Country.objects.all()
-    allCountries = [(tmp.name, tmp.name) for tmp in tmpCountries]
-    allCountries.append(('Otro', 'Otro'))
+
 
     if (request.method == 'POST'):
-        form = NewUserForm(request.POST, alliesC=allAllies, countriesC=allCountries)
+        form = NewUserForm(request.POST, alliesC=allAllies)
 
         if (form.is_valid()):
             new_mail = form.clean_email()
@@ -809,7 +922,7 @@ def addUser(request):
             msg = "El usuario fue agregado con éxito."
             messages.error(request, msg, extra_tags="alert-success")
     else:
-        form = NewUserForm(alliesC=allAllies, countriesC=allCountries)
+        form = NewUserForm(alliesC=allAllies)
 
     return render(request, 'admin/addUser.html', {'form': form})
 
@@ -828,12 +941,10 @@ def editUser(request, _user_id):
     tmpAllies = User.objects.filter(Q(user_type='Aliado-1') | Q(user_type='Aliado-2') | Q(user_type='Aliado-3'))
     allAllies = [(tmp.id, tmp.first_name + ' ' + tmp.last_name + ' - ' + str(tmp.id_number)) for tmp in tmpAllies]
     allAllies.append(('Ninguno', 'Ninguno'))
-    tmpCountries = Country.objects.all()
-    allCountries = [(tmp.name, tmp.name) for tmp in tmpCountries]
-    allCountries.append(('Otro', 'Otro'))
+
 
     if (request.method == 'POST'):
-        form = NewUserForm(request.POST, alliesC=allAllies, countriesC=allCountries)
+        form = NewUserForm(request.POST, alliesC=allAllies)
 
         if (form.is_valid()):    
             new_mail = form.clean_email()
@@ -880,7 +991,7 @@ def editUser(request, _user_id):
             referred = 'Ninguno'
         else:
             referred = actualUser.referred_by.first_name + " " + actualUser.referred_by.last_name + " - " + actualUser.referred_by.id_number
-        form = NewUserForm(alliesC=allAllies, countriesC=allCountries,
+        form = NewUserForm(alliesC=allAllies,
                             initial={'first_name': actualUser.first_name, 'last_name': actualUser.last_name, 'mobile_phone': actualUser.mobile_phone,
                                     'country': actualUser.country, 'address': actualUser.address, 'id_number': actualUser.id_number, 'user_type': actualUser.user_type, 
                                     'referred_by': actualUser.referred_by, 'canBuyDollar': actualUser.canBuyDollar, 'email': actualUser.email})
@@ -888,11 +999,8 @@ def editUser(request, _user_id):
     return render(request, 'admin/editUser.html', {'form': form})
 
 def addHoliday(request):
-    tmpCountries = Country.objects.all()
-    allCountries = [(tmp.name, tmp.name) for tmp in tmpCountries]
-
     if (request.method == 'POST'):
-        form = NewHolidayForm(request.POST, countriesC=allCountries)
+        form = NewHolidayForm(request.POST)
 
         if (form.is_valid()):
             date = form.cleaned_data['date']
@@ -913,7 +1021,7 @@ def addHoliday(request):
             msg = "El feriado fue agregado con éxito."
             messages.error(request, msg, extra_tags="alert-success")
     else:
-        form = NewHolidayForm(countriesC=allCountries)
+        form = NewHolidayForm()
 
     return render(request, 'admin/addHoliday.html', {'form': form})
 
@@ -929,11 +1037,10 @@ def editHoliday(request, _holiday_id):
     except:
         raise Http404
 
-    tmpCountries = Country.objects.all()
-    allCountries = [(tmp.name, tmp.name) for tmp in tmpCountries]
+
 
     if (request.method == 'POST'):
-        form = NewHolidayForm(request.POST, countriesC=allCountries)
+        form = NewHolidayForm(request.POST)
 
         if (form.is_valid()):
             date = form.cleaned_data['date']
@@ -956,7 +1063,7 @@ def editHoliday(request, _holiday_id):
             messages.error(request, msg, extra_tags="alert-success")
     else:
         form = NewHolidayForm(initial={'date': actualHoliday.date, 'description': actualHoliday.description,
-                                        'country': actualHoliday.country}, countriesC=allCountries)
+                                        'country': actualHoliday.country})
 
     return render(request, 'admin/editHoliday.html', {'form': form})
 

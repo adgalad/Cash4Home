@@ -69,7 +69,7 @@
                       {{form1.account}}<br>
                     </div>
                   </div>
-                  <h4 hidden="">¿A cuál moneda quieres enviar tu dinero?</h4>
+                  <h4 >¿A cuál moneda quieres enviar tu dinero?</h4>
                   <br>
                   <div class="col-md-12 col-sm-12 col-xs-12">
                     <div class="col-md-2 col-sm-2 col-xs-6">
@@ -244,7 +244,7 @@
     const toAccs = JSON.parse('{{ toAccs | safe }}')
     const fromAccs = JSON.parse('{{ fromAccs | safe }}')
     const rate = JSON.parse('{{ rate | safe }}')
-    $('#id_currency').val('VEF').hide()
+    // $('#id_currency').val('VEF').hide()
     $( document ).ready(function() {
         changeCurrency()
     });

@@ -23,11 +23,16 @@
         <section class="login_content">
           {% for message in messages %}
           <div class="alert {{ message.tags }}">
-            {{ message }}
+            {{ message | safe  }}
           </div>
           {% endfor %}
           <form method="post">
             {% csrf_token %}
+            {% if request.GET.next %}
+              <input type="hidden" name="next" value="{{ request.GET.next }}" />
+            {% else %}
+              <input type="hidden" name="next" value="/" />
+            {% endif %}
             <h1>Iniciar sesión</h1>
             {% for field in form %}
               {{ field }} 

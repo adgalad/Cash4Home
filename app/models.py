@@ -82,10 +82,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     def get_full_name(self):
-        return self.email
+        return self.first_name + " " + self.last_name
 
     def get_short_name(self):
-        return self.email
+        return self.first_name
 
     @property
     def canVerify(self):
@@ -118,7 +118,7 @@ class ExchangeRate(models.Model):
 
 class Bank(models.Model):
     swift = models.CharField(max_length=12, primary_key=True, unique=True, blank=True)
-    country = models.CharField(max_length=70)
+    country = models.ForeignKey('Country', related_name='banks')
     name = models.CharField(max_length=100)
     aba = models.CharField(max_length=10, null=True)
 
@@ -156,8 +156,6 @@ class AccountBelongsTo(models.Model):
             name = self.alias + " (" + name + ")"
         return name
 
-def pkgenOperation():
-    return "MT-"
 
 def pkgenTransaction():
     return "Tx"+str(round(timezone.now().timestamp()))+str(random.randint(0,10000))
@@ -238,6 +236,12 @@ class Comission(models.Model):
 class Country(models.Model):
     name = models.CharField(max_length=70, primary_key=True, unique=True)
     status = models.BooleanField(default=True)
+    iso_code = models.CharField(max_length=4)
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
 
 class CanSendTo(models.Model):
     # The primary key is the django id

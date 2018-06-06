@@ -15,6 +15,7 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+DEFAULT_DOMAIN = 'http://0.0.0.0:8000/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -153,5 +154,5 @@ EMAIL_HOST_USER = 'smarticket.suport@gmail.com'
 EMAIL_HOST_PASSWORD = 'asd123asd'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'Equipo de soporte de Cash4Home <support@cash4home.com>'
+DEFAULT_FROM_EMAIL = 'Cash4Home. Equipo de soporte'
 

@@ -24,18 +24,15 @@
             {% csrf_token %}
             <h1>Crear cuenta</h1>
             {% for field in form %}
-<<<<<<< HEAD
-                  {{ field }}
-=======
-                {{ field.label }}
+                <!-- {{ field.label }} -->
                 {{ field }}
->>>>>>> vicky
+                {% if field.name == 'country' %} <br> {% endif %}
                 {% for error in field.errors %}
                   <p style="color: red">{{ error }}</p>
                 {% endfor %}
             {% endfor %}
             <input id="phone" name="phone" class="form-control" type="tel" placeholder="Número de teléfono ( Ej 2125834456 )">
-
+            <br>
             <button id="submit" class="btn btn-primary submit" type="submit">Registrarse</button>
           </form>
           <div class="clearfix"></div>

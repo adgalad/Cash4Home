@@ -4,24 +4,45 @@ from app.models import *
 from django.utils.translation import ugettext as _
 from app.customWidgets import *
 from functools import partial
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.tokens import default_token_generator
+
+class MyPasswordResetForm(PasswordResetForm):
+  def save(self, domain_override=None,
+           subject_template_name='registration/password_reset_subject.txt',
+           email_template_name='registration/password_reset_email.html',
+           use_https=False, token_generator=default_token_generator,
+           from_email=None, request=None, html_email_template_name=None,
+           extra_email_context=None):
+    opts = {
+      'use_https': request.is_secure(),
+      'token_generator': token_generator,
+      'from_email': from_email,
+      'email_template_name': email_template_name,
+      'subject_template_name': subject_template_name,
+      'request': request,
+      'html_email_template_name': html_email_template_name,
+      'extra_email_context': extra_email_context,
+      'html_email_template_name': 'registration/password_reset_html_email.html',
+    }
+    super(MyPasswordResetForm, self).save(**opts)
+
 
 class SignUpForm(UserCreationForm):
 
   first_name = forms.CharField(max_length=30, required=True, label='Nombre')
   last_name = forms.CharField(max_length=30, required=True, label='Apellido')
   mobile_phone = forms.RegexField(regex=r'^\+?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
-  country = forms.ChoiceField(required=True, label="País de residencia")
-  address = forms.CharField(max_length=30, required=True, label='Dirección')
+  country = forms.ModelChoiceField(label=_("País de residencia"), required=True, queryset=Country.objects.filter(status=True), empty_label="País de residencia")
+
+  address = forms.CharField(max_length=100, required=True, label='Dirección')
   id_number = forms.CharField(max_length=30, required=True, label='Número de identificación')
 
   def __init__(self, *args, **kwargs):
-    countriesChoices = kwargs.pop('countriesC') 
-
     super(SignUpForm, self).__init__(*args, **kwargs)
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control', 'placeholder': self.fields[i].label})
 
-    self.fields['country'].choices = countriesChoices
   
   def clean_email(self):
     return self.cleaned_data['email'].lower()
@@ -37,8 +58,12 @@ class SignUpForm(UserCreationForm):
     fields = ('first_name', 'last_name', 'email', 'password1', 'password2', 'id_number', 'country', 'address', 'mobile_phone' )
 
 class ChangeEmailForm(forms.Form):
-  email = forms.EmailField(required=True, label=_(u"Email"))  
+  email = forms.EmailField(label=_("Email"), max_length=254)
 
+  def __init__(self, *args, **kwargs):
+    super(ChangeEmailForm, self).__init__(*args, **kwargs)
+    for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control', 'placeholder': self.fields[i].label})
 
 
 class AuthenticationForm(forms.Form):
@@ -55,7 +80,7 @@ class AuthenticationForm(forms.Form):
 class BankAccountForm(forms.Form):
   bank = GroupedModelChoiceField(label=_('Banco*'), group_by_field='country', queryset=Bank.objects.all().exclude(country="Venezuela"))
   number = forms.CharField(required=True, label=_(u"Número de cuenta*"))
-  router = forms.CharField(required=False, label=_(u"Número ABA (Solo para banco en EEUU)"))
+  router = forms.CharField(required=False, label=_(u"Número ABA (Solo para bancos en EEUU)"))
   id_currency = forms.ModelChoiceField(label=_('Moneda*'), required=True, queryset=Currency.objects.filter(currency_type='FIAT'))
 
   def __init__(self, *args, **kwargs):
@@ -155,35 +180,30 @@ class NewExchangeRateForm(forms.Form):
 class NewBankForm(forms.Form):
 
   name = forms.CharField(max_length=100, required=True, label="Nombre", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
-  country = forms.ChoiceField(required=True, label="País", widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
+  country = forms.ModelChoiceField(label=_("País"), required=True, queryset=Country.objects.filter(status=True), empty_label="Pais", widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
   swift = forms.CharField(max_length=12, required=True, label="SWIFT", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
   aba = forms.CharField(max_length=10, required=True, label="ABA", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
 
   def __init__(self, *args, **kwargs):
-    countriesChoices = kwargs.pop('countriesC') 
-
     super(NewBankForm, self).__init__(*args, **kwargs)
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
 
-    self.fields['country'].choices = countriesChoices
 
 class EditBankForm(forms.Form):
 
   name = forms.CharField(max_length=100, required=True, label="Nombre", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
-  country = forms.ChoiceField(required=True, label="País", widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
+  country = forms.ModelChoiceField(label=_("País"), required=True, queryset=Country.objects.filter(status=True), empty_label="Pais", widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
   swift = forms.CharField(max_length=12, required=True, label="SWIFT", widget = forms.TextInput(attrs={'style': 'width:100%;', 'readonly':'readonly'}))
   aba = forms.CharField(max_length=10, required=True, label="ABA", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
 
 
   def __init__(self, *args, **kwargs):
-    countriesChoices = kwargs.pop('countriesC')
 
     super(EditBankForm, self).__init__(*args, **kwargs)
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
 
-    self.fields['country'].choices = countriesChoices
 
 class NewAccountForm(forms.Form):
 
@@ -221,16 +241,14 @@ class NewHolidayForm(forms.Form):
   date = forms.DateField(label = "Fecha", required = True, widget = DateInput(), input_formats = ['%d/%m/%Y'])
   description = forms.CharField(label="Descripción", required=True, max_length=140,
                                     widget = forms.TextInput(attrs={'style': 'width:100%;'}))
-  country = forms.ChoiceField(label="País", required=True, widget = forms.Select(attrs={'style': 'width:100%;'}))
+  country = forms.ModelChoiceField(label=_("País de residencia"), required=True, queryset=Country.objects.filter(status=True), empty_label="Pais", widget = forms.Select(attrs={'style': 'width:100%;'}))
 
   def __init__(self, *args, **kwargs):
-      countriesChoices = kwargs.pop('countriesC')
       
       super(NewHolidayForm, self).__init__(*args, **kwargs)
       for i in self.fields:
           self.fields[i].widget.attrs.update({'class' : 'form-control'})
 
-      self.fields['country'].choices = countriesChoices
 
 class NewCountryForm(forms.Form):
 
@@ -255,8 +273,8 @@ class NewUserForm(forms.Form):
   id_number = forms.CharField(max_length=30, required=True, label='Número de identificación')
   email = forms.EmailField(required=True, label=_(u"Email"))  
   mobile_phone = forms.RegexField(regex=r'^\+?1?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
-  country = forms.ChoiceField(required=True, label="País de residencia")
-  address = forms.CharField(max_length=30, required=True, label='Dirección')
+  country = forms.ModelChoiceField(label=_("País de residencia"), required=True, queryset=Country.objects.filter(status=True), empty_label="País")
+  address = forms.CharField(max_length=100, required=True, label='Dirección')
   user_choices = (('Cliente', 'Cliente'), ('Aliado-1', 'Aliado-1'), ('Aliado-2', 'Aliado-2'), ('Aliado-3', 'Aliado-3'), ('Operador', 'Operador'), ('Admin', 'Admin'))
   user_type = forms.ChoiceField(choices=user_choices, required=True, label="Tipo de usuario")
   referred_by = forms.ChoiceField(label='Referido por', required=True)
@@ -266,15 +284,12 @@ class NewUserForm(forms.Form):
 
   def __init__(self, *args, **kwargs):
     alliesChoices = kwargs.pop('alliesC') 
-    countriesChoices = kwargs.pop('countriesC') 
-
     super(NewUserForm, self).__init__(*args, **kwargs)
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
         self.fields['canBuyDollar'].widget.attrs.update({'class' : 'flat'})
 
     self.fields['referred_by'].choices = alliesChoices
-    self.fields['country'].choices = countriesChoices
   
   def clean_email(self):
     return self.cleaned_data['email'].lower()

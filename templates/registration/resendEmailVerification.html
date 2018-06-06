@@ -1,0 +1,59 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %} Registrarse {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <!-- Animate.css -->
+  <link href="/static/vendors/animate.css/animate.min.css" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block body_class %}login{% endblock body_class %}
+
+{% block body %}
+  <div>
+    <a class="hiddenanchor" id="signup"></a>
+    <a class="hiddenanchor" id="signin"></a>
+
+    <div class="login_wrapper">
+      <div class="form registration_form">
+        <section class="login_content">
+          {% for message in messages %}
+            <div class="alert {{ message.tags }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+          <form method="post">
+            {% csrf_token %}
+            <h1>Validar correo</h1>
+            {% for field in form %}
+                <!-- {{ field.label }} -->
+                {{ field }}
+                {% for error in field.errors %}
+                  <p style="color: red">{{ error }}</p>
+                {% endfor %}
+            {% endfor %}
+
+            <button id="submit" class="btn btn-primary submit" type="submit">Enviar</button>
+          </form>
+          <div class="clearfix"></div>
+
+          <div class="separator">
+
+            <div class="clearfix"></div>
+            <br />
+
+            <div style="position: relative;left: 34%;"">
+             <a href="/"> <img src="/static/images/logo.png" class="img-responsive" width="30%"> </a>
+            </div>
+          </div>
+          
+        </section>
+      </div>
+    </div>
+  </div>
+
+
+
+{% endblock body %}
+

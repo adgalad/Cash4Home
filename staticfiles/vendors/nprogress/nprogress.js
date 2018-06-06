@@ -62,47 +62,47 @@
    */
 
   NProgress.set = function(n) {
-    var started = NProgress.isStarted();
+    // var started = NProgress.isStarted();
 
-    n = clamp(n, Settings.minimum, 1);
-    NProgress.status = (n === 1 ? null : n);
+    // n = clamp(n, Settings.minimum, 1);
+    // NProgress.status = (n === 1 ? null : n);
 
-    var progress = NProgress.render(!started),
-        bar      = progress.querySelector(Settings.barSelector),
-        speed    = Settings.speed,
-        ease     = Settings.easing;
+    // var progress = NProgress.render(!started),
+    //     bar      = progress.querySelector(Settings.barSelector),
+    //     speed    = Settings.speed,
+    //     ease     = Settings.easing;
 
-    progress.offsetWidth; /* Repaint */
+    // progress.offsetWidth; /* Repaint */
 
-    queue(function(next) {
-      // Set positionUsing if it hasn't already been set
-      if (Settings.positionUsing === '') Settings.positionUsing = NProgress.getPositioningCSS();
+    // queue(function(next) {
+    //   // Set positionUsing if it hasn't already been set
+    //   if (Settings.positionUsing === '') Settings.positionUsing = NProgress.getPositioningCSS();
 
-      // Add transition
-      css(bar, barPositionCSS(n, speed, ease));
+    //   // Add transition
+    //   css(bar, barPositionCSS(n, speed, ease));
 
-      if (n === 1) {
-        // Fade out
-        css(progress, { 
-          transition: 'none', 
-          opacity: 1 
-        });
-        progress.offsetWidth; /* Repaint */
+    //   if (n === 1) {
+    //     // Fade out
+    //     css(progress, { 
+    //       transition: 'none', 
+    //       opacity: 1 
+    //     });
+    //     progress.offsetWidth; /* Repaint */
 
-        setTimeout(function() {
-          css(progress, { 
-            transition: 'all ' + speed + 'ms linear', 
-            opacity: 0 
-          });
-          setTimeout(function() {
-            NProgress.remove();
-            next();
-          }, speed);
-        }, speed);
-      } else {
-        setTimeout(next, speed);
-      }
-    });
+    //     setTimeout(function() {
+    //       css(progress, { 
+    //         transition: 'all ' + speed + 'ms linear', 
+    //         opacity: 0 
+    //       });
+    //       setTimeout(function() {
+    //         NProgress.remove();
+    //         next();
+    //       }, speed);
+    //     }, speed);
+    //   } else {
+    //     setTimeout(next, speed);
+    //   }
+    // });
 
     return this;
   };
@@ -246,6 +246,7 @@
 
     parent.appendChild(progress);
     return progress;
+
   };
 
   /**
