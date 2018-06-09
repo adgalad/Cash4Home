@@ -40,6 +40,7 @@ class SignUpForm(UserCreationForm):
 class ChangeEmailForm(forms.Form):
   email = forms.EmailField(required=True, label=_(u"Email"))  
 
+
 class AuthenticationForm(forms.Form):
 
   email = forms.EmailField(required=True, label=_(u"Email"))
@@ -62,6 +63,7 @@ class BankAccountForm(forms.Form):
     # self.fields['account'].widget.attrs.update({'class' : 'form-control', 'placeholder':'Ej 1013232012'})
     for i in self.fields:
       self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
 
 class BankAccountDestForm(BankAccountForm):
   bank = ModelChoiceField(label=_('Banco*'), required=True, queryset=Bank.objects.filter(country="Venezuela"))
@@ -192,7 +194,7 @@ class NewAccountForm(forms.Form):
     choices_use = (('Origen', 'Origen'), ('Destino', 'Destino'))
     use_type = forms.ChoiceField(choices=choices_use, required=True, label="Tipo de uso",
                                     widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
-    bank = GroupedModelChoiceField(label=_('Banco'), group_by_field='country', queryset=Bank.objects.all(), to_field_name="swift")
+    bank = GroupedModelChoiceField(label=_('Banco'), group_by_field='country', queryset=Bank.objects.all())
     aba = forms.CharField(max_length=10, required=True, label="ABA", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
     currency = forms.ModelChoiceField(required=True, label="Moneda", queryset=Currency.objects.all(),
                                     widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))

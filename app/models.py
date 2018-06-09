@@ -131,7 +131,7 @@ class Account(models.Model):
     use_type = models.CharField(choices=choices, max_length=8, blank=True)
     id_bank = models.ForeignKey(Bank)
     id_currency = models.ForeignKey(Currency)
-    aba = models.CharField(max_length=10)
+    aba = models.CharField(max_length=10, null=True, blank=True)
 
     def __str__(self):
         return str(self.id_bank) + " " + str(self.number)
