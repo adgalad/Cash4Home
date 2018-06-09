@@ -24,7 +24,11 @@
       {% endfor %} 
       {% for field in form %}
         {{ field.label_tag }}
-        {{ field }} 
+        {{ field }}
+        {% for error in field.errors %}
+          <p style="color: red">{{ error }}</p>
+        {% endfor %}
+
         <br>
       {% endfor %}
       <div class="text-center">

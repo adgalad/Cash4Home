@@ -120,8 +120,6 @@ class Bank(models.Model):
     swift = models.CharField(max_length=12, primary_key=True, unique=True, blank=True)
     country = models.ForeignKey('Country', related_name='banks')
     name = models.CharField(max_length=100)
-    aba = models.CharField(max_length=10, null=True)
-
 
     def __str__(self):
         return self.name
@@ -133,6 +131,7 @@ class Account(models.Model):
     use_type = models.CharField(choices=choices, max_length=8, blank=True)
     id_bank = models.ForeignKey(Bank)
     id_currency = models.ForeignKey(Currency)
+    aba = models.CharField(max_length=10, null=True, blank=True)
 
     def __str__(self):
         return str(self.id_bank) + " " + str(self.number)
@@ -170,13 +169,17 @@ class Operation(models.Model):
     status = models.CharField(choices=status_choices, max_length=20)
     exchanger = models.CharField(max_length=70, blank=True, null=True)
     date = models.DateTimeField()
-    id_client = models.ForeignKey(User)
-    id_account = models.ForeignKey(Account) # Origin account from the client
+    id_client = models.ForeignKey(User, related_name="user_client")
+    id_account = models.ForeignKey(Account, related_name='account_client_origin') # Origin account from the client
     exchange_rate = models.FloatField()
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_used')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_used')
     date_ending = models.DateTimeField()
     is_active = models.BooleanField(default=True)
+    account_allie_origin = models.ForeignKey(Account, related_name='account_allie_origin')
+    id_allie_origin = models.ForeignKey(User, related_name='user_allie_origin')
+    account_allie_target = models.ForeignKey(Account, related_name='account_allie_target', blank=True, null=True)
+    id_allie_target = models.ForeignKey(User, related_name='user_allie_target', blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if (self.pk):
@@ -242,6 +245,9 @@ class Country(models.Model):
 
     class Meta:
         ordering = ['name']
+
+    def __str__(self):
+        return self.name
 
 class CanSendTo(models.Model):
     # The primary key is the django id

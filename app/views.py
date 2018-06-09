@@ -373,6 +373,7 @@ def createAccount(request):
     if form.is_valid():
       number = form.cleaned_data.get('number')
       bank = form.cleaned_data.get('bank')
+      print(bank.swift)
       acc = Account.objects.filter(number=number, id_bank=bank)
       currency = form.cleaned_data.get('id_currency')
       if acc.count() == 0:
@@ -547,9 +548,7 @@ def addCurrencies(request):
             name =  form.cleaned_data['name']
             currency_type = form.cleaned_data['currency_type']
 
-            alreadyExists = Currency.objects.filter(code=code).exists()
-
-            if (alreadyExists):
+            if (Currency.objects.filter(code=code).exists()):
                 msg = "La moneda ingresada ya existe. Elija otro nombre."
                 messages.error(request,msg, extra_tags="alert-warning")
                 return render(request, 'admin/addCurrency.html', {'form': form})
@@ -560,8 +559,6 @@ def addCurrencies(request):
             new_currency.currency_type = currency_type
 
             new_currency.save()
-
-            form.clean()
 
             msg = "La moneda fue agregada con éxito"
             messages.error(request, msg, extra_tags="alert-success")
@@ -605,16 +602,14 @@ def editCurrencies(request, _currency_id):
     return render(request, 'admin/editCurrency.html', {'form': form})
 
 def addExchangeRate(request):
-    tmpCurrencies = Currency.objects.all()
-    allCurrencies = [(tmp.code, tmp.code) for tmp in tmpCurrencies]
 
     if (request.method == 'POST'):
-        form = NewExchangeRateForm(request.POST, currencyC=allCurrencies)
+        form = NewExchangeRateForm(request.POST)
 
         if (form.is_valid()):
             rate = form.cleaned_data['rate']
-            origin =  Currency.objects.get(code=form.cleaned_data['origin_currency'])
-            target = Currency.objects.get(code=form.cleaned_data['target_currency'])
+            origin =  form.cleaned_data['origin_currency']
+            target = form.cleaned_data['target_currency']
 
             alreadyExists = ExchangeRate.objects.filter(origin_currency=origin, target_currency=target).exists()
 
@@ -640,7 +635,7 @@ def addExchangeRate(request):
             messages.error(request, msg, extra_tags="alert-success")
             return render(request, 'admin/addExchangeRate.html', {'form': form})
     else:
-        form = NewExchangeRateForm(currencyC=allCurrencies)
+        form = NewExchangeRateForm()
 
     return render(request, 'admin/addExchangeRate.html', {'form': form})
 
@@ -656,16 +651,13 @@ def editExchangeRate(request, _rate_id):
     except:
         raise Http404
 
-    tmpCurrencies = Currency.objects.all()
-    allCurrencies = [(tmp.code, tmp.code) for tmp in tmpCurrencies]
-
     if (request.method == 'POST'):
-        form = NewExchangeRateForm(request.POST, currencyC=allCurrencies)
+        form = NewExchangeRateForm(request.POST)
 
         if (form.is_valid()):
             rate = form.cleaned_data['rate']
-            origin =  Currency.objects.get(code=form.cleaned_data['origin_currency'])
-            target = Currency.objects.get(code=form.cleaned_data['target_currency'])
+            origin =  form.cleaned_data['origin_currency']
+            target = form.cleaned_data['target_currency']
 
 
             if ((origin != actualRate.origin_currency) or (target != actualRate.target_currency)):
@@ -691,29 +683,22 @@ def editExchangeRate(request, _rate_id):
             msg = "La moneda fue editada con éxito"
             messages.error(request, msg, extra_tags="alert-success")
     else:
-        form = NewExchangeRateForm(initial={'rate':actualRate.rate, 'origin_currency': actualRate.origin_currency.code, 'target_currency': actualRate.target_currency.code},
-                                        currencyC=allCurrencies)
+        form = NewExchangeRateForm(initial={'rate':actualRate.rate, 'origin_currency': actualRate.origin_currency.code, 
+                                                'target_currency': actualRate.target_currency.code})
 
     return render(request, 'admin/editExchangeRate.html', {'form': form})
 
 def addBank(request):
-
-
     if (request.method == 'POST'):
         form = NewBankForm(request.POST)
 
         if (form.is_valid()):
             name = form.cleaned_data['name']
-            country = form.cleaned_data['country']
+            country = form.cleaned_data['country'].name
             swift = form.cleaned_data['swift']
-            aba = form.cleaned_data['aba']
 
-            if (Bank().objects.filter(swift=swift).exists()):
+            if (Bank.objects.filter(swift=swift).exists()):
                 msg = "El SWIFT ingresado corresponde a otro banco. Ingrese un SWIFT correcto."
-                messages.error(request, msg, extra_tags="alert-warning")
-                return render(request, 'admin/addBank.html', {'form': form})
-            if (Bank().objects.filter(aba=aba).exists()):
-                msg = "El ABA ingresado corresponde a otro banco. Ingrese un ABA correcto."
                 messages.error(request, msg, extra_tags="alert-warning")
                 return render(request, 'admin/addBank.html', {'form': form})
 
@@ -721,7 +706,6 @@ def addBank(request):
             new_bank.name = name.upper()
             new_bank.country = country
             new_bank.swift = swift
-            new_bank.aba = aba
             new_bank.save()
 
             msg = "El banco fue agregado con éxito."
@@ -739,8 +723,6 @@ def adminBank(request):
         return render(request, 'admin/adminBank.html', {'banks': all_banks})
 
 def editBank(request, _bank_id):
-
-
     try:
         actualBank = Bank.objects.get(swift=_bank_id)
     except:
@@ -751,10 +733,10 @@ def editBank(request, _bank_id):
 
         if (form.is_valid()):
             country = form.cleaned_data['country']
-            name = form.cleaned_data['name']
+            name = form.cleaned_data['name'].name
             aba = form.cleaned_data['aba']
 
-            if (Bank().objects.filter(aba=aba).exists()):
+            if (Bank.objects.filter(aba=aba).exists()):
                 msg = "El ABA ingresado corresponde a otro banco. Ingrese un ABA correcto."
                 messages.error(request, msg, extra_tags="alert-warning")
                 return render(request, 'admin/editBank.html', {'form': form})
@@ -767,53 +749,58 @@ def editBank(request, _bank_id):
             msg = "El banco fue editado con éxito."
             messages.error(request, msg, extra_tags="alert-success")
     else:
-        form = EditBankForm(initial={'name': actualBank.name, 'country': actualBank.country, 'swift':_bank_id,
-                                      'aba': actualBank.aba})
+        form = EditBankForm(initial={'name': actualBank.name, 'country': actualBank.country, 'swift':_bank_id})
 
         return render(request, 'admin/editBank.html', {'form': form})
 
 def addAccount(request):
-    tmp_currencies = Currency.objects.all()
-    all_currencies = [(tmp.code, tmp.name) for tmp in tmp_currencies]
 
     if (request.method == 'POST'):
-        form = NewAccountForm(request.POST, currencyC=all_currencies)
+        form = NewAccountForm(request.POST)
 
         if (form.is_valid()):
             number = form.cleaned_data['number']
-            is_thirds = forms.cleaned_data['is_thirds']
-            use_type = forms.cleaned_data['use_type']
-            bank = Bank.objects.get(swift=form.cleaned_data['bank'])
-            currency = Currency.objects.get(code=form.cleaned_data['currency'])
+            is_thirds = form.cleaned_data['is_thirds']
+            use_type = form.cleaned_data['use_type']
+            bank = form.cleaned_data['bank']
+            currency = form.cleaned_data['currency']
+            aba = form.cleaned_data['aba']
 
             if (Account.objects.filter(number=number,bank=bank).exists()):
                 msg = "La cuenta que ingresaste ya existe en ese banco."
                 messages.error(request, msg, extra_tags="alert-warning")
                 return render(request, 'admin/addAccount.html', {'form': form})
 
-            new_account = Account()
-            new_account.number = number
-            new_account.is_client = (is_thirds == 'Cliente')
-            new_account.id_bank = bank
-            new_account.id_currency = currency
-            new_account.save()
+            #new_account = Account()
+            #new_account.number = number
+            #new_account.is_client = (is_thirds == 'Cliente')
+            #new_account.id_bank = bank
+            #new_account.id_currency = currency
+            #new_account.aba = aba
+            #new_account.save()
 
-            belongs_to = AccountBelongsTo()
-            belongs_to.id_account = new_account
+            #belongs_to = AccountBelongsTo()
+            #belongs_to.id_account = new_account
             #Falta el cliente
             if (is_thirds == 'Terceros'):
                 belongs_to.owner = form.cleaned_data['owner']
                 belongs_to.alias = form.cleaned_data['alias']
                 belongs_to.email = form.cleaned_data['email']
                 belongs_to.id_number = form.cleaned_data['id_number']
+            elif (is_thirds == 'Cliente'):
+                #client = User.objects.get(id=form.cleaned_data['client'])
+                pass
+            elif(is_thirds == 'Aliado'):
+                #allie = User.objects.get(id=form.cleaned_data['allie'])
+                print(form.cleaned_data['allie'])
 
-            belongs_to.save()
+            #belongs_to.save()
 
             msg = "La cuenta fue agregada con éxito."
             messages.error(request, msg, extra_tags="alert-success")
 
     else:
-        form = NewAccountForm(currencyC=all_currencies)
+        form = NewAccountForm()
 
     return render(request, 'admin/addAccount.html', {'form': form})
 
@@ -829,11 +816,8 @@ def editAccount(request, _account_id):
     except:
         raise Http404
 
-    tmp_currencies = Currency.objects.all()
-    all_currencies = [(tmp.code, tmp.name) for tmp in tmp_currencies]
-
     if (request.method == 'POST'):
-        form = NewAccountForm(request.POST, currencyC=allCurrencies)
+        form = NewAccountForm(request.POST)
 
         if (form.is_valid()):
             number = form.cleaned_data['number']
@@ -871,7 +855,7 @@ def editAccount(request, _account_id):
             #Falta el cliente
 
     else:
-        form = NewAccountForm(currencyC=allCurrencies)
+        form = NewAccountForm()
 
     return render(request, 'admin/editAccount.html', {'form': form})
 
@@ -905,7 +889,7 @@ def addUser(request):
             new_user.last_name = form.clean_last_name()
             new_user.email = new_mail
             new_user.mobile_phone = form.cleaned_data['mobile_phone']
-            new_user.country = form.cleaned_data['country']
+            new_user.country = form.cleaned_data['country'].name
             new_user.address = form.cleaned_data['address']
             new_user.user_type = form.cleaned_data['user_type']
             new_user.canBuyDollar = form.cleaned_data['canBuyDollar']
@@ -968,7 +952,7 @@ def editUser(request, _user_id):
             actualUser.first_name = form.clean_first_name()
             actualUser.last_name = form.clean_last_name()
             actualUser.mobile_phone = form.cleaned_data['mobile_phone']
-            actualUser.country = form.cleaned_data['country']
+            actualUser.country = form.cleaned_data['country'].name
             actualUser.address = form.cleaned_data['address']
             actualUser.user_type = form.cleaned_data['user_type']
             actualUser.canBuyDollar = form.cleaned_data['canBuyDollar']
@@ -1005,7 +989,7 @@ def addHoliday(request):
         if (form.is_valid()):
             date = form.cleaned_data['date']
             description = form.cleaned_data['description']
-            country = form.cleaned_data['country']
+            country = form.cleaned_data['country'].name
 
             if (Holiday.objects.filter(date=date, country=country).exists()):
                 msg = "Ya existe un feriado para ese día en " + country
@@ -1037,15 +1021,13 @@ def editHoliday(request, _holiday_id):
     except:
         raise Http404
 
-
-
     if (request.method == 'POST'):
         form = NewHolidayForm(request.POST)
 
         if (form.is_valid()):
             date = form.cleaned_data['date']
             description = form.cleaned_data['description']
-            country = form.cleaned_data['country']
+            country = form.cleaned_data['country'].name
 
             if ((actualHoliday.date != date) or (actualHoliday.country != country)):
                 if (Holiday.objects.filter(date=date, country=country)):
@@ -1132,7 +1114,22 @@ def editCountry(request, _country_id):
 
 def operationalDashboard(request):
     if (request.method == 'GET'):
-        if (request.user.user_type == 'Operador'):
-            #actualOperations = Operation.objects.filter()
-            pass
+        if ((request.user.user_type == 'Operador') or (request.user.user_type == 'Admin')):
+            actualOperations = Operation.objects.filter(is_active=True).order_by('date')
+            endedOperations = Operation.objects.filter(is_active=False).order_by('date')
+            
+        elif (request.user.user_type == 'Aliado-1'):
+            actualOperations = Operation.objects.filter(Q(is_active=True) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
+            endedOperations = Operation.objects.filter(Q(is_active=False) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
 
+        totalOpen = actualOperations.count()
+        totalEnded = endedOperations.count()
+
+        return render(request, 'dashboard/operationalDashboard.html', 
+                            {'actualO': actualOperations, 'endedO': endedOperations, 'totalOpen': totalOpen, 'totalEnded': totalEnded})
+
+def operationDetailDashboard(request, _operation_id):
+    pass
+
+def operationEditDashboard(request, _operation_id):
+    pass

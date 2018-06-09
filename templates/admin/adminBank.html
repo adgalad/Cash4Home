@@ -36,7 +36,6 @@
                     <th>Nombre</th>
                     <th>País</th>
                     <th>SWIFT</th>
-                    <th>ABA</th>
                     <th>Editar</th>
                   </tr>
                 </thead>
@@ -46,7 +45,6 @@
                       <td>{{ b.name }}</td>
                       <td>{{ b.country }}</td>
                       <td>{{ b.swift }}</td>  
-                      <td>{{ b.aba }}</td>
                       <td><a href="{% url 'editBank' b.swift %}"><i class="fa fa-edit"></i></a></td>
                     </tr>
                   {% endfor %}

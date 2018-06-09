@@ -47,9 +47,6 @@ urlpatterns = [
     url(r'^operation/pending$', views.pendingOperations, name='pendingOperations'),
     url(r'^operation/(?P<_operation_id>.+)/details$', views.operationModal, name='operationModal'),
 
-    
-
-
     url(r'^$', views.home, name='home'),
     url(r'^index$', views.home, name='home'),
     url(r'^index.html', views.home, name='home'),
@@ -85,6 +82,11 @@ urlpatterns = [
     url(r'^add/country/$', views.addCountry, name="addCountry"),
     url(r'^all/country/$', views.adminCountry, name="adminCountry"),
     url(r'^edit/country/(?P<_country_id>\w+)', views.editCountry, name="editCountry"),
+
+    #Dashboards
+    url(r'^dashboard/operational/$', views.operationalDashboard, name="operationalDashboard"),
+    url(r'^dashboard/operational/(?P<_operation_id>\w+)/details$', views.operationDetailDashboard, name="operationDetailDashboard"),
+    url(r'^dashboard/operational/(?P<_operation_id>\w+)/edit$', views.operationEditDashboard, name="operationEditDashboard"),
 ]
 
 

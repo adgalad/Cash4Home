@@ -2473,6 +2473,8 @@ function init_DataTables () {
 
   $('#datatable-responsive').DataTable()
 
+  $('#datatable-responsive2').DataTable()
+
   $('#datatable-scroller').DataTable({
     ajax: 'js/datatables/json/scroller-demo.json',
     deferRender: true,
