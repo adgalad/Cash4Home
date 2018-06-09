@@ -120,8 +120,6 @@ class Bank(models.Model):
     swift = models.CharField(max_length=12, primary_key=True, unique=True, blank=True)
     country = models.CharField(max_length=70)
     name = models.CharField(max_length=100)
-    aba = models.CharField(max_length=10, null=True)
-
 
     def __str__(self):
         return self.name
@@ -133,6 +131,7 @@ class Account(models.Model):
     use_type = models.CharField(choices=choices, max_length=8, blank=True)
     id_bank = models.ForeignKey(Bank)
     id_currency = models.ForeignKey(Currency)
+    aba = models.CharField(max_length=10)
 
     def __str__(self):
         return str(self.id_bank) + " " + str(self.number)
@@ -242,6 +241,9 @@ class Comission(models.Model):
 class Country(models.Model):
     name = models.CharField(max_length=70, primary_key=True, unique=True)
     status = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
 
 class CanSendTo(models.Model):
     # The primary key is the django id
