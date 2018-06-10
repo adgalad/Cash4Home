@@ -1006,13 +1006,13 @@ def editUser(request, _user_id):
 
     return render(request, 'admin/editUser.html', {'form': form})
 
-# def viewUser(request, _user_id):
-#     try:
-#         actualUser = User.objects.get(id=_user_id)
-#     except:
-#         raise Http404
+def viewUser(request, _user_id):
+    try:
+        actualUser = User.objects.get(id=_user_id)
+    except:
+        raise Http404
 
-#     return render(request, 'admin/viewUser.html', {'user': actualUser})
+    return render(request, 'admin/viewUser.html', {'user': actualUser})
 
 
 def addHoliday(request):
