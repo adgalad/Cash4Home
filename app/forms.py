@@ -77,20 +77,24 @@ class AuthenticationForm(forms.Form):
                 
 
 class BankAccountForm(forms.Form):
-  bank = GroupedModelChoiceField(label=_('Banco*'), group_by_field='country', queryset=Bank.objects.all().exclude(country="Venezuela"))
+  bank = GroupedModelChoiceField(label=_('Banco*'), group_by_field='country', queryset=None)
   number = forms.CharField(required=True, label=_(u"Número de cuenta*"))
   router = forms.CharField(required=False, label=_(u"Número ABA (Solo para bancos en EEUU)"))
   id_currency = forms.ModelChoiceField(label=_('Moneda*'), required=True, queryset=Currency.objects.filter(currency_type='FIAT'))
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, canBuyDollar = False, *args, **kwargs):
     super(BankAccountForm, self).__init__(*args, **kwargs)
+    if canBuyDollar:
+      self.fields['bank'].queryset = Bank.objects.all()
+    else:
+      self.fields['bank'].queryset = Bank.objects.all().exclude(country="Venezuela")
     # self.fields['account'].widget.attrs.update({'class' : 'form-control', 'placeholder':'Ej 1013232012'})
     for i in self.fields:
       self.fields[i].widget.attrs.update({'class' : 'form-control'})
 
 
 class BankAccountDestForm(BankAccountForm):
-  bank = ModelChoiceField(label=_('Banco*'), required=True, queryset=Bank.objects.filter(country="Venezuela"))
+  bank = ModelChoiceField(label=_('Banco*'), required=True, queryset=Bank.objects.all())
   owner = forms.CharField(required=True, label=_(u"Nombre del titular*"))
   id_number = forms.CharField(max_length=30, required=True, label=_(u'Número de identificación*'))
   email = forms.EmailField(required=True, label=_(u"Email del titular*"))
@@ -295,7 +299,7 @@ class NewUserForm(forms.ModelForm):
   # address = forms.CharField(max_length=100, required=True, label='Dirección')
   user_choices = (('Cliente', 'Cliente'), ('Aliado-1', 'Aliado-1'), ('Aliado-2', 'Aliado-2'), ('Aliado-3', 'Aliado-3'), ('Operador', 'Operador'), ('Admin', 'Admin'))
   user_type = forms.ChoiceField(choices=user_choices, required=True, label="Tipo de usuario")
-  referred_by = forms.ModelChoiceField(queryset=None, label='Referido por', empty_label="Ninguno")
+  referred_by = forms.ModelChoiceField(queryset=None, label='Referido por', required=False, empty_label="Ninguno")
   choices_buy = ((True, 'Si'), (False, 'No'))
   canBuyDollar = forms.ChoiceField(choices=choices_buy, label='¿Puede comprar dólares?', required=True, 
                                     widget=forms.RadioSelect(attrs={'style': 'width:100%; background-color:white'}))

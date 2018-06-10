@@ -117,7 +117,6 @@ AUTH_USER_MODEL = 'app.User'
 # Session timeout
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 AUTO_LOGOUT_DELAY = 5 # minutes
-
 # SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # SESSION_COOKIE_AGE = 10
 

@@ -223,9 +223,6 @@ def createOperation(request):
                               target_currency = toCurrency,
                               
                             )
-        file = open(os.path.join(STATIC_ROOT, "countries.json"), "r")
-        countries = json.loads(file.read())
-        file.close()
 
         operation._save(fromAccount.id_account.id_bank.country.iso_code, toAccounts[0][0].id_account.id_bank.country.iso_code, timezone.now())
         for i in toAccounts:
@@ -385,17 +382,16 @@ def accounts(request):
   
   return render(request, 'dashboard/accounts.html', {'origin':origin, 'dest':dest})
 
-
+@login_required(login_url="/login/")
 def createAccount(request):
   own = request.GET.get('own')
 
   if own is None:
     return render(request, 'error_handling/page_404.html')
   own = own == "1"
-  form = BankAccountForm if own else BankAccountDestForm
 
   if request.method == 'POST':
-    form = form(request.POST)
+    form = BankAccountForm(request.POST, canBuyDollar = request.user.canBuyDollar) if own else BankAccountDestForm(request.POST)
     if form.is_valid():
       number = form.cleaned_data.get('number')
       bank = form.cleaned_data.get('bank')
@@ -437,7 +433,7 @@ def createAccount(request):
       
       return redirect('accounts')
   else:
-    form = form() 
+    form = BankAccountForm(canBuyDollar = request.user.canBuyDollar) if own else BankAccountDestForm()
   return render(request, 'dashboard/createAccount.html', {"form": form, 'own':own})
 
 

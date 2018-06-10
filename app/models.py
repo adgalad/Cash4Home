@@ -207,7 +207,7 @@ class Operation(models.Model):
     def isCanceled(self):
         if self.status == 'Cancelada' or not self.is_active:
             return True
-        elif timezone.now() > self.date_ending:
+        elif timezone.now() > self.date_ending and self.status == 'Falta verificacion':
             self.status = 'Cancelada'
             self.is_active = False
             self.save()
