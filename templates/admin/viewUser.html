@@ -1,0 +1,199 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %} Detalles del usuario {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="/static/vendors/datatables.net-bs/css/dataTables.bootstrap.min.css" rel="stylesheet">
+  <link href="/static/vendors/datatables.net-buttons-bs/css/buttons.bootstrap.min.css" rel="stylesheet">
+  <link href="/static/vendors/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css" rel="stylesheet">
+  <link href="/static/vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css" rel="stylesheet">
+  <link href="/static/vendors/datatables.net-scroller-bs/css/scroller.bootstrap.min.css" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="clearfix"></div>
+
+      <div class="row">
+        <div id="popup" class="modal fade" role="dialog"></div>
+
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <div class="x_title">
+              <h2>Detalles del usuario</h2>
+              <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+              <div class="row">
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Nombre</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ user.first_name }} {{ user.last_name }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>DNI</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ user.id_number }}
+                </div>
+              </div>
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>País</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ user.country }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>Dirección</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ user.address }}
+                </div>
+              </div>
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Teléfono</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ user.mobile_phone }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>Tipo de usuario</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ user.user_type }}
+                </div>
+              </div>
+              {% if user.user_type == 'Cliente' %}
+                <div class="row">
+                  <hr>
+                  <div class="col-md-2 col-sm-2 col-xs-12">
+                    <b>Imagen Selfie</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12 profile-img">
+                    <!--<img src="{{ user.selfie_image.url }}" class='img-responsive'>-->
+                      <a href="/static/images/selfie_placeholder.png" target="_blank"><img src="/static/images/selfie_placeholder.png" class="img-responsive"></a>
+                      
+                  </div>
+                  <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                    <b>Imagen Servicio</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12 profile-img">
+                    <!--<img src="{{ user.service_image }}" class="img-responsive">-->
+                      <a href="/static/images/selfie_placeholder.png" target="_blank"><img src="/static/images/selfie_placeholder.png" class="img-responsive"></a>
+                  </div>
+                </div>
+                <div class="row">
+                  <hr>
+                  <div class="col-md-2 col-sm-2 col-xs-12">
+                    <b>DNI Frontal</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12 profile-img">
+                    <!--<img src="{{ user.id_front.url }}" class='img-responsive'>-->
+                      <a href="/static/images/selfie_placeholder.png" target="_blank"><img src="/static/images/selfie_placeholder.png" class="img-responsive"></a>
+                  </div>
+                  <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                    <b>DNI Trasera</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12 profile-img">
+                    <a href="/static/images/selfie_placeholder.png" target="_blank"><img src="/static/images/selfie_placeholder.png" class="img-responsive"></a>
+                  </div>
+                </div>
+                <div class="row">
+                  <hr>
+                  <div class="col-md-2 col-sm-2 col-xs-12">
+                    <b>Estado</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12">
+                    {% if user.verified %}
+                      Verificado
+                    {% else %}
+                      Por verificar
+                    {% endif %}
+                  </div>
+                  <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                    <b>¿Puede comprar dólares?</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12 ">
+                    {% if user.canBuyDollar %}
+                      Si
+                    {% else %}
+                      No
+                    {% endif %}
+                  </div>
+                </div>
+              {% elif user.user_type == 'Aliado-1' or user.user_type == 'Aliado-2' or user.user_type == 'Aliado-3' %}
+                <div class="row">
+                  <hr>
+                  <div class="col-md-2 col-sm-2 col-xs-12">
+                    <b>Referido por</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12">
+                     {% if user.referred_by %}
+                        {{ user.referred_by.first_name }} {{ user.referred_by.last_name }}
+                      {% else %}
+                        N/A
+                      {% endif %}
+                  </div>
+                  <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                    <b>¿Puede comprar dólares?</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12 ">
+                    {% if user.canBuyDollar %}
+                      Si
+                    {% else %}
+                      No
+                    {% endif %}
+                  </div>
+                </div>
+              {% endif %}
+              <hr>
+              <div style="float:right;">
+                <a class="btn btn-primary" href="{% url 'adminUser' %}" ><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
+                <a class="btn btn-primary" href="{% url 'editUser' user.id %}" ><i class="fa fa-edit"></i>&nbsp Editar</a>  
+              </div>
+              
+            </div>
+          </div>
+        </div>
+
+        
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <!-- Datatables -->
+  <script type="text/javascript">
+    function modal (url) {
+      $('#popup').load(url, function () {
+        console.log($(this))
+        $(this).modal('show')
+      })
+      return false
+    }
+  </script>
+  <script src="/static/vendors/datatables.net/js/jquery.dataTables.min.js"></script>
+  <script src="/static/vendors/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+  <script src="/static/vendors/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+  <script src="/static/vendors/datatables.net-buttons-bs/js/buttons.bootstrap.min.js"></script>
+  <script src="/static/vendors/datatables.net-buttons/js/buttons.flash.min.js"></script>
+  <script src="/static/vendors/datatables.net-buttons/js/buttons.html5.min.js"></script>
+  <script src="/static/vendors/datatables.net-buttons/js/buttons.print.min.js"></script>
+  <script src="/static/vendors/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js"></script>
+  <script src="/static/vendors/datatables.net-keytable/js/dataTables.keyTable.min.js"></script>
+  <script src="/static/vendors/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+  <script src="/static/vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js"></script>
+  <script src="/static/vendors/datatables.net-scroller/js/dataTables.scroller.min.js"></script>
+  <script src="/static/vendors/jszip/dist/jszip.min.js"></script>
+  <script src="/static/vendors/pdfmake/build/pdfmake.min.js"></script>
+  <script src="/static/vendors/pdfmake/build/vfs_fonts.js"></script>
+{% endblock javascripts %}

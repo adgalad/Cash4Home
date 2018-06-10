@@ -27,10 +27,10 @@ from C4H.settings import MEDIA_ROOT, STATIC_ROOT, EMAIL_HOST_USER, DEFAULT_DOMAI
 from app.cron import BTCPrice
 from app.encryptation import encrypt, decrypt
 
+#from app.cron import BTCPrice
+#from app.encryptation import encrypt, decrypt
+
 from django.db.models import Q
-
-
-
 
 ########## ERROR HANDLING ##########
 
@@ -44,7 +44,7 @@ def handler404(request):
 def handler403(request):
     response = render(request, 'error_handling/403.html')
     response.status_code = 403
-    return response
+    return responseVE
 
 #---- Vista para manejar Error 500 - Internal server error ----#
 def handler500(request):
@@ -926,7 +926,7 @@ def addUser(request):
             new_user.last_name = form.clean_last_name()
             new_user.email = new_mail
             new_user.mobile_phone = form.cleaned_data['mobile_phone']
-            new_user.country = form.cleaned_data['country'].name
+            new_user.country = form.cleaned_data['country']
             new_user.address = form.cleaned_data['address']
             new_user.user_type = form.cleaned_data['user_type']
             new_user.canBuyDollar = form.cleaned_data['canBuyDollar']
@@ -950,7 +950,6 @@ def addUser(request):
 def adminUser(request):
     if (request.method == 'GET'):
         all_users = User.objects.all()
-
         return render(request, 'admin/adminUser.html', {'users': all_users})
 
 def editUser(request, _user_id):
@@ -1006,6 +1005,15 @@ def editUser(request, _user_id):
                            instance=actualUser)
 
     return render(request, 'admin/editUser.html', {'form': form})
+
+# def viewUser(request, _user_id):
+#     try:
+#         actualUser = User.objects.get(id=_user_id)
+#     except:
+#         raise Http404
+
+#     return render(request, 'admin/viewUser.html', {'user': actualUser})
+
 
 def addHoliday(request):
     if (request.method == 'POST'):
