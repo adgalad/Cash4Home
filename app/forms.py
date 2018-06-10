@@ -11,7 +11,7 @@ class SignUpForm(UserCreationForm):
   first_name = forms.CharField(max_length=30, required=True, label='Nombre')
   last_name = forms.CharField(max_length=30, required=True, label='Apellido')
   mobile_phone = forms.RegexField(regex=r'^\+?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
-  country = forms.ChoiceField(required=True, label="País de residencia")
+  country = forms.ModelChoiceField(required=True, label="País de residencia", queryset=Country.objects.all())
   address = forms.CharField(max_length=30, required=True, label='Dirección')
   id_number = forms.CharField(max_length=30, required=True, label='Número de identificación')
 
@@ -134,8 +134,7 @@ class EditCurrencyForm(forms.Form):
 
 class NewExchangeRateForm(forms.Form):
 
-  rate = forms.CharField(max_length=10, required=True, label="Tasa", 
-                        widget = forms.TextInput(attrs={'style': 'width:100%;', 'type': "number"}))
+  rate = forms.FloatField(required=True, label="Tasa" , min_value=0)
   origin_currency = forms.ModelChoiceField(required=True, label="Moneda origen",
                           widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}), queryset=Currency.objects.all())
   target_currency = forms.ModelChoiceField(required=True, label="Moneda destino",
