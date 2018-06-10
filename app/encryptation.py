@@ -2,12 +2,10 @@ import base64
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
 from Crypto import Random
-
-
-KEY_PASSWORD = b'EsTa_3s-L4_P4SsW0rD____$1n_3ll4-N0-S3_Pu3d3-Desencriptar---@#$@#$'  # <<<----- Poner una clave y anotar :D
+from django.conf import settings
 
 def encrypt(source, encode=True):
-    key = SHA256.new(KEY_PASSWORD).digest()  # use SHA-256 over our key to get a proper-sized AES key
+    key = SHA256.new(settings.SECRET_KEY).digest()  # use SHA-256 over our key to get a proper-sized AES key
     IV = Random.new().read(AES.block_size)  # generate IV
     encryptor = AES.new(key, AES.MODE_CBC, IV)
     padding = AES.block_size - len(source) % AES.block_size  # calculate needed padding
@@ -18,7 +16,7 @@ def encrypt(source, encode=True):
 def decrypt(source, decode=True):
     if decode:
         source = base64.b64decode(source.encode("ascii"))
-    key = SHA256.new(KEY_PASSWORD).digest()  # use SHA-256 over our key to get a proper-sized AES key
+    key = SHA256.new(settings.SECRET_KEY).digest()  # use SHA-256 over our key to get a proper-sized AES key
     IV = source[:AES.block_size]  # extract the IV from the beginning
     decryptor = AES.new(key, AES.MODE_CBC, IV)
     data = decryptor.decrypt(source[AES.block_size:])  # decrypt

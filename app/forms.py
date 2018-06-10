@@ -183,17 +183,27 @@ class NewBankForm(forms.Form):
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
 
-class EditBankForm(forms.Form):
+class EditBankForm(forms.ModelForm):
 
   name = forms.CharField(max_length=100, required=True, label="Nombre", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
   country = forms.ModelChoiceField(required=True, label="País", widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}), queryset=Country.objects.all())
   swift = forms.CharField(max_length=12, required=True, label="SWIFT", widget = forms.TextInput(attrs={'style': 'width:100%;', 'readonly':'readonly'}))
-
+  # allies = forms.ModelMultipleChoiceField(queryset=None, required=False, label="Aliados")
   def __init__(self, *args, **kwargs):
 
     super(EditBankForm, self).__init__(*args, **kwargs)
+    print(args, kwargs)
+    if 'instance' in kwargs:
+      allies = User.objects.filter(user_type='Aliado-1').filter(hasAccount__id_account__id_bank__swift=kwargs['instance'].swift, hasAccount__id_account__use_type='Origen')
+      self.fields['allies'].queryset = allies
+    else:
+      self.fields['allies'].queryset = User.objects.none()
+    self.fields['allies'].label = 'Aliados'
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
+  class Meta:
+    model = Bank
+    fields = ('name', 'country', 'swift', 'allies' )
 
 def format(queryset, field):
   dictionary = {}

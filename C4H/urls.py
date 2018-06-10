@@ -33,6 +33,7 @@ urlpatterns = [
     url(r'^reset/done/$', auth_views.password_reset_complete, name='password_reset_complete'),
 
     #User
+    url(r'^dashboard$', views.dashboard, name='dashboard'),
     url(r'^user/profile$', views.profile, name='profile'),
     url(r'^user/verification$', views.userVerification, name='userVerification'),
    
@@ -43,9 +44,10 @@ urlpatterns = [
     url(r'^account/new$', views.createAccount, name='createAccount'),
     
     url(r'^operation/new$', views.createOperation, name='createOperation'),
-    url(r'^operation/verify/(?P<_operation_id>.+)$', views.uploadImage, name='verifyOperation'),
+    url(r'^operation/verify/(?P<_operation_id>.+)$', views.verifyOperation, name='verifyOperation'),
     url(r'^operation/pending$', views.pendingOperations, name='pendingOperations'),
     url(r'^operation/(?P<_operation_id>.+)/details$', views.operationModal, name='operationModal'),
+    url(r'^operation/(?P<_operation_id>.+)/cancel$', views.cancelOperation, name='cancelOperation'),
 
     url(r'^$', views.home, name='home'),
     url(r'^index$', views.home, name='home'),

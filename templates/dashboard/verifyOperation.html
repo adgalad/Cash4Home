@@ -1,0 +1,192 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %} Verificar operación{% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="/static/css/dragndrop.css" rel="stylesheet">
+  <!-- NProgress -->
+  <link href="/static/vendors/nprogress/nprogress.css" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+          <h3>Verificar operación</h3>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <br>
+            <div class="x_content">
+              {% for message in messages %}
+                <div class="alert {{ message.tags }}">
+                  {{ message }}
+                </div>
+              {% endfor %}
+
+              {% if operation.is_active %}
+              <p> Su operación fue creada exitosamente. </p>
+              <p> Para continuar debe realizar una transferencia bancaria a la cuenta con los siguientes datos:</p>
+              
+              <style type="text/css">
+                td {
+                  font-size: 13px;
+                  width: 140px;
+                }
+                tr {
+                  height: 50px;
+                  border-bottom: 1px solid;
+                }
+              </style>
+              <div >
+                <table style="width: 40%">
+                  <tr>
+                    <td><b>Banco:</b></td>
+                    <td> {{ operation.account_allie_origin.name }} </td>
+                  </tr>
+
+                  <tr>
+                    <td><b>Cuenta:</b></td>
+                    <td> {{ operation.account_allie_origin.number }} </td>
+                  </tr>
+                  {% if operation.account_allie_origin.aba %}
+                  <tr>
+                    <td><b>Número ABA:</b></td>
+                    <td> {{ operation.account_allie_origin.aba }}</td>
+                  </tr>
+                  {% endif %}
+
+                  <tr>
+                    <td><b>Monto:</b></td>
+                    <td> {{ operation.fiat_amount | currency }} </td>
+                  </tr>
+
+                </table>
+              </div>
+              <br><br>
+              Tiempo restante: <tiempo id='timeLeft'></tiempo>
+              <br>
+              <div class="progress progress_sm" style="width: 40%">
+                <div class="progress-bar bg-green" 
+                     role="progressbar" 
+
+                     id='progressbar' 
+                     style="width: 1%;" 
+                     aria-valuenow="0">      
+                </div>
+              </div>
+
+              <br><br>
+              <p> Una vez que haya completado la transferencia, deberá subir una imagen de un comprobante del banco con el cual podamos realizar la verificación.</p>
+              
+              
+
+              <form id="upload" action="{% url 'verifyOperation' operation.code %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <br>
+                <div class="row">
+                  <br>
+                  <a href="#" onclick="getAcceptedExtension('file')">
+                    <div class="col-xs-12 col-sm-12 col-md-6" style="height: 300px; width: 400px; display: table;">
+                      <div style="display: table-cell; vertical-align: middle;">
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                          <img width="100%" class="imageUpload" id="img" src="/static/images/placeholder.png" alt="your image"/>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+                <div class="row">
+                  <div class="col-xs-12 col-sm-12 col-md-6">
+                    <input type='file' class="from-control" name="file" id="file" onchange="readURL(this, 'img');" />
+                  </div>
+                </div>
+                <br>
+                <a href="{% url 'pendingOperations' %}"><button type="button" class="btn btn-primary">Regresar</button></a>
+                <button type="submit" class="btn btn-primary">Continuar</button>
+                <a href="{% url 'cancelOperation' operation.code %}" onclick="cancelOperation()"><button type="button" class="btn btn-danger">Cancelar operación</button></a>
+              </form>
+              {% else %}
+                <a href="{% url 'pendingOperations' %}"><button type="button" class="btn btn-primary">Regresar</button></a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <!-- bootstrap-progressbar -->
+  <script src="/static/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js"></script>
+  <script src="/static/js/fileupload.js"></script>
+  <script type="text/javascript">
+    var start = parseInt('{{ start }}')
+    var end = parseInt('{{ end }}')
+
+    function toHHMMSS(seconds){
+      var hours   = Math.floor(seconds / 3600);
+      var minutes = Math.floor((seconds - (hours * 3600)) / 60);
+      var seconds = Math.floor(seconds - (hours * 3600) - (minutes * 60));
+
+      hours = String(hours)
+      minutes = String(minutes)
+      seconds = String(seconds)
+      
+      if (hours < 0)
+        return '0:00:00'
+
+
+      if (minutes < 0)
+        minutes = '00'
+      else if (minutes < 10) 
+        minutes = '0' + String(minutes) 
+      else 
+        minutes = String(minutes)
+
+      if (seconds < 0)
+        seconds = '00'
+      else if (seconds < 10)
+        seconds = '0' + String(seconds)
+      else 
+        seconds = String(seconds)
+
+      return hours + ':' + minutes + ':' + seconds
+    }
+
+    function updateTimer(){
+      var now = new Date()
+
+      
+      var left = end - now.getTime()/1000
+      var delta = end - start
+      
+      $('#timeLeft').html(toHHMMSS(left))
+      console.log(toHHMMSS(left), toHHMMSS(delta))
+      percentage = 100 - Math.floor(left*100.0/delta)
+      console.log('left: ', percentage, '%' )
+      $('#progressbar').attr('style', 'width: ' + percentage + '%;')
+    }
+    updateTimer()
+    var intervalID = setInterval(updateTimer, 1000 )
+
+    function cancelOperation(){
+      if (window.confirm("¿Está seguro de cancelar la operación?")) {
+          return true;
+      } else {
+          return false;
+      }
+    }
+  </script>
+
+{% endblock javascripts %}

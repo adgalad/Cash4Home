@@ -90,14 +90,25 @@
                 </a>
               </li>
             </ul>
-            <ul class="nav navbar-nav navbar-right">
-              <li>
-                <a class="btn btn-primary1" href="/login">Ingresar</a>
-              </li>
-              <li>
-                <a class="btn btn-primary2" href="/signup">Registrarse  </a>
-              </li>
-            </ul>
+            {% if user.is_authenticated %}
+              <ul class="nav navbar-nav navbar-right">
+                <li>
+                  <a class="btn btn-primary1" href="{% url 'dashboard' %}">Ir al dashboard</a>
+                </li>
+                <li>
+                  <a class="btn btn-primary2" href="{% url 'logout' %}">Cerrar Sessión</a>
+                </li>
+              </ul>
+            {% else %}
+              <ul class="nav navbar-nav navbar-right">
+                <li>
+                  <a class="btn btn-primary1" href="{% url 'login' %}">Ingresar</a>
+                </li>
+                <li>
+                  <a class="btn btn-primary2" href="{% url 'signup' %}">Registrarse  </a>
+                </li>
+              </ul>
+            {% endif %}
       </div> 
     </nav>
 

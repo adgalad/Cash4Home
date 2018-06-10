@@ -123,33 +123,25 @@
                       <i class="fa fa-times"></i> Quitar
                     </button>
                   </div>
+                  
                   <style type="text/css">
-                    td {
-                      font-size: 13px;
-                      width: 140px;
-                    }
-/*                    tr.bottom {
-                      border-bottom: 1px solid;
-                    }*/
-                    tr {
-                      height: 50px;
-                    }
-
-                    td.td-from {
-                      font-size: 16 !important;
-                    }
+                    td { font-size: 13px; width: 140px; }
+                    tr { height: 50px;}
+                    td.td-from { font-size: 16 !important; }
                   </style>
+
                   <div class="col-md-5 col-sm-6 col-xs-12" align="center">
                     <table style="width: 70%;">
                       <tr class="bottom"> 
                         <td><b>Monto a enviar:</b></td>
                         <td id="amount"></td>
                       </tr>
-
+                      {% if fee != '0.0' %}
                       <tr class="bottom">
                         <td><b>Comisión:</b></td>
                         <td id="fee"></td>
                       </tr>
+                      {% endif %}
 
                       <tr class="bottom">
                         <td><b>Total neto:</b></td>
@@ -201,11 +193,12 @@
                         <td><b>Monto a enviar:</b></td>
                         <td id="amount2"> </td>
                       </tr>
-
+                      {% if fee != '0.0' %}
                       <tr class="bottom">
                         <td><b>Comisión:</b></td>
                         <td id="fee2"></td>
                       </tr>
+                      {% endif %}
 
                       <tr class="bottom">
                         <td><b>Total neto:</b></td>

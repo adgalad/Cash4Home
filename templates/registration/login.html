@@ -31,7 +31,7 @@
             {% if request.GET.next %}
               <input type="hidden" name="next" value="{{ request.GET.next }}" />
             {% else %}
-              <input type="hidden" name="next" value="/" />
+              <input type="hidden" name="next" value="{% url 'dashboard' %}" />
             {% endif %}
             <h1>Iniciar sesión</h1>
             {% for field in form %}
@@ -60,16 +60,6 @@
       </div>
     </div>
   </div>
-  <script type="text/javascript">
-    function localBitcoin () {
-      var xhttp = new XMLHttpRequest()
-      xhttp.open('GET', 'https://localbitcoins.com//bitcoinaverage/ticker-all-currencies/', true)
-      xhttp.setRequestHeader('Content-type', 'application/json')
-      xhttp.send()
-      var response = JSON.parse(xhttp.responseText)
-      console.log(response)
-    }
-    localBitcoin()
-  </script>
+
 {% endblock body %}
 

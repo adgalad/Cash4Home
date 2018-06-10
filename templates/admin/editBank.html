@@ -1,6 +1,15 @@
 {% extends "base_dashboard.html" %}
 {% load i18n %}
 
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="/static/css/bootstrap-multiselect.css" rel="stylesheet">
+  <style type="text/css">
+    
+  </style>
+{% endblock stylesheets %}
+
 {% block title %} Editar banco {% endblock title %}
 
 {% block content %}
@@ -24,6 +33,9 @@
       {% endfor %} 
       {% for field in form %}
         {{ field.label_tag }}
+        {% if field.label == 'Aliados' %} 
+          <br>
+        {% endif %}
         {{ field }} 
         <br>
       {% endfor %}
@@ -35,3 +47,22 @@
     </div>
   </div>
 {% endblock %}
+
+{% block javascripts %}
+  {{ block.super}}
+  <!-- jQuery Smart Wizard -->
+  <script src="/static/js/bootstrap-multiselect.js"></script>
+  <script type="text/javascript">
+      $(document).ready(function() {
+          $('#id_allies').multiselect({
+              enableClickableOptGroups: true,
+              enableCollapsibleOptGroups: true,
+              enableFiltering: true,
+              nonSelectedText: 'Seleccione los aliados',
+              includeSelectAllOption: true
+          })
+          $('.btn-group').attr('style', 'width: 100%;')
+      });
+
+  </script>
+{% endblock javascripts %}

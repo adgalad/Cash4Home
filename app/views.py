@@ -74,8 +74,11 @@ def activateEmail(request, token):
   return redirect('/login')
 
 def home(request):
-  if request.user.is_authenticated():
-    if request.user.canVerify:
+  return render(request, 'index.html')
+
+@login_required(login_url="/login/")
+def dashboard(request):
+  if request.user.canVerify:
       message = ''' <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
             Su cuenta no esta verificada. Para poder realizar una operación es necesario que verifique su cuenta.
             <a href=" '''+ reverse('userVerification') + '''"> 
@@ -84,11 +87,9 @@ def home(request):
               </button>
             </a>'''
       messages.error(request, message, extra_tags="safe alert alert-warning alert-dismissible fade in")
-    file = open(os.path.join(MEDIA_ROOT, "BTCPrice.json"), "r")
-    prices = json.loads(file.read())
-    return render(request, 'dashboard/dashboard_operator.html', {'prices': prices})
-  else:
-    return render(request, 'index.html')
+  file = open(os.path.join(MEDIA_ROOT, "BTCPrice.json"), "r")
+  prices = json.loads(file.read())
+  return render(request, 'dashboard/dashboard_operator.html', {'prices': prices})
 
 def company(request):
   return render(request, 'company.html')
@@ -147,11 +148,11 @@ def userVerification(request):
         messages.error(request, 'Por favor suba las imágenes.', extra_tags="alert-error")
     return render(request, 'dashboard/userVerification.html')
   else:
-    return redirect('/')
+    return redirect(reverse('dashboard'))
 
 def createOperation(request):
   abt        = AccountBelongsTo.objects.filter(id_client=request.user.id)
-  fee        = 0.01
+  fee        = 0.00
   rates      = {}
   toAccs     = {}
   fromAccs   = {}
@@ -206,23 +207,24 @@ def createOperation(request):
         fromCurrency = fromAccount.id_account.id_currency
         toCurrency = form1.cleaned_data['currency']
         rate = rates[str(fromCurrency) + "/" + str(toCurrency)]
-        operation = Operation(fiat_amount = total,
-                              crypto_rate = None,
-                              status = 'Falta verificacion',
-                              exchanger = None,
-                              date = timezone.now(),
-                              id_client = request.user,
-                              id_account = fromAccount.id_account,
-                              exchange_rate = rate,
+        operation = Operation(fiat_amount     = total,
+                              crypto_rate     = None,
+                              status          = 'Falta verificacion',
+                              exchanger       = None,
+                              date            = timezone.now(),
+                              date_ending     = timezone.now()+datetime.timedelta(seconds=90*60), # 90 minutos
+                              id_client       = request.user,
+                              id_account      = fromAccount.id_account,
+                              exchange_rate   = rate,
                               origin_currency = fromCurrency,
                               target_currency = toCurrency,
-                              date_ending = timezone.now()+datetime.timedelta(seconds=90*60) # 90 minutos
+                              
                             )
         file = open(os.path.join(STATIC_ROOT, "countries.json"), "r")
         countries = json.loads(file.read())
         file.close()
 
-        operation.save(fromAccount.id_account.id_bank.country.iso_code, toAccounts[0][0].id_account.id_bank.country.iso_code, timezone.now())
+        operation._save(fromAccount.id_account.id_bank.country.iso_code, toAccounts[0][0].id_account.id_bank.country.iso_code, timezone.now())
         for i in toAccounts:
           OperationGoesTo(operation_code = operation, number_account = i[0].id_account, amount = i[1] ).save()
         
@@ -265,13 +267,15 @@ def createOperation(request):
                   from_email     = DEFAULT_FROM_EMAIL,
                   recipient_list = [request.user.email])
 
-
-        return render(request, 'dashboard/operationConfirmation.html', {
-                        'bank_name': fromAccount.id_account.id_bank.name,
-                        'bank_account': 1012366452,
-                        'bank_aba': fromAccount.id_account.id_bank.aba,
-                        'amount': "%s %s"%(fromCurrency, total),
-                        'operationID': operation.code})
+        return redirect('verifyOperation', _operation_id=operation.code)
+        # return render(request, 'dashboard/uploadImage.html', {
+        #                 'bank_name': fromAccount.id_account.id_bank.name,
+        #                 'bank_account': 1012366452,
+        #                 'bank_aba': fromAccount.id_account.id_bank.aba,
+        #                 'amount': "%s %s"%(fromCurrency, total),
+        #                 'operationID': operation.code})
+      else:
+        messages.error(request, 'No se pudo crear la operación. Revise los datos ingresados', extra_tags="alert-error")
 
   else:
     form1 = FromAccountForm().setQueryset(queryset1)
@@ -294,9 +298,11 @@ def createOperation(request):
                 'fromAccs': str(json.dumps(fromAccs)),
                 "fee": str(fee)})
 
-
+@login_required(login_url="/login/")
 def pendingOperations(request):
-  operations = Operation.objects.filter(id_client=request.user)
+  operations = Operation.objects.filter(id_client=request.user).exclude(status='Cancelada')
+  for i in operations:
+    i.isCanceled()
   pending = operations.exclude(status="Fondos transferidos")
   complete = operations.filter(status="Fondos transferidos")
   return render(request, 'dashboard/pendingOperations.html', {'pendingOperations':pending, 'completeOperations':complete}) 
@@ -311,7 +317,21 @@ def operationModal(request, _operation_id):
   else: 
     return
 
-def uploadImage(request, _operation_id):
+
+@login_required(login_url="/login/")
+def cancelOperation(request, _operation_id):
+  try: operation = Operation.objects.get(code=_operation_id, id_client=request.user.id)
+  except: raise PermissionDenied
+
+  if operation.status == 'Falta verificacion':
+    operation.status = 'Cancelada'
+    operation.save()
+    return render(request, 'dashboard/cancelOperation.html', {'operation':operation}) 
+  else:
+    raise PermissionDenied
+
+
+def verifyOperation(request, _operation_id):
   msg = ""
   
   try: operation = Operation.objects.get(code=_operation_id)
@@ -320,9 +340,10 @@ def uploadImage(request, _operation_id):
     raise PermissionDenied
   elif operation.status != "Falta verificacion":
     messages.error(request, 'Esta operación ya fue verificada', extra_tags="alert-error")
-    return render(request, 'dashboard/uploadImage.html', {"id": _operation_id})  
+  elif operation.isCanceled():
+    messages.error(request, 'Esta operación fue cancelada o expiró', extra_tags="alert-error")
 
-  if request.method == 'POST':
+  elif request.method == 'POST':
     if 'file' in request.FILES:
       file = request.FILES['file']
       if file.name.endswith(('.png', 'jpeg', 'jpg')):
@@ -341,7 +362,9 @@ def uploadImage(request, _operation_id):
         messages.error(request, 'Solo puede subir imagenes PNG y JPG.', extra_tags="alert-error")
     else:
       messages.error(request, 'Por favor suba una imagen.', extra_tags="alert-warning")
-  return render(request, 'dashboard/uploadImage.html', {"id": _operation_id})  
+  start = time.mktime(operation.date.timetuple())
+  end = time.mktime(operation.date_ending.timetuple())
+  return render(request, 'dashboard/verifyOperation.html', { "operation": operation, 'start':start, 'end':end })  
 
 
 
@@ -436,18 +459,21 @@ def logout(request):
   return redirect("/")
 
 def login(request):
-  if request.user: redirect('/')
+  if request.user.is_authenticated(): return redirect(reverse('dashboard'))
   if request.method == 'POST':
+    print('Hola')
     form = AuthenticationForm(request.POST)
     if form.is_valid():
+      print('chao')
       email = form.cleaned_data.get('email')
       raw_password = form.cleaned_data.get('password1')
       user = authenticate(username=email, password=raw_password)
       if user is not None:
+        print('Jamon')
         # if user.is_active:
         login_auth(request, user)
-        print(request.POST.get('next','/'))
-        return redirect(request.POST.get('next','/'))
+        print(request.POST.get('next',reverse('dashboard')))
+        return redirect(request.POST.get('next',reverse('dashboard')))
       else:
         user = User.objects.get(email= email)
         if not (user is None or user.is_active):
@@ -531,7 +557,7 @@ def signup(request):
       user.save()
       login_auth(request, user)
       sendEmailValidation(user)
-      return redirect('/')
+      return redirect(reverse('login'))
   else:
     form = SignUpForm()
   return render(request, 'registration/signup.html', {'form': form})
@@ -729,29 +755,33 @@ def editBank(request, _bank_id):
         raise Http404
 
     if (request.method == 'POST'):
-        form = EditBankForm(request.POST)
+        form = EditBankForm(request.POST, instance=actualBank)
 
         if (form.is_valid()):
+            print(form.cleaned_data['allies'])
+            actualBank.allies.clear()
+            for i in form.cleaned_data['allies']:
+              actualBank.allies.add(i)
             country = form.cleaned_data['country']
-            name = form.cleaned_data['name'].name
-            aba = form.cleaned_data['aba']
+            name = form.cleaned_data['name']
 
-            if (Bank.objects.filter(aba=aba).exists()):
-                msg = "El ABA ingresado corresponde a otro banco. Ingrese un ABA correcto."
-                messages.error(request, msg, extra_tags="alert-warning")
-                return render(request, 'admin/editBank.html', {'form': form})
+            # if (Bank.objects.filter(aba=aba).exists()):
+            #     msg = "El ABA ingresado corresponde a otro banco. Ingrese un ABA correcto."
+            #     messages.error(request, msg, extra_tags="alert-warning")
+            #     return render(request, 'admin/editBank.html', {'form': form})
 
-            actualBank.country = country.upper()
-            actualBank.name = name.upper()
-            actualBank.aba = aba
+            actualBank.country = country
+            actualBank.name = name.title()
             actualBank.save()
 
             msg = "El banco fue editado con éxito."
             messages.error(request, msg, extra_tags="alert-success")
+            all_banks = Bank.objects.all()
+            return render(request, 'admin/adminBank.html', {'banks': all_banks})
     else:
-        form = EditBankForm(initial={'name': actualBank.name, 'country': actualBank.country, 'swift':_bank_id})
+        form = EditBankForm(instance=actualBank)
 
-        return render(request, 'admin/editBank.html', {'form': form})
+    return render(request, 'admin/editBank.html', {'form': form})
 
 def addAccount(request):
 
@@ -806,7 +836,7 @@ def addAccount(request):
 
 def adminAccount(request):
     if (request.method == 'GET'):
-        all_accounts = Account().objects.all()
+        all_accounts = Account.objects.all()
 
         return render(request, 'admin/adminAccount.html', {'accounts': all_accounts})
 
@@ -818,7 +848,6 @@ def editAccount(request, _account_id):
 
     if (request.method == 'POST'):
         form = NewAccountForm(request.POST)
-
         if (form.is_valid()):
             number = form.cleaned_data['number']
             is_thirds = forms.cleaned_data['is_thirds']

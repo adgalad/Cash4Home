@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.validators import RegexValidator
 import os
 from django.utils import timezone
+import datetime
 import random
 class MyUserManager(BaseUserManager):
     """
@@ -110,7 +111,7 @@ class Currency(models.Model):
 class ExchangeRate(models.Model):
     # The primary key is the django id
     rate = models.FloatField()
-    date = models.DateTimeField()
+    date = models.DateTimeField(auto_now_add=True)
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_pair')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_pair')
     def __str__(self):
@@ -120,10 +121,14 @@ class Bank(models.Model):
     swift = models.CharField(max_length=12, primary_key=True, unique=True, blank=True)
     country = models.ForeignKey('Country', related_name='banks')
     name = models.CharField(max_length=100)
-
+    allies = models.ManyToManyField(User)
     def __str__(self):
         return self.name
-    
+
+# class AllyToBank(models.Model):
+#      bank = models.ForeignKey('', related_name='banks')
+#      country = models.ForeignKey('Country', related_name='banks')
+
 class Account(models.Model):
     number = models.CharField(max_length=270)
     is_client = models.BooleanField()
@@ -138,8 +143,8 @@ class Account(models.Model):
 
 class AccountBelongsTo(models.Model):
     # The primary key is the django id
-    id_account = models.ForeignKey(Account)
-    id_client = models.ForeignKey(User)
+    id_account = models.ForeignKey(Account, related_name='belongsTo')
+    id_client = models.ForeignKey(User, related_name='hasAccount')
 
     owner = models.CharField(max_length=64, null=True)
     alias = models.CharField(max_length=32, null=True)
@@ -164,17 +169,18 @@ class Operation(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True)
     fiat_amount = models.DecimalField(max_digits=30, decimal_places=15)
     crypto_rate = models.FloatField(blank=True, null=True)
-    status_choices = (('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
+    status_choices = (('Cancelada', 'Cancelada'), ('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), 
+                      ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
                       ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'))
     status = models.CharField(choices=status_choices, max_length=20)
     exchanger = models.CharField(max_length=70, blank=True, null=True)
-    date = models.DateTimeField()
+    date = models.DateTimeField(auto_now_add=True)
+    date_ending = models.DateTimeField(default=timezone.now() + datetime.timedelta(minutes=30))
     id_client = models.ForeignKey(User, related_name="user_client")
     id_account = models.ForeignKey(Account, related_name='account_client_origin') # Origin account from the client
     exchange_rate = models.FloatField()
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_used')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_used')
-    date_ending = models.DateTimeField()
     is_active = models.BooleanField(default=True)
     account_allie_origin = models.ForeignKey(Account, related_name='account_allie_origin')
     id_allie_origin = models.ForeignKey(User, related_name='user_allie_origin')
@@ -183,15 +189,28 @@ class Operation(models.Model):
 
     def save(self, *args, **kwargs):
         if (self.pk):
-            self.is_active = (self.date < self.date_ending)
+            self.is_active = (timezone.now() < self.date_ending)
         super(Operation, self).save(*args, **kwargs)
 
-    def save(self, fromCountry, toCountry, date, *args, **kwargs):
+
+    def _save(self, fromCountry, toCountry, date, *args, **kwargs):
         
         self.code = "MT-%s-%s-%s-%s"%(fromCountry, toCountry, date.strftime("%d%m%Y"), Operation.objects.all().count())
-        print(self.code)
-        super(Operation, self).save(*args, **kwargs)
+        if (self.pk):
+            self.is_active = (self.date < self.date_ending)
+        self.save(*args, **kwargs)
         return self.code
+
+    def isCanceled(self):
+        if self.status == 'Cancelada' or not self.is_active:
+            return True
+        elif timezone.now() > self.date_ending:
+            self.status = 'Cancelada'
+            self.is_active = False
+            self.save()
+            return True
+        return False
+
 
 class OperationGoesTo(models.Model):
     # The primary key is the django id

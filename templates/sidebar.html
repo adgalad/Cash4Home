@@ -1,6 +1,6 @@
 <div class="left_col scroll-view">
   <div class="navbar nav_title" style="border: 0;">
-    <a href="/" class="site_title" style="">
+    <a href="{% url 'dashboard' %}" class="site_title" style="">
       <!-- <i class="logo"></i> -->
       <img style="float:left" src="/static/images/logo2.png" width="55px">
       <span style="padding-top: 20%; padding-left: 4%;">
@@ -17,14 +17,18 @@
     <div class="menu_section">
       <ul class="nav side-menu">
         <li>
-          <a href="/">
+          <a href="{% url 'dashboard' %}">
             <i class="fa fa-home"></i> Home
           </a>
         </li>
       </ul>
 
       <ul class="nav side-menu">
-        <li><a href="/user/profile"><i class="fa fa-user"></i> Ver perfil</a></li>
+        <li>
+          <a href="{% url 'profile' %}">
+            <i class="fa fa-user"></i> Ver perfil
+          </a>
+        </li>
       </ul>
       <ul class="nav side-menu">
         <li><a><i class="fa fa-bank"></i> Cuentas bancarias <span class="fa fa-chevron-down"></span></a>
