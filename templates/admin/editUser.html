@@ -3,6 +3,11 @@
 
 {% block title %} Editar usuario {% endblock title %}
 
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="/static/css/bootstrap-multiselect.css" rel="stylesheet">
+{% endblock stylesheets %}
+
 {% block content %}
   <div class="right_col" role="main">
     <div class="col-xs-5 col-xs-offset-3">
@@ -39,3 +44,22 @@
     </div>
   </div>
 {% endblock %}
+
+{% block javascripts %}
+  {{ block.super}}
+  <!-- jQuery Smart Wizard -->
+  <script src="/static/js/bootstrap-multiselect.js"></script>
+  <script type="text/javascript">
+      $(document).ready(function() {
+          $('#id_coordinatesUsers').multiselect({
+              enableClickableOptGroups: true,
+              enableCollapsibleOptGroups: true,
+              enableFiltering: true,
+              nonSelectedText: 'Seleccione los aliados',
+              includeSelectAllOption: true
+          })
+          $('.btn-group').attr('style', 'width: 100%;')
+      });
+
+  </script>
+{% endblock javascripts %}

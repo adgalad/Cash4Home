@@ -45,7 +45,7 @@
                     <tr>
                       <td>{{ a.number }}</td>
                       <td>{{ a.is_client }}</td>
-                      <td>{{ a.use_type }}</td>  
+                      <td>{{ a.belongsTo.use_type }}</td>  
                       <td>{{ a.is_bank.name }}</td>
                       <td><a href="{% url 'editAccount' a.id %}"><i class="fa fa-edit"></i></a></td>
                     </tr>

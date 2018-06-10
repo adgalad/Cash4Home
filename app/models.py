@@ -76,8 +76,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     canBuyDollar = models.BooleanField(default=False)
     country = models.CharField(max_length=70)
 
+    coordinatesUsers = models.ManyToManyField('self', verbose_name='Aliados que coordina')
+
     USERNAME_FIELD = 'email'
     objects = MyUserManager()
+
 
     def __str__(self):
         return self.email
@@ -132,8 +135,7 @@ class Bank(models.Model):
 class Account(models.Model):
     number = models.CharField(max_length=270)
     is_client = models.BooleanField()
-    choices = (('Origen', 'Origen'), ('Destino', 'Destino'))
-    use_type = models.CharField(choices=choices, max_length=8, blank=True)
+    
     id_bank = models.ForeignKey(Bank)
     id_currency = models.ForeignKey(Currency)
     aba = models.CharField(max_length=10, null=True, blank=True)
@@ -145,7 +147,8 @@ class AccountBelongsTo(models.Model):
     # The primary key is the django id
     id_account = models.ForeignKey(Account, related_name='belongsTo')
     id_client = models.ForeignKey(User, related_name='hasAccount')
-
+    choices = (('Origen', 'Origen'), ('Destino', 'Destino'))
+    use_type = models.CharField(choices=choices, max_length=8, blank=True)
     owner = models.CharField(max_length=64, null=True)
     alias = models.CharField(max_length=32, null=True)
     email = models.EmailField(null=True)
@@ -174,16 +177,16 @@ class Operation(models.Model):
                       ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'))
     status = models.CharField(choices=status_choices, max_length=20)
     exchanger = models.CharField(max_length=70, blank=True, null=True)
-    date = models.DateTimeField(auto_now_add=True)
-    date_ending = models.DateTimeField(default=timezone.now() + datetime.timedelta(minutes=30))
+    date = models.DateTimeField()
+    date_ending = models.DateTimeField()
     id_client = models.ForeignKey(User, related_name="user_client")
     id_account = models.ForeignKey(Account, related_name='account_client_origin') # Origin account from the client
     exchange_rate = models.FloatField()
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_used')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_used')
     is_active = models.BooleanField(default=True)
-    account_allie_origin = models.ForeignKey(Account, related_name='account_allie_origin')
-    id_allie_origin = models.ForeignKey(User, related_name='user_allie_origin')
+    account_allie_origin = models.ForeignKey(Account, related_name='account_allie_origin', blank=True, null=True)
+    id_allie_origin = models.ForeignKey(User, related_name='user_allie_origin', blank=True, null=True)
     account_allie_target = models.ForeignKey(Account, related_name='account_allie_target', blank=True, null=True)
     id_allie_target = models.ForeignKey(User, related_name='user_allie_target', blank=True, null=True)
 

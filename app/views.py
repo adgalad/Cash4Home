@@ -156,8 +156,8 @@ def createOperation(request):
   rates      = {}
   toAccs     = {}
   fromAccs   = {}
-  queryset1  = abt.filter(email__isnull=True)
-  queryset2  = abt.exclude(email__isnull=True)
+  queryset1  = abt.filter(use_type='Origen') # Cuentas origen
+  queryset2  = abt.filter(use_type='Destino') # Cuentas destino
   ToAccountFormSet = formset_factory(ToAccountForm)
   
   for i in ExchangeRate.objects.all():
@@ -176,6 +176,7 @@ def createOperation(request):
     }
 
   if request.method == 'POST':
+    print('ES POST')
     POST = request.POST.copy()
     form1 = FromAccountForm(request.POST).setQueryset(queryset1)
 
@@ -185,8 +186,10 @@ def createOperation(request):
     form2 = ToAccountFormSet(POST)
     for i in form2:
       i.setQueryset(queryset2)
+    print(POST)
 
     if form1.is_valid() and form2.is_valid():
+      print('ENTRO')
       fromAccount = form1.cleaned_data["account"]
       toAccounts = []
       ok = True
@@ -202,7 +205,7 @@ def createOperation(request):
         else:
           ok = False
           break
-
+      print(ok)
       if ok:
         fromCurrency = fromAccount.id_account.id_currency
         toCurrency = form1.cleaned_data['currency']
@@ -375,7 +378,7 @@ def accounts(request):
   origin = []
   dest = []
   for i in abt:
-    if i.id_account.use_type == "Origen":
+    if i.use_type == "Origen":
       origin.append(i)
     else:
       dest.append(i)
@@ -403,7 +406,6 @@ def createAccount(request):
         acc = Account(number=number,
                       id_bank=bank,
                       id_currency=currency,
-                      use_type="Origen" if own else "Destino",
                       is_client=True)
       else:
         acc = acc[0]
@@ -415,7 +417,9 @@ def createAccount(request):
       acc.save()
 
       if own:
-        AccountBelongsTo.objects.create(id_client=request.user, id_account=acc)
+        AccountBelongsTo.objects.create(id_client=request.user, 
+                                        use_type="Origen" if own else "Destino",
+                                        id_account=acc)
       else:
         email = form.cleaned_data.get('email').lower()
         alias = form.cleaned_data.get('alias')
@@ -424,6 +428,7 @@ def createAccount(request):
         id_number = form.cleaned_data.get('id_number')
         AccountBelongsTo.objects.create(id_client=request.user, 
                                         id_account=acc,
+                                        use_type="Origen" if own else "Destino",
                                         email=email,
                                         alias=alias,
                                         owner=owner,
@@ -477,7 +482,7 @@ def login(request):
       else:
         user = User.objects.get(email= email)
         if not (user is None or user.is_active):
-          msg = 'Debe verificar su correo electronico antes de poder ingresar. <a href="' + reverse('resendEmailVerification') + '">Validar correo</a>'
+          msg = 'Debe verificar su correo electronico antes de poder ingresar. <a href="' + reverse('resendEmailVerification') + '">Reenviar correo</a>'
           messages.error(request, msg, extra_tags="safe alert-warning")
         else:
           messages.error(request,'El correo electrónico o la contraseña son inválidos.', extra_tags="alert-error")
@@ -557,7 +562,10 @@ def signup(request):
       user.save()
       login_auth(request, user)
       sendEmailValidation(user)
-      return redirect(reverse('login'))
+      form = AuthenticationForm()
+      msg = 'Debe verificar su correo electronico antes de poder ingresar. <a href="' + reverse('resendEmailVerification') + '">Reenviar correo</a>'
+      messages.error(request, msg, extra_tags="safe alert-warning")
+      return render(request, 'registration/login.html', {'form': form})
   else:
     form = SignUpForm()
   return render(request, 'registration/signup.html', {'form': form})
@@ -951,13 +959,12 @@ def editUser(request, _user_id):
     except:
         raise Http404
 
-    tmpAllies = User.objects.filter(Q(user_type='Aliado-1') | Q(user_type='Aliado-2') | Q(user_type='Aliado-3'))
-    allAllies = [(tmp.id, tmp.first_name + ' ' + tmp.last_name + ' - ' + str(tmp.id_number)) for tmp in tmpAllies]
-    allAllies.append(('Ninguno', 'Ninguno'))
+    allAllies = User.objects.filter(Q(user_type='Aliado-1') | Q(user_type='Aliado-2') | Q(user_type='Aliado-3'))
+    
 
 
     if (request.method == 'POST'):
-        form = NewUserForm(request.POST, alliesC=allAllies)
+        form = NewUserForm(request.POST, instance=actualUser, alliesC=allAllies)
 
         if (form.is_valid()):    
             new_mail = form.clean_email()
@@ -981,17 +988,12 @@ def editUser(request, _user_id):
             actualUser.first_name = form.clean_first_name()
             actualUser.last_name = form.clean_last_name()
             actualUser.mobile_phone = form.cleaned_data['mobile_phone']
-            actualUser.country = form.cleaned_data['country'].name
+            actualUser.country = form.cleaned_data['country']
             actualUser.address = form.cleaned_data['address']
             actualUser.user_type = form.cleaned_data['user_type']
             actualUser.canBuyDollar = form.cleaned_data['canBuyDollar']
-            new_referred_id = form.cleaned_data['referred_by']
-
-            if (new_referred_id == 'Ninguno'):
-                actualUser.referred_by = None
-            elif ((actualUser.referred_by == None) or (new_referred_id != actualUser.referred_by.id)):
-                newAllie = User.objects.get(id=new_referred_id)
-                actualUser.referred_by = newAllie
+            actualUser.referred_by = form.cleaned_data['referred_by']
+            actualUser.coordinatesUsers = form.cleaned_data['coordinatesUsers']
 
             actualUser.save()
 
@@ -1000,14 +1002,8 @@ def editUser(request, _user_id):
         else:
             print(form.errors)
     else:
-        if not(actualUser.referred_by):
-            referred = 'Ninguno'
-        else:
-            referred = actualUser.referred_by.first_name + " " + actualUser.referred_by.last_name + " - " + actualUser.referred_by.id_number
         form = NewUserForm(alliesC=allAllies,
-                            initial={'first_name': actualUser.first_name, 'last_name': actualUser.last_name, 'mobile_phone': actualUser.mobile_phone,
-                                    'country': actualUser.country, 'address': actualUser.address, 'id_number': actualUser.id_number, 'user_type': actualUser.user_type, 
-                                    'referred_by': actualUser.referred_by, 'canBuyDollar': actualUser.canBuyDollar, 'email': actualUser.email})
+                           instance=actualUser)
 
     return render(request, 'admin/editUser.html', {'form': form})
 

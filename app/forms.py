@@ -118,6 +118,8 @@ class ToAccountForm(forms.Form):
   amount = forms.FloatField(required=False, label="Monto")
 
   def __init__(self, *args, **kwargs):
+    if 'data' in kwargs and 'prefix' in kwargs and kwargs['prefix'] + '-amount' in kwargs['data']:
+      kwargs['data'][kwargs['prefix'] + '-amount'] = kwargs['data'][kwargs['prefix'] + '-amount'].replace(',','')
     super(ToAccountForm, self).__init__(*args, **kwargs)
     for i in self.fields:
       self.fields[i].widget.attrs.update({'class' : 'form-control'})
@@ -125,6 +127,8 @@ class ToAccountForm(forms.Form):
   def setQueryset(self, queryset):
     self.fields['account'].queryset = queryset
     return self
+
+
 
 
 class NewCurrencyForm(forms.Form):
@@ -194,7 +198,7 @@ class EditBankForm(forms.ModelForm):
     super(EditBankForm, self).__init__(*args, **kwargs)
     print(args, kwargs)
     if 'instance' in kwargs:
-      allies = User.objects.filter(user_type='Aliado-1').filter(hasAccount__id_account__id_bank__swift=kwargs['instance'].swift, hasAccount__id_account__use_type='Origen')
+      allies = User.objects.filter(user_type='Aliado-1').filter(hasAccount__id_account__id_bank__swift=kwargs['instance'].swift, hasAccount__use_type='Origen')
       self.fields['allies'].queryset = allies
     else:
       self.fields['allies'].queryset = User.objects.none()
@@ -282,18 +286,18 @@ class NewCountryForm(forms.Form):
       self.fields['status'].widget.attrs.update({'class' : 'flat'})
 
 
-class NewUserForm(forms.Form):
+class NewUserForm(forms.ModelForm):
 
-  first_name = forms.CharField(max_length=30, required=True, label='Nombre')
-  last_name = forms.CharField(max_length=30, required=True, label='Apellido')
-  id_number = forms.CharField(max_length=30, required=True, label='Número de identificación')
-  email = forms.EmailField(required=True, label=_(u"Email"))  
-  mobile_phone = forms.RegexField(regex=r'^\+?1?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
-  country = forms.ModelChoiceField(label=_("País de residencia"), required=True, queryset=Country.objects.filter(status=True), empty_label="País")
-  address = forms.CharField(max_length=100, required=True, label='Dirección')
+  # first_name = forms.CharField(max_length=30, required=True, label='Nombre')
+  # last_name = forms.CharField(max_length=30, required=True, label='Apellido')
+  # id_number = forms.CharField(max_length=30, required=True, label='Número de identificación')
+  # email = forms.EmailField(required=True, label=_(u"Email"))  
+  # mobile_phone = forms.RegexField(regex=r'^\+?1?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
+  # country = forms.ModelChoiceField(label=_("País de residencia"), required=True, queryset=Country.objects.filter(status=True), empty_label="País")
+  # address = forms.CharField(max_length=100, required=True, label='Dirección')
   user_choices = (('Cliente', 'Cliente'), ('Aliado-1', 'Aliado-1'), ('Aliado-2', 'Aliado-2'), ('Aliado-3', 'Aliado-3'), ('Operador', 'Operador'), ('Admin', 'Admin'))
   user_type = forms.ChoiceField(choices=user_choices, required=True, label="Tipo de usuario")
-  referred_by = forms.ChoiceField(label='Referido por', required=True)
+  referred_by = forms.ModelChoiceField(queryset=None, label='Referido por', empty_label="Ninguno")
   choices_buy = ((True, 'Si'), (False, 'No'))
   canBuyDollar = forms.ChoiceField(choices=choices_buy, label='¿Puede comprar dólares?', required=True, 
                                     widget=forms.RadioSelect(attrs={'style': 'width:100%; background-color:white'}))
@@ -305,7 +309,7 @@ class NewUserForm(forms.Form):
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
         self.fields['canBuyDollar'].widget.attrs.update({'class' : 'flat'})
 
-    self.fields['referred_by'].choices = alliesChoices
+    self.fields['referred_by'].queryset = alliesChoices
   
   def clean_email(self):
     return self.cleaned_data['email'].lower()
@@ -315,3 +319,7 @@ class NewUserForm(forms.Form):
   
   def clean_last_name(self):
     return self.cleaned_data['last_name'].title()
+
+  class Meta:
+    model = User
+    fields = ('first_name', 'last_name', 'email', 'id_number', 'country', 'address', 'mobile_phone', 'user_type', 'referred_by', 'coordinatesUsers', 'canBuyDollar' )
