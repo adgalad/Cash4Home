@@ -76,6 +76,7 @@ urlpatterns = [
     url(r'^add/user/$', views.addUser, name="addUser"),
     url(r'^all/user/$', views.adminUser, name="adminUser"),
     url(r'^edit/user/(?P<_user_id>\w+)', views.editUser, name="editUser"),
+    url(r'^view/user/(?P<_user_id>\w+)', views.viewUser, name="viewUser"),
 
     url(r'^add/holiday/$', views.addHoliday, name="addHoliday"),
     url(r'^all/holiday/$', views.adminHoliday, name="adminHoliday"),
@@ -83,7 +84,7 @@ urlpatterns = [
 
     url(r'^add/country/$', views.addCountry, name="addCountry"),
     url(r'^all/country/$', views.adminCountry, name="adminCountry"),
-    url(r'^edit/country/(?P<_country_id>\w+)', views.editCountry, name="editCountry"),
+    url(r'^edit/country/(?P<_country_id>[\w\ ]+)', views.editCountry, name="editCountry"),
 
     #Dashboards
     url(r'^dashboard/operational/$', views.operationalDashboard, name="operationalDashboard"),
