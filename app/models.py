@@ -102,6 +102,8 @@ class Holiday(models.Model):
     description = models.CharField(max_length=140)
     country = models.CharField(max_length=70)
 
+    def __str__(self):
+        return str(self.date) + ' ' + self.description
 class Currency(models.Model):
     code = models.CharField(max_length=10, primary_key=True, unique=True) # VEF, USD, BTC
     name = models.CharField(max_length=50)

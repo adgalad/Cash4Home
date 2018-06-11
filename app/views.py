@@ -44,7 +44,7 @@ def handler404(request):
 def handler403(request):
     response = render(request, 'error_handling/403.html')
     response.status_code = 403
-    return responseVE
+    return response
 
 #---- Vista para manejar Error 500 - Internal server error ----#
 def handler500(request):
@@ -78,6 +78,7 @@ def home(request):
 
 @login_required(login_url="/login/")
 def dashboard(request):
+
   if request.user.canVerify:
       message = ''' <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
             Su cuenta no esta verificada. Para poder realizar una operación es necesario que verifique su cuenta.
@@ -94,6 +95,8 @@ def dashboard(request):
 def company(request):
   return render(request, 'company.html')
 
+
+@login_required(login_url="/login/")
 def profile(request):
   if request.method == 'POST':
     emailForm = ChangeEmailForm(request.POST)
@@ -125,6 +128,7 @@ def profile(request):
 
   return render(request, 'dashboard/profile.html')
 
+@login_required(login_url="/login/")
 def userVerification(request):
   if request.user.canVerify:
     if request.method == 'POST':
@@ -150,6 +154,7 @@ def userVerification(request):
   else:
     return redirect(reverse('dashboard'))
 
+@login_required(login_url="/login/")
 def createOperation(request):
   abt        = AccountBelongsTo.objects.filter(id_client=request.user.id)
   fee        = 0.00
@@ -176,7 +181,6 @@ def createOperation(request):
     }
 
   if request.method == 'POST':
-    print('ES POST')
     POST = request.POST.copy()
     form1 = FromAccountForm(request.POST).setQueryset(queryset1)
 
@@ -186,10 +190,8 @@ def createOperation(request):
     form2 = ToAccountFormSet(POST)
     for i in form2:
       i.setQueryset(queryset2)
-    print(POST)
 
     if form1.is_valid() and form2.is_valid():
-      print('ENTRO')
       fromAccount = form1.cleaned_data["account"]
       toAccounts = []
       ok = True
@@ -205,8 +207,9 @@ def createOperation(request):
         else:
           ok = False
           break
-      print(ok)
+
       if ok:
+
         fromCurrency = fromAccount.id_account.id_currency
         toCurrency = form1.cleaned_data['currency']
         rate = rates[str(fromCurrency) + "/" + str(toCurrency)]
@@ -215,7 +218,7 @@ def createOperation(request):
                               status          = 'Falta verificacion',
                               exchanger       = None,
                               date            = timezone.now(),
-                              date_ending     = timezone.now()+datetime.timedelta(seconds=90*60), # 90 minutos
+                              date_ending     = timezone.now()+datetime.timedelta(seconds=2*60), # 90 minutos
                               id_client       = request.user,
                               id_account      = fromAccount.id_account,
                               exchange_rate   = rate,
@@ -225,9 +228,20 @@ def createOperation(request):
                             )
 
         operation._save(fromAccount.id_account.id_bank.country.iso_code, toAccounts[0][0].id_account.id_bank.country.iso_code, timezone.now())
+
+        # Verificar que en alguno de los paises hay un feriado
+        holiday = False
+        if Holiday.objects.filter(date=datetime.date.today(), country=fromAccount.id_account.id_bank.country.name).count():
+          holiday = True
+
         for i in toAccounts:
           OperationGoesTo(operation_code = operation, number_account = i[0].id_account, amount = i[1] ).save()
+          if Holiday.objects.filter(date=datetime.date.today(), country=i[0].id_account.id_bank.country.name).count():
+            holiday = True
         
+        if holiday:
+          print('hola')
+          messages.error(request, 'Debido a que hoy es un día feriado en alguno de los paises involucrados en la operación, el proceso de la misma puede presentar demoras.', extra_tags="alert-warning")
           
         plain_message = 'Se ha creado una operación para el envio de %s %s desde su cuenta %s'%(fromCurrency, total, fromAccount.id_account) 
         
@@ -330,7 +344,7 @@ def cancelOperation(request, _operation_id):
   else:
     raise PermissionDenied
 
-
+@login_required(login_url="/login/")
 def verifyOperation(request, _operation_id):
   msg = ""
   
@@ -894,9 +908,8 @@ def editAccount(request, _account_id):
 
 
 def addUser(request):
-    tmpAllies = User.objects.filter(Q(user_type='Aliado-1') | Q(user_type='Aliado-2') | Q(user_type='Aliado-3'))
-    allAllies = [(tmp.id, tmp.first_name + ' ' + tmp.last_name + ' - ' + str(tmp.id_number)) for tmp in tmpAllies]
-    allAllies.append(('Ninguno', 'Ninguno'))
+    allAllies = User.objects.filter(Q(user_type='Aliado-1') | Q(user_type='Aliado-2') | Q(user_type='Aliado-3'))
+
 
 
     if (request.method == 'POST'):
@@ -983,7 +996,7 @@ def editUser(request, _user_id):
             actualUser.first_name = form.clean_first_name()
             actualUser.last_name = form.clean_last_name()
             actualUser.mobile_phone = form.cleaned_data['mobile_phone']
-            actualUser.country = form.cleaned_data['country']
+            actualUser.country = form.cleaned_data['country'].name
             actualUser.address = form.cleaned_data['address']
             actualUser.user_type = form.cleaned_data['user_type']
             actualUser.canBuyDollar = form.cleaned_data['canBuyDollar']

@@ -290,13 +290,13 @@ class NewCountryForm(forms.Form):
 
 class NewUserForm(forms.ModelForm):
 
-  # first_name = forms.CharField(max_length=30, required=True, label='Nombre')
-  # last_name = forms.CharField(max_length=30, required=True, label='Apellido')
-  # id_number = forms.CharField(max_length=30, required=True, label='Número de identificación')
-  # email = forms.EmailField(required=True, label=_(u"Email"))  
-  # mobile_phone = forms.RegexField(regex=r'^\+?1?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
-  # country = forms.ModelChoiceField(label=_("País de residencia"), required=True, queryset=Country.objects.filter(status=True), empty_label="País")
-  # address = forms.CharField(max_length=100, required=True, label='Dirección')
+  first_name = forms.CharField(max_length=30, required=True, label='Nombre')
+  last_name = forms.CharField(max_length=30, required=True, label='Apellido')
+  id_number = forms.CharField(max_length=30, required=True, label='Número de identificación')
+  email = forms.EmailField(required=True, label=_(u"Email"))  
+  mobile_phone = forms.RegexField(regex=r'^\+?1?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
+  country = forms.ModelChoiceField(label=_("País de residencia"), required=True, queryset=Country.objects.filter(status=True), empty_label="País")
+  address = forms.CharField(max_length=100, required=True, label='Dirección')
   user_choices = (('Cliente', 'Cliente'), ('Aliado-1', 'Aliado-1'), ('Aliado-2', 'Aliado-2'), ('Aliado-3', 'Aliado-3'), ('Operador', 'Operador'), ('Admin', 'Admin'))
   user_type = forms.ChoiceField(choices=user_choices, required=True, label="Tipo de usuario")
   referred_by = forms.ModelChoiceField(queryset=None, label='Referido por', required=False, empty_label="Ninguno")
@@ -312,7 +312,8 @@ class NewUserForm(forms.ModelForm):
         self.fields['canBuyDollar'].widget.attrs.update({'class' : 'flat'})
 
     self.fields['referred_by'].queryset = alliesChoices
-  
+    self.fields['coordinatesUsers'].queryset = alliesChoices
+    self.fields['coordinatesUsers'].required = False
   def clean_email(self):
     return self.cleaned_data['email'].lower()
   
