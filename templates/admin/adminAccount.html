@@ -30,13 +30,14 @@
               <div class="clearfix"></div>
             </div>
             <div class="x_content">
-              <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive" cellspacing="0" width="100%">
+              <table id="datatable-buttons" class="table table-striped table-bordered dt-responsive" cellspacing="0" width="100%">
                 <thead>
                   <tr>
                     <th>Número</th>
-                    <th>Es cliente</th>
-                    <th>Uso</th>
                     <th>Banco</th>
+                    <th>País</th>
+                    <th>Moneda</th>
+                    <th>ABA</th>
                     <th>Editar</th>
                   </tr>
                 </thead>
@@ -44,9 +45,14 @@
                   {% for a in accounts %}
                     <tr>
                       <td>{{ a.number }}</td>
-                      <td>{{ a.is_client }}</td>
-                      <td>{{ a.belongsTo.use_type }}</td>  
-                      <td>{{ a.is_bank.name }}</td>
+                      <td>{{ a.id_bank.name }}</td>
+                      <td>{{ a.id_bank.country }}</td>
+                      <td>{{ a.id_currency.code }}</td>  
+                      {% if a.aba %}
+                        <td>{{ a.aba }}</td>
+                      {% else %}
+                        <td>N/A</td>
+                      {% endif %}
                       <td><a href="{% url 'editAccount' a.id %}"><i class="fa fa-edit"></i></a></td>
                     </tr>
                   {% endfor %}

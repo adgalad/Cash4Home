@@ -8,6 +8,21 @@ import os
 from django.utils import timezone
 import datetime
 import random
+
+
+class Country(models.Model):
+    name = models.CharField(max_length=70, primary_key=True, unique=True)
+    status = models.BooleanField(default=True)
+    iso_code = models.CharField(max_length=4)
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
 class MyUserManager(BaseUserManager):
     """
     A custom user manager to deal with emails as unique identifiers for auth
@@ -74,7 +89,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     user_type = models.CharField(choices=user_choices, max_length=9, blank=True)
     referred_by = models.ForeignKey('self', null=True, blank=True)
     canBuyDollar = models.BooleanField(default=False)
-    country = models.CharField(max_length=70)
+    country = models.ForeignKey(Country, null=True, blank=True)
 
     coordinatesUsers = models.ManyToManyField('self', verbose_name='Aliados que coordina')
 
@@ -100,7 +115,7 @@ class Holiday(models.Model):
     #The primary key is the django id
     date = models.DateField()
     description = models.CharField(max_length=140)
-    country = models.CharField(max_length=70)
+    country = models.ForeignKey(Country)
 
 class Currency(models.Model):
     code = models.CharField(max_length=10, primary_key=True, unique=True) # VEF, USD, BTC
@@ -134,7 +149,6 @@ class Bank(models.Model):
 
 class Account(models.Model):
     number = models.CharField(max_length=270)
-    is_client = models.BooleanField()
     
     id_bank = models.ForeignKey(Bank)
     id_currency = models.ForeignKey(Currency)
@@ -256,20 +270,6 @@ class Comission(models.Model):
     choices = (('Pagado', 'Pagado'), ('Por pagar', 'Por pagar'), ('Pagado parcialmente', 'Pagado parcialmente'))
     status = models.CharField(choices=choices, max_length=20)
     remaining = models.DecimalField(max_digits=40, decimal_places=40)
-
-
-class Country(models.Model):
-    name = models.CharField(max_length=70, primary_key=True, unique=True)
-    status = models.BooleanField(default=True)
-    iso_code = models.CharField(max_length=4)
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
 
 class CanSendTo(models.Model):
     # The primary key is the django id

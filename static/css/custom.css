@@ -4388,6 +4388,7 @@ table thead .checkbox.radio { margin-top:-7px;margin-top:-21px; }
     left: 0
 }
 
-.flat li {
+#id_canBuyDollar li, #id_status li{
     display: inline;
+    margin-right: 20px;
 }
