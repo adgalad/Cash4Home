@@ -22,7 +22,6 @@
       <div class="row">
         <div class="col-md-12 col-sm-12 col-xs-12">
           <div class="x_panel">
-            <br>
             <div class="x_content">
               {% for message in messages %}
                 <div class="alert {{ message.tags }}">
@@ -31,8 +30,11 @@
               {% endfor %}
 
               {% if operation.is_active %}
+              <h3>Datos de la transferencia</h3>
+              <hr>
               <p> Su operación fue creada exitosamente. </p>
               <p> Para continuar debe realizar una transferencia bancaria a la cuenta con los siguientes datos:</p>
+              <p> <b>Nota:</b> Puede hacer uso de otros mecanismos de pago como <b>Zelle</b>®, <b>PayPal</b>®, entre otros.</p>
               
               <style type="text/css">
                 td {
@@ -44,52 +46,75 @@
                   border-bottom: 1px solid;
                 }
               </style>
-              <div >
-                <table style="width: 40%">
-                  <tr>
-                    <td><b>Banco:</b></td>
-                    <td> {{ operation.account_allie_origin.name }} </td>
-                  </tr>
 
-                  <tr>
-                    <td><b>Cuenta:</b></td>
-                    <td> {{ operation.account_allie_origin.number }} </td>
-                  </tr>
-                  {% if operation.account_allie_origin.aba %}
-                  <tr>
-                    <td><b>Número ABA:</b></td>
-                    <td> {{ operation.account_allie_origin.aba }}</td>
-                  </tr>
-                  {% endif %}
+              <div class="row">
+                <div class="col-md-6 col-sm-10 col-xs-12">
+                  <table style="min-width: 100%">
+                    <tr>
+                      <td><b>Banco:</b></td>
+                      <td> {{ operation.account_allie_origin.id_bank.name }} </td>
+                    </tr>
 
-                  <tr>
-                    <td><b>Monto:</b></td>
-                    <td> {{ operation.fiat_amount | currency }} </td>
-                  </tr>
+                    <tr>
+                      <td><b>Cuenta:</b></td>
+                      <td> {{ operation.account_allie_origin.number }} </td>
+                    </tr>
+                    {% if operation.account_allie_origin.aba %}
+                    <tr>
+                      <td><b>Número ABA:</b></td>
+                      <td> {{ operation.account_allie_origin.aba }}</td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                      <td><b>Nombre:</b></td>
+                      <td> {{ operation.id_allie_origin.get_full_name }} </td>
+                    </tr>
 
-                </table>
+                    <tr>
+                      <td><b>Correo electrónico:</b></td>
+                      <td> {{ operation.id_allie_origin.email }} </td>
+                    </tr>
+
+                    <tr>
+                      <td><b>Teléfono:</b></td>
+                      <td> {{ operation.id_allie_origin.mobile_phone }} </td>
+                    </tr>
+
+                    <tr>
+                      <td><b>Monto:</b></td>
+                      <td> {{ operation.origin_currency }} {{ operation.fiat_amount | currency }} </td>
+                    </tr>
+
+                  </table>
+                </div>
               </div>
               <br><br>
               Tiempo restante: <tiempo id='timeLeft'></tiempo>
               <br>
-              <div class="progress progress_sm" style="width: 40%">
-                <div class="progress-bar bg-green" 
-                     role="progressbar" 
+              <div class="row">
+                <div class="col-md-6 col-sm-10 col-xs-12">
+                  <div class="progress progress_sm">
+                    <div class="progress-bar bg-green" 
+                         role="progressbar" 
 
-                     id='progressbar' 
-                     style="width: 1%;" 
-                     aria-valuenow="0">      
+                         id='progressbar' 
+                         style="width: 1%;" 
+                         aria-valuenow="0">      
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <br><br>
-              <p> Una vez que haya completado la transferencia, deberá subir una imagen de un comprobante del banco con el cual podamos realizar la verificación.</p>
+              <br>
+              <h3>Imagen del comprobante</h3>
+              <hr>
+              <p> Una vez que haya completado la transferencia, deberá subir una imagen de un comprobante con el cual podamos realizar la verificación.</p>
               
               
 
               <form id="upload" action="{% url 'verifyOperation' operation.code %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                <br>
                 <div class="row">
                   <br>
                   <a href="#" onclick="getAcceptedExtension('file')">

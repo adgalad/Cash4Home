@@ -4,7 +4,7 @@ import json
 from django.http import JsonResponse, Http404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.exceptions import PermissionDenied
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from django.contrib.auth import authenticate, update_session_auth_hash
 from django.contrib.auth import logout as logout_auth
 from django.contrib.auth import login as login_auth
@@ -23,12 +23,9 @@ from app.forms import *
 from app.models import *
 import requests
 import datetime
-from C4H.settings import MEDIA_ROOT, STATIC_ROOT, EMAIL_HOST_USER, DEFAULT_DOMAIN, DEFAULT_FROM_EMAIL
-from app.cron import BTCPrice
+from C4H.settings import MEDIA_ROOT, STATIC_ROOT, EMAIL_HOST_USER, DEFAULT_DOMAIN, DEFAULT_FROM_EMAIL, OPERATION_TIMEOUT
 from app.encryptation import encrypt, decrypt
-
-#from app.cron import BTCPrice
-#from app.encryptation import encrypt, decrypt
+import random
 
 from django.db.models import Q
 
@@ -88,9 +85,18 @@ def dashboard(request):
               </button>
             </a>'''
       messages.error(request, message, extra_tags="safe alert alert-warning alert-dismissible fade in")
-  file = open(os.path.join(MEDIA_ROOT, "BTCPrice.json"), "r")
-  prices = json.loads(file.read())
-  return render(request, 'dashboard/dashboard_operator.html', {'prices': prices})
+
+  print(request.user.groups.filter(name__in=['Operador', 'Aliado-1', 'Aliado-2', 'Aliado-3']))
+  if request.user.is_superuser:
+    file = open(os.path.join(MEDIA_ROOT, "BTCPrice.json"), "r")
+    prices = json.loads(file.read())
+    file.close()
+    return render(request, 'dashboard/dashboard_operator.html', {'prices': prices})
+  elif request.user.groups.filter(name__in=['Operador', 'Aliado-1', 'Aliado-2', 'Aliado-3']):
+    return operationalDashboard(request)
+  else:
+    return pendingOperations(request)
+
 
 def company(request):
   return render(request, 'company.html')
@@ -132,7 +138,8 @@ def profile(request):
 def userVerification(request):
   if request.user.canVerify:
     if request.method == 'POST':
-      if 'file1' in request.FILES and 'file2' in request.FILES:
+      print(request.POST)
+      if 'file1' in request.FILES and 'file2' in request.FILES and 'file3' in request.FILES: 
         file1 = request.FILES['file1']
         file2 = request.FILES['file2']
         file3 = request.FILES['file3']
@@ -156,6 +163,12 @@ def userVerification(request):
 
 @login_required(login_url="/login/")
 def createOperation(request):
+  if not request.user.verified:
+    messages.error(request, 'Usted no puede realizar envios de dinero hasta que su cuenta no haya sido verificada.',
+                   extra_tags="safe alert alert-warning alert-dismissible fade in")
+    return redirect(reverse('dashboard'))
+
+
   abt        = AccountBelongsTo.objects.filter(id_client=request.user.id)
   fee        = 0.00
   rates      = {}
@@ -212,82 +225,111 @@ def createOperation(request):
 
         fromCurrency = fromAccount.id_account.id_currency
         toCurrency = form1.cleaned_data['currency']
-        rate = rates[str(fromCurrency) + "/" + str(toCurrency)]
-        operation = Operation(fiat_amount     = total,
-                              crypto_rate     = None,
-                              status          = 'Falta verificacion',
-                              exchanger       = None,
-                              date            = timezone.now(),
-                              date_ending     = timezone.now()+datetime.timedelta(seconds=2*60), # 90 minutos
-                              id_client       = request.user,
-                              id_account      = fromAccount.id_account,
-                              exchange_rate   = rate,
-                              origin_currency = fromCurrency,
-                              target_currency = toCurrency,
-                              
-                            )
+        rate   = rates[str(fromCurrency) + "/" + str(toCurrency)]
+        bank   = fromAccount.id_account.id_bank
+        allies = bank.allies.all()
 
-        operation._save(fromAccount.id_account.id_bank.country.iso_code, toAccounts[0][0].id_account.id_bank.country.iso_code, timezone.now())
+        if allies.count() == 0:
+          for bank in fromAccount.id_account.id_bank.acceptBanks:
+            allies = bank.allies.all()
+            if allies.count() > 0:
+              break
 
-        # Verificar que en alguno de los paises hay un feriado
-        holiday = False
-        if Holiday.objects.filter(date=datetime.date.today(), country=fromAccount.id_account.id_bank.country.name).count():
-          holiday = True
+        if allies.count() != 0:
 
-        for i in toAccounts:
-          OperationGoesTo(operation_code = operation, number_account = i[0].id_account, amount = i[1] ).save()
-          if Holiday.objects.filter(date=datetime.date.today(), country=i[0].id_account.id_bank.country.name).count():
-            holiday = True
-        
-        if holiday:
-          print('hola')
-          messages.error(request, 'Debido a que hoy es un día feriado en alguno de los paises involucrados en la operación, el proceso de la misma puede presentar demoras.', extra_tags="alert-warning")
-          
-        plain_message = 'Se ha creado una operación para el envio de %s %s desde su cuenta %s'%(fromCurrency, total, fromAccount.id_account) 
-        
-        message = '''
-          Se ha creado exitosamente una operación para el envio de:<br>
-          <div align="center">
-            <h4><b> %s %s </b><h4>
-          </div>
-          <br>
-          Una vez que haya transferido los fondos desde su cuenta de banco <b>%s</b>, deberá subir una imagen del comprobante de la transferencia con la cual nuestro equipo podra verificar la operación.<br><br>
-          Cuando los fondos hayan caido en las cuentas a las que envió dinero, se le avisara por correo electrónico que la operación fue completada.<br><br>
+          ally = allies[random.randint(0, allies.count()-1)]
+          print('++>', ally)
+          try:
 
-          <div align="center">
-            <a href="%s">
-              <button class="btn btn-primary">
-                Ver detalles de la operación 
-              </button>
-            </a>
-          </div>
+            belongsTo = ally.hasAccount.filter(use_type='Origen', id_account__id_bank=bank)[0]
+            account = belongsTo.id_account
+            print('>>', belongsTo, account)
+          except:
+            for ally in allies:
+              print('-->', ally)
+              try:
+                belongsTo = ally.hasAccount.filter(use_type='Origen', id_account__id_bank=bank)[0]
+                account = belongsTo.id_account
+                print('**>', belongsTo, account)
+              except:
+                account = None
 
-          <br><br>
-          Sinceramente,<br>
-          Equipo de soporte de Cash4Home
-        '''%(fromCurrency, total, fromAccount.id_account, DEFAULT_DOMAIN+'operation/pending?operation=' + operation.code)
+          if account is not None:
 
-        html_message = loader.render_to_string(
-                'registration/base_email.html',
-                {
-                    'message': message,
-                    'tittle':  'Sea ha creado la operación exitosamente.',
-                    'url': DEFAULT_DOMAIN,
-                }
-            )
-        send_mail(subject        = "Verificación de correo electrónico",
-                  message        = plain_message,
-                  html_message   = html_message,
-                  from_email     = DEFAULT_FROM_EMAIL,
-                  recipient_list = [request.user.email])
+            operation = Operation(fiat_amount     = total,
+                                  crypto_rate     = None,
+                                  status          = 'Falta verificacion',
+                                  exchanger       = None,
+                                  date            = timezone.now(),
+                                  date_ending     = timezone.now()+datetime.timedelta(seconds=OPERATION_TIMEOUT*60), # 90 minutos
+                                  id_client       = request.user,
+                                  id_account      = fromAccount.id_account,
+                                  exchange_rate   = rate,
+                                  origin_currency = fromCurrency,
+                                  target_currency = toCurrency,
+                                  id_allie_origin = ally,
+                                  account_allie_origin = account,
+                                )
 
-        return redirect('verifyOperation', _operation_id=operation.code)
-        # return render(request, 'dashboard/uploadImage.html', {
-        #                 'bank_name': fromAccount.id_account.id_bank.name,
-        #                 'bank_account': 1012366452,
-        #                 'bank_aba': fromAccount.id_account.id_bank.aba,
-        #                 'amount': "%s %s"%(fromCurrency, total),
-        #                 'operationID': operation.code})
+            operation._save(fromAccount.id_account.id_bank.country.iso_code, toAccounts[0][0].id_account.id_bank.country.iso_code, timezone.now())
+
+            # Verificar que en alguno de los paises hay un feriado
+            holiday = False
+            if Holiday.objects.filter(date=datetime.date.today(), country=fromAccount.id_account.id_bank.country.name).count():
+              holiday = True
+
+            for i in toAccounts:
+              OperationGoesTo(operation_code = operation, number_account = i[0].id_account, amount = i[1] ).save()
+              if Holiday.objects.filter(date=datetime.date.today(), country=i[0].id_account.id_bank.country.name).count():
+                holiday = True
+            
+            if holiday:
+              print('hola')
+              messages.error(request, 'Debido a que hoy es un día feriado en alguno de los paises involucrados en la operación, el proceso de la misma puede presentar demoras.', extra_tags="alert-warning")
+              
+            plain_message = 'Se ha creado una operación para el envio de %s %s desde su cuenta %s'%(fromCurrency, total, fromAccount.id_account) 
+            
+            message = '''
+              Se ha creado exitosamente una operación para el envio de:<br>
+              <div align="center">
+                <h4><b> %s %s </b><h4>
+              </div>
+              <br>
+              Una vez que haya transferido los fondos desde su cuenta de banco <b>%s</b>, deberá subir una imagen del comprobante de la transferencia con la cual nuestro equipo podra verificar la operación.<br><br>
+              Cuando los fondos hayan caido en las cuentas a las que envió dinero, se le avisara por correo electrónico que la operación fue completada.<br><br>
+
+              <div align="center">
+                <a href="%s">
+                  <button class="btn btn-primary">
+                    Ver detalles de la operación 
+                  </button>
+                </a>
+              </div>
+
+              <br><br>
+              Sinceramente,<br>
+              Equipo de soporte de Cash4Home
+            '''%(fromCurrency, total, fromAccount.id_account, DEFAULT_DOMAIN+'operation/pending?operation=' + operation.code)
+
+            html_message = loader.render_to_string(
+                    'registration/base_email.html',
+                    {
+                        'message': message,
+                        'tittle':  'Sea ha creado la operación exitosamente.',
+                        'url': DEFAULT_DOMAIN,
+                    }
+                )
+            send_mail(subject        = "Verificación de correo electrónico",
+                      message        = plain_message,
+                      html_message   = html_message,
+                      from_email     = DEFAULT_FROM_EMAIL,
+                      recipient_list = [request.user.email])
+
+            return redirect('verifyOperation', _operation_id=operation.code)
+          else:
+            messages.error(request, 'No se pudo crear la operación, ya que no hay aliados disponibles en este momento. Por favor, intente mas tarde.', extra_tags="alert-error")  
+        else:
+          messages.error(request, 'No se pudo crear la operación, ya que no hay aliados disponibles en este momento. Por favor, intente mas tarde.', extra_tags="alert-error")  
       else:
         messages.error(request, 'No se pudo crear la operación. Revise los datos ingresados', extra_tags="alert-error")
 
@@ -582,7 +624,7 @@ def signup(request):
 
 
 # Admin views
-
+@permission_required('admin.add_currency', login_url='/login/')
 def addCurrencies(request):
     if (request.method == 'POST'):
         form = NewCurrencyForm(request.POST)
@@ -611,13 +653,14 @@ def addCurrencies(request):
 
     return render(request, 'admin/addCurrency.html', {'form': form})
 
-
+@permission_required('admin.edit_currency', login_url='/login/')
 def adminCurrencies(request):
     if (request.method == 'GET'):
         allCurrencies = Currency.objects.all()
 
         return render(request, 'admin/adminCurrency.html', {'currencies': allCurrencies})
 
+@permission_required('admin.edit_currency', login_url='/login/')
 def editCurrencies(request, _currency_id):
     try:
         c = Currency.objects.get(code=_currency_id)
@@ -645,6 +688,7 @@ def editCurrencies(request, _currency_id):
 
     return render(request, 'admin/editCurrency.html', {'form': form})
 
+@permission_required('admin.add_rate', login_url='/login/')
 def addExchangeRate(request):
 
     if (request.method == 'POST'):
@@ -683,12 +727,14 @@ def addExchangeRate(request):
 
     return render(request, 'admin/addExchangeRate.html', {'form': form})
 
+@permission_required('admin.edit_rate', login_url='/login/')
 def adminExchangeRate(request):
     if (request.method == 'GET'):
         allRates = ExchangeRate.objects.all()
 
         return render(request, 'admin/adminExchangeRate.html', {'rates': allRates})
 
+@permission_required('admin.edit_rate', login_url='/login/')
 def editExchangeRate(request, _rate_id):
     try:
         actualRate = ExchangeRate.objects.get(id=_rate_id)
@@ -732,6 +778,7 @@ def editExchangeRate(request, _rate_id):
 
     return render(request, 'admin/editExchangeRate.html', {'form': form})
 
+@permission_required('admin.add_bank', login_url='/login/')
 def addBank(request):
     if (request.method == 'POST'):
         form = NewBankForm(request.POST)
@@ -760,12 +807,15 @@ def addBank(request):
 
     return render(request, 'admin/addBank.html', {'form': form})
 
+
+@permission_required('admin.edit_bank', login_url='/login/')
 def adminBank(request):
     if (request.method == 'GET'):
         all_banks = Bank.objects.all()
 
         return render(request, 'admin/adminBank.html', {'banks': all_banks})
 
+@permission_required('admin.edit_bank', login_url='/login/')
 def editBank(request, _bank_id):
     try:
         actualBank = Bank.objects.get(swift=_bank_id)
@@ -788,6 +838,7 @@ def editBank(request, _bank_id):
             #     messages.error(request, msg, extra_tags="alert-warning")
             #     return render(request, 'admin/editBank.html', {'form': form})
 
+            actualBank.acceptBanks = form.cleaned_data['acceptBanks']
             actualBank.country = country
             actualBank.name = name.title()
             actualBank.save()
@@ -795,12 +846,13 @@ def editBank(request, _bank_id):
             msg = "El banco fue editado con éxito."
             messages.error(request, msg, extra_tags="alert-success")
             all_banks = Bank.objects.all()
-            return render(request, 'admin/adminBank.html', {'banks': all_banks})
+            return render(request, 'admin/editBank.html', {'form': form})
     else:
         form = EditBankForm(instance=actualBank)
 
     return render(request, 'admin/editBank.html', {'form': form})
 
+@permission_required('admin.add_account', login_url='/login/')
 def addAccount(request):
 
     if (request.method == 'POST'):
@@ -852,12 +904,14 @@ def addAccount(request):
 
     return render(request, 'admin/addAccount.html', {'form': form})
 
+@permission_required('admin.edit_account', login_url='/login/')
 def adminAccount(request):
     if (request.method == 'GET'):
         all_accounts = Account.objects.all()
 
         return render(request, 'admin/adminAccount.html', {'accounts': all_accounts})
 
+@permission_required('admin.edit_account', login_url='/login/')
 def editAccount(request, _account_id):
     try:
         actualAccount = Account.objects.get(id=_account_id)
@@ -906,9 +960,10 @@ def editAccount(request, _account_id):
 
     return render(request, 'admin/editAccount.html', {'form': form})
 
-
+@permission_required('admin.add_user', login_url='/login/')
 def addUser(request):
-    allAllies = User.objects.filter(Q(user_type='Aliado-1') | Q(user_type='Aliado-2') | Q(user_type='Aliado-3'))
+    # allAllies = User.objects.filter(Q(user_type='Aliado-1') | Q(user_type='Aliado-2') | Q(user_type='Aliado-3'))
+    allAllies = User.objects.filter(groups__name__in=['Aliado-1', 'Aliado-2', 'Aliado-3'])
 
 
 
@@ -937,7 +992,7 @@ def addUser(request):
             new_user.mobile_phone = form.cleaned_data['mobile_phone']
             new_user.country = form.cleaned_data['country']
             new_user.address = form.cleaned_data['address']
-            new_user.user_type = form.cleaned_data['user_type']
+            # new_user.user_type = form.cleaned_data['user_type']
             new_user.canBuyDollar = form.cleaned_data['canBuyDollar']
             new_referred_id = form.cleaned_data['referred_by']
 
@@ -956,18 +1011,22 @@ def addUser(request):
 
     return render(request, 'admin/addUser.html', {'form': form})
 
+@permission_required('admin.edit_user', login_url='/login/')
 def adminUser(request):
+    print(request.user.has_perm('admin.edit_user'))
     if (request.method == 'GET'):
         all_users = User.objects.all()
         return render(request, 'admin/adminUser.html', {'users': all_users})
 
+@permission_required('admin.edit_user', login_url='/login/')
 def editUser(request, _user_id):
     try:
         actualUser = User.objects.get(id=_user_id)
     except:
         raise Http404
 
-    allAllies = User.objects.filter(Q(user_type='Aliado-1') | Q(user_type='Aliado-2') | Q(user_type='Aliado-3'))
+    # allAllies = User.objects.filter(Q(user_type='Aliado-1') | Q(user_type='Aliado-2') | Q(user_type='Aliado-3'))
+    allAllies = User.objects.filter(groups__name__in=['Aliado-1', 'Aliado-2', 'Aliado-3'])
     
 
 
@@ -998,10 +1057,11 @@ def editUser(request, _user_id):
             actualUser.mobile_phone = form.cleaned_data['mobile_phone']
             actualUser.country = form.cleaned_data['country'].name
             actualUser.address = form.cleaned_data['address']
-            actualUser.user_type = form.cleaned_data['user_type']
+            # actualUser.user_type = form.cleaned_data['user_type']
             actualUser.canBuyDollar = form.cleaned_data['canBuyDollar']
             actualUser.referred_by = form.cleaned_data['referred_by']
             actualUser.coordinatesUsers = form.cleaned_data['coordinatesUsers']
+            actualUser.groups = form.cleaned_data['groups']
 
             actualUser.save()
 
@@ -1023,7 +1083,7 @@ def viewUser(request, _user_id):
 
     return render(request, 'admin/viewUser.html', {'user': actualUser})
 
-
+@permission_required('admin.add_holiday', login_url='/login/')
 def addHoliday(request):
     if (request.method == 'POST'):
         form = NewHolidayForm(request.POST)
@@ -1051,12 +1111,14 @@ def addHoliday(request):
 
     return render(request, 'admin/addHoliday.html', {'form': form})
 
+@permission_required('admin.edit_holiday', login_url='/login/')
 def adminHoliday(request):
     if (request.method == 'GET'):
         holidays = Holiday.objects.all()
 
         return render(request, 'admin/adminHoliday.html', {'holidays': holidays})
 
+@permission_required('admin.edit_holiday', login_url='/login/')
 def editHoliday(request, _holiday_id):
     try:
         actualHoliday = Holiday.objects.get(id=_holiday_id)
@@ -1091,6 +1153,7 @@ def editHoliday(request, _holiday_id):
 
     return render(request, 'admin/editHoliday.html', {'form': form})
 
+@permission_required('admin.add_country', login_url='/login/')
 def addCountry(request):
     if (request.method == 'POST'):
         form = NewCountryForm(request.POST)
@@ -1116,12 +1179,14 @@ def addCountry(request):
 
     return render(request, 'admin/addCountry.html', {'form': form})
 
+@permission_required('admin.edit_country', login_url='/login/')
 def adminCountry(request):
     if (request.method == 'GET'):
         all_countries = Country.objects.all()
 
         return render(request, 'admin/adminCountry.html', {'countries': all_countries})
 
+@permission_required('admin.edit_country', login_url='/login/')
 def editCountry(request, _country_id):
     try:
         actualCountry = Country.objects.get(name=_country_id)
@@ -1156,11 +1221,11 @@ def editCountry(request, _country_id):
 
 def operationalDashboard(request):
     if (request.method == 'GET'):
-        if ((request.user.user_type == 'Operador') or (request.user.user_type == 'Admin')):
+        if request.user.groups.filter(name = 'Operador') or (request.user.is_superuser):
             actualOperations = Operation.objects.filter(is_active=True).order_by('date')
             endedOperations = Operation.objects.filter(is_active=False).order_by('date')
             
-        elif (request.user.user_type == 'Aliado-1'):
+        elif request.user.groups.filter(name = 'Aliado-1'):
             actualOperations = Operation.objects.filter(Q(is_active=True) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
             endedOperations = Operation.objects.filter(Q(is_active=False) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
 
@@ -1175,3 +1240,51 @@ def operationDetailDashboard(request, _operation_id):
 
 def operationEditDashboard(request, _operation_id):
     pass
+
+@permission_required('admin.add_group', login_url='/login/')
+def addGroup(request):
+  form = GroupForm()
+
+  if request.method == 'POST':
+    form = GroupForm(request.POST)
+    if form.is_valid():
+      form.save()
+      messages.error(request, 'El grupo fue agregado con exito', extra_tags="alert-success")
+  return render(request, 'admin/addGroup.html', {'form': form})
+
+@permission_required('admin.edit_group', login_url='/login/')
+def adminGroup(request):
+    if (request.method == 'GET'):
+        all_groups = Group.objects.all()
+        return render(request, 'admin/adminGroup.html', {'groups': all_groups})
+
+@permission_required('admin.edit_group', login_url='/login/')
+def editGroup(request, _group_id):
+  try:
+    actualGroup = Group.objects.get(id=_group_id)
+  except:
+    raise Http404
+  
+  form = GroupForm(instance=actualGroup)
+
+  if request.method == 'POST':
+    form = GroupForm(request.POST, instance=actualGroup)
+    if form.is_valid():
+      form.save()
+      messages.error(request, 'El grupo fue editado con exito', extra_tags="alert-success")
+  return render(request, 'admin/editGroup.html', {'form': form})
+
+
+
+# Me parece q crear permiso no sirve de mucho, ya que hay q tocar codigo o crear un mecanismo dinamico que asigne el permiso a una view.
+
+# def addPermission(request):
+#   form = PermissionForm()
+#   if request.method == 'POST':
+#     form = PermissionForm(request.POST)
+#     if form.is_valid():
+#       form.save()
+#       messages.error(request, 'El permiso fue agregado con exito', extra_tags="alert-success")
+#   return render(request, 'admin/addPermission.html', {'form': form})
+
+

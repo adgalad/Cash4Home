@@ -41,65 +41,134 @@
       </ul>
 
       <ul class="nav side-menu">
-        <li><a><i class="fa fa-home"></i> Operaciones <span class="fa fa-chevron-down"></span></a>
-          <ul class="nav child_menu">
-            <li><a href="{% url 'createOperation' %}">Crear nueva</a></li>
-            <li><a href="{% url 'pendingOperations' %}">Operaciones realizadas</a></li>
-          </ul>
+        <li>
+          <a href="{% url 'createOperation' %}">
+            <i class="fa fa-money"></i> Enviar dinero
+          </a>
         </li>
       </ul>
     </div>
     <div class="menu_section">
+      {% if perms.admin.edit_operation or perms.admin.add_operation or perms.admin.edit_rate or perms.admin.add_rate or perms.admin.edit_currency or perms.admin.add_currency or perms.admin.edit_account or perms.admin.add_account or perms.admin.edit_bank or perms.admin.add_bank or perms.admin.edit_holiday or perms.admin.add_holiday or perms.admin.edit_user or perms.admin.add_user or perms.admin.edit_country or perms.admin.add_country or perms.admin.edit_group or perms.admin.add_group%}
       <h3>Administración</h3>
+      
       <ul class="nav side-menu">
+
+        {% if perms.admin.edit_operation or perms.admin.add_operation %}
         <li><a><i class="fa fa-book"></i> Operaciones <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
+            {% if perms.admin.edit_operation %}
             <li><a href="#">Editar</a></li>
+            {% endif %}
           </ul>
         </li>
+        {% endif %}
+
+        {% if perms.admin.edit_rate or perms.admin.add_rate %}
         <li><a><i class="fa fa-percent"></i> Tasas <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
-            <li><a href="{% url 'addExchangeRate' %}">Agregar</a></li>
-            <li><a href="{% url 'adminExchangeRate' %}">Editar</a></li>
+            {% if perms.admin.add_rate %}
+              <li><a href="{% url 'addExchangeRate' %}">Agregar</a></li>
+            {% endif %}
+            {% if perms.admin.edit_rate %}
+              <li><a href="{% url 'adminExchangeRate' %}">Editar</a></li>
+            {% endif %}
           </ul>
         </li>
+        {% endif %}
+
+        {% if perms.admin.edit_currency or perms.admin.add_currency %}
         <li><a><i class="fa fa-money"></i> Monedas <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
+            {% if perms.admin.add_currency %}  
               <li><a href="{% url 'addCurrencies' %}">Agregar</a>
+            {% endif %}
+            {% if perms.admin.edit_currency %}
               <li><a href="{% url 'adminCurrencies' %}">Editar</a>
+            {% endif %}
           </ul>
         </li>
+        {% endif %}
+        {% if perms.admin.edit_account or perms.admin.add_account %}
         <li><a><i class="fa fa-bank"></i> Cuentas <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
+            {% if perms.admin.add_account %}
               <li><a href="{% url 'addAccount' %}">Agregar</a>
+            {% endif %}
+            {% if perms.admin.edit_account %}
               <li><a href="{% url 'adminAccount' %}">Editar</a>
+            {% endif %}
           </ul>
         </li>
+        {% endif %}
+
+        {% if perms.admin.edit_bank or perms.admin.add_bank %}
         <li><a><i class="fa fa-bank"></i> Bancos <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
+            {% if perms.admin.add_bank %}
               <li><a href="{% url 'addBank' %}">Agregar</a>
+            {% endif %}
+            {% if perms.admin.edit_bank %}
               <li><a href="{% url 'adminBank' %}">Editar</a>
+            {% endif %}
           </ul>
         </li>
+        {% endif %}
+
+        {% if perms.admin.edit_holiday or perms.admin.add_holiday %}
         <li><a><i class="fa fa-calendar"></i> Feriados <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
+            {% if perms.admin.add_holiday %}
               <li><a href="{% url 'addHoliday' %}">Agregar</a>
+            {% endif %}
+            {% if perms.admin.edit_holiday %}
               <li><a href="{% url 'adminHoliday' %}">Editar</a>
+            {% endif %}
           </ul>
         </li>
+        {% endif %}
+
+        {% if perms.admin.edit_user or perms.admin.add_user %}
         <li><a><i class="fa fa-users"></i> Usuarios <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
+            {% if perms.admin.add_user %}
               <li><a href="{% url 'addUser' %}">Agregar</a>
+            {% endif %}
+            {% if perms.admin.edit_user %}
               <li><a href="{% url 'adminUser' %}">Editar</a>
+            {% endif %}
           </ul>
         </li>
+        {% endif %}
+
+        {% if perms.admin.edit_country or perms.admin.add_country %}
         <li><a><i class="fa fa-globe"></i> Países <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
+            {% if perms.admin.add_country %}
               <li><a href="{% url 'addCountry' %}">Agregar</a>
+            {% endif %}
+            {% if perms.admin.edit_country %}
               <li><a href="{% url 'adminCountry' %}">Editar</a>
+            {% endif %}
           </ul>
         </li>
+        {% endif %}
+
+        {% if perms.admin.edit_group or perms.admin.add_group %}
+        <li><a><i class="fa fa-lock"></i> Grupos <span class="fa fa-chevron-down"></span></a>
+          <ul class="nav child_menu">
+            {% if perms.admin.add_group %}
+              <li><a href="{% url 'addGroup' %}">Agregar</a>
+            {% endif %}
+            {% if perms.admin.edit_group %}
+              <li><a href="{% url 'adminGroup' %}">Editar</a>
+            {% endif %}
+          </ul>
+        </li>
+        {% endif %}
+
       </ul>
+      {% endif %}
     </div>
   </div>
   <!-- /sidebar menu -->

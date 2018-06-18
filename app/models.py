@@ -123,10 +123,12 @@ class ExchangeRate(models.Model):
         return str(self.origin_currency) + "/" + str(self.target_currency)
 
 class Bank(models.Model):
-    swift = models.CharField(max_length=12, primary_key=True, unique=True, blank=True)
-    country = models.ForeignKey('Country', related_name='banks')
-    name = models.CharField(max_length=100)
-    allies = models.ManyToManyField(User)
+    swift       = models.CharField(max_length=12, primary_key=True, unique=True, blank=True)
+    country     = models.ForeignKey('Country', related_name='banks')
+    name        = models.CharField(max_length=100)
+    allies      = models.ManyToManyField(User)
+    acceptBanks = models.ManyToManyField('Bank', verbose_name='Transferencias instantaneas a')
+
     def __str__(self):
         return self.name
 

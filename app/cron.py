@@ -1,9 +1,7 @@
 import json
 import requests
-from django_cron import CronJobBase, Schedule
-from C4H.settings import MEDIA_ROOT
 import os
-        
+import time
 
 ## Pair: BTCUSD, USDBTC, DASHUSD, etc
 class PriceRetriever:
@@ -74,21 +72,30 @@ class PriceRetriever:
     return prices
 
 
-BTCPrice = PriceRetriever()
 
-class UpdateBTCPrice(CronJobBase):
-    RUN_EVERY_MINS = 1
 
-    schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
-    code = 'app.cron.UpdateBTCPrice'    # a unique code
+class UpdateBTCPrice():
+    RUN_EVERY_SECS = 2
 
+    def __init__(self):
+        self.BTCPrice = PriceRetriever()
+    
     def do(self):
-        global BTCPrice
-        BTCPrice.ask()
-        print(">>>>")
-        print(os.path.join(MEDIA_ROOT, "BTCPrice"))
-        file  = open(os.path.join(MEDIA_ROOT, "BTCPrice.json"), "w")
-        info = json.dumps(BTCPrice.getPriceInformation())
-        print(info)
-        file.write(info)
-        file.close()
+        try:
+            self.BTCPrice.ask()
+            info = json.dumps(self.BTCPrice.getPriceInformation())
+            file = open(os.path.join('./media', "BTCPrice.json"), "w")
+            file.write(info)
+            file.close()
+
+        except Exception as e:
+            print(e)
+
+        
+        
+
+x = UpdateBTCPrice()
+
+while(True):
+    x.do()
+    time.sleep(x.RUN_EVERY_SECS)
