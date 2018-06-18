@@ -60,43 +60,51 @@
         <li><a><i class="fa fa-percent"></i> Tasas <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
             <li><a href="{% url 'addExchangeRate' %}">Agregar</a></li>
-            <li><a href="{% url 'adminExchangeRate' %}">Editar</a></li>
+            <li><a href="{% url 'adminExchangeRate' %}">Ver</a></li>
           </ul>
         </li>
         <li><a><i class="fa fa-money"></i> Monedas <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
               <li><a href="{% url 'addCurrencies' %}">Agregar</a>
-              <li><a href="{% url 'adminCurrencies' %}">Editar</a>
+              <li><a href="{% url 'adminCurrencies' %}">Ver</a>
           </ul>
         </li>
         <li><a><i class="fa fa-bank"></i> Cuentas <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
               <li><a href="{% url 'addAccount' %}">Agregar</a>
-              <li><a href="{% url 'adminAccount' %}">Editar</a>
+              <li><a href="{% url 'adminAccount' %}">Ver</a>
+          </ul>
+        </li>
+        <li><a><i class="fa fa-exchange"></i> Exchangers <span class="fa fa-chevron-down"></span></a>
+          <ul class="nav child_menu">
+              <li><a href="{% url 'addExchanger' %}">Agregar exchanger</a>
+              <li><a href="{% url 'adminExchanger' %}">Ver exchangers</a>
+              <li><a href="{% url 'addRepurchase' %}">Agregar recompra</a>
+              <li><a href="{% url 'adminRepurchase' %}">Ver recompra</a>
           </ul>
         </li>
         <li><a><i class="fa fa-bank"></i> Bancos <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
               <li><a href="{% url 'addBank' %}">Agregar</a>
-              <li><a href="{% url 'adminBank' %}">Editar</a>
+              <li><a href="{% url 'adminBank' %}">Ver</a>
           </ul>
         </li>
         <li><a><i class="fa fa-calendar"></i> Feriados <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
               <li><a href="{% url 'addHoliday' %}">Agregar</a>
-              <li><a href="{% url 'adminHoliday' %}">Editar</a>
+              <li><a href="{% url 'adminHoliday' %}">Ver</a>
           </ul>
         </li>
         <li><a><i class="fa fa-users"></i> Usuarios <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
               <li><a href="{% url 'addUser' %}">Agregar</a>
-              <li><a href="{% url 'adminUser' %}">Editar</a>
+              <li><a href="{% url 'adminUser' %}">Ver</a>
           </ul>
         </li>
         <li><a><i class="fa fa-globe"></i> Países <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
               <li><a href="{% url 'addCountry' %}">Agregar</a>
-              <li><a href="{% url 'adminCountry' %}">Editar</a>
+              <li><a href="{% url 'adminCountry' %}">Ver</a>
           </ul>
         </li>
       </ul>

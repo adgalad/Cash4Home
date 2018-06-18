@@ -91,7 +91,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     canBuyDollar = models.BooleanField(default=False)
     country = models.ForeignKey(Country, null=True, blank=True)
 
-    coordinatesUsers = models.ManyToManyField('self', verbose_name='Aliados que coordina')
+    coordinatesUsers = models.ManyToManyField('self', verbose_name='Aliados que coordina', blank=True)
 
     USERNAME_FIELD = 'email'
     objects = MyUserManager()
@@ -139,7 +139,7 @@ class Bank(models.Model):
     swift = models.CharField(max_length=12, primary_key=True, unique=True, blank=True)
     country = models.ForeignKey('Country', related_name='banks')
     name = models.CharField(max_length=100)
-    allies = models.ManyToManyField(User)
+    allies = models.ManyToManyField(User, blank=True)
     def __str__(self):
         return self.name
 
@@ -167,6 +167,7 @@ class AccountBelongsTo(models.Model):
     alias = models.CharField(max_length=32, null=True)
     email = models.EmailField(null=True)
     id_number = models.IntegerField(verbose_name='ID number', null=True)
+    active = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ('id_account', 'id_client')

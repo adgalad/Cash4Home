@@ -56,8 +56,27 @@
               enableFiltering: true,
               nonSelectedText: 'Seleccione los aliados',
               includeSelectAllOption: true
-          })
-          $('.btn-group').attr('style', 'width: 100%;')
+          });
+          $('.btn-group').attr('style', 'width: 100%;');
+          $('label[for=id_referred_by], #id_referred_by').hide();
+          $('label[for=id_coordinatesUsers], .multiselect-native-select').hide();
+
+          $('#id_user_type').change(function() {
+
+              if (($(this).val() == 'Aliado-1') || ($(this).val() == 'Aliado-3')) {
+                $('label[for=id_referred_by], #id_referred_by').show();
+                 $('label[for=id_coordinatesUsers], .multiselect-native-select').hide();
+                document.getElementById("id_referred_by").required = true;
+              } else if ($(this).val() == 'Aliado-2') {
+                $('label[for=id_referred_by], #id_referred_by').show();
+                 $('label[for=id_coordinatesUsers], .multiselect-native-select').show();
+                document.getElementById("id_referred_by").required = true;
+              } else {
+                $('label[for=id_referred_by], #id_referred_by').hide();
+                $('label[for=id_coordinatesUsers], .multiselect-native-select').hide();
+                document.getElementById("id_referred_by").required = false;
+              }
+          });
       });
 
   </script>

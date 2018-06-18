@@ -3,6 +3,11 @@
 
 {% block title %} Agregar banco {% endblock title %}
 
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="/static/css/bootstrap-multiselect.css" rel="stylesheet">
+{% endblock stylesheets %}
+
 {% block content %}
   <div class="right_col" role="main">
     <div class="row">
@@ -38,3 +43,21 @@
     </div>  
   </div>
 {% endblock %}
+
+{% block javascripts %}
+  {{ block.super}}
+  <!-- jQuery Smart Wizard -->
+  <script src="/static/js/bootstrap-multiselect.js"></script>
+  <script type="text/javascript">
+      $(document).ready(function() {
+          $('#id_can_send').multiselect({
+              enableClickableOptGroups: true,
+              enableCollapsibleOptGroups: true,
+              enableFiltering: true,
+              nonSelectedText: 'Seleccione los bancos',
+              includeSelectAllOption: true
+          });
+      });
+
+  </script>
+{% endblock javascripts %}
