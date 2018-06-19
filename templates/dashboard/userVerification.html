@@ -1,0 +1,153 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %} Verificar Usuario {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="/static/css/dragndrop.css" rel="stylesheet">
+    <style type="text/css"> 
+    .stepContainer {
+      height: 100% !important;
+    }
+  </style>
+{% endblock stylesheets %}
+
+
+{% block content %}
+  
+
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+          <h3>Verificar cuenta</h3>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+
+      <div class='row'>
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <form id="upload" action="{% url 'userVerification' %}" method="post" enctype="multipart/form-data">
+              <div class="x_content" >
+                  <!-- Smart Wizard -->
+                  <div id="wizard" class="form_wizard wizard_horizontal">
+                    <ul class="wizard_steps">
+                      <li>
+                        <a href="#step-1">
+                          <span class="step_no">2</span>
+                          <span class="step_descr">
+                                            Paso 2<br />
+                                            <small>Imagen de servico</small>
+                                        </span>
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#step-2">
+                          <span class="step_no">3</span>
+                          <span class="step_descr">
+                                            Paso 3<br />
+                                            <small>Imagen de identidad</small>
+                                        </span>
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#step-3">
+                          <span class="step_no">4</span>
+                          <span class="step_descr">
+                                            Paso 4<br />
+                                            <small>Selfie</small>
+                                        </span>
+                        </a>
+                      </li>
+                    </ul>
+                    
+                      {% csrf_token %}
+                      <input type='file' style="display:none;" name="file1" id="file1" onchange="readURL(this, 'img_file1');" />
+                      <input type='file' style="display:none;" name="file2" id="file2" onchange="readURL(this, 'img_file2');" />
+                      <input type='file' style="display:none;" name="file3" id="file3" onchange="readURL(this, 'img_file3');" />
+
+                    <div id="step-1">
+                      <h2>Recibo de servicio</h2>
+                      <hr>
+                      <p> Antes de poder realizar operaciones en la plataforma de Cash4Home, es necesario que verifique su identidad. Por favor, suba las siguientes requisitos:</p>
+                      Una imagen de un recibo de algún servicio a su nombre (pago de electricidad, telefono, etc.) en el cual aparezca su dirección de domicilio.
+                      <div class="row">
+                        <br>
+                        <a href="#" onclick="getAcceptedExtension('file1')">
+                          <div class="col-xs-12 col-sm-12 col-md-6" style="height: 300px; width: 400px; display: table;">
+                            <div style="display: table-cell; vertical-align: middle;">
+                              <div style="display: flex; align-items: center; justify-content: center;">
+                                <img width="100%" class="imageUpload" id="img_file1" src="/static/images/service_placeholder.png" alt="your image"/>
+                              </div>
+                            </div>
+                          </div>
+                        </a>
+                        <br>
+                      </div>
+                    </div>
+                    <div id="step-2">
+                      <h2>Documento de identidad </h2>
+                      <hr>
+                      Una imagen de un documento de identidad vigente (cédula, pasaporte, licencia de conducir) que contenga su nombre completo y una foto de su rostro.
+                      <div class="row">
+                        <br>
+                        <a href="#" onclick="getAcceptedExtension('file2')">
+                          <div class="col-xs-12 col-sm-12 col-md-6" style="height: 300px; width: 400px; display: table;">
+                            <div style="display: table-cell; vertical-align: middle;">
+                              <div style="display: flex; align-items: center; justify-content: center;">
+                                <img width="100%" class="imageUpload" id="img_file2" src="/static/images/id_placeholder.png" alt="your image"/>
+                              </div>
+                            </div>
+                          </div>
+                        </a>
+                        <br>
+                      </div>
+                    </div>
+                    <div id="step-3">
+                      <h2>Selfie con el documento</h2>
+                      <hr>
+                      Una foto de usted sosteniendo su documento documento de identificación.
+                      <div class="row">
+                        <br>
+                        <a href="#" onclick="getAcceptedExtension('file3')">
+                          <div class="col-xs-12 col-sm-12 col-md-6" style="height: 300px; width: 400px; display: table;">
+                            <div style="display: table-cell; vertical-align: middle;">
+                              <div style="display: flex; align-items: center; justify-content: center;">
+                                <img width="100%" class="imageUpload" id="img_file3" src="/static/images/selfie_placeholder.png" alt="your image"/>
+                              </div>
+                            </div>
+                          </div>
+                        </a>
+                        <br>
+                      </div>
+                    </div>
+                    <!-- End SmartWizard Content -->
+                  </div>
+                  <div class="clearfix"></div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super}}
+  <script type="text/javascript">
+    $('input[type="file"]').change(function(){
+      if (checkImages()){
+        $('button[type="submit"]').removeClass('buttonDisabled')
+      } else {
+        $('button[type="submit"]').addClass('buttonDisabled')
+      }
+    })
+  </script>
+  <script src="/static/js/fileupload.js"></script>
+  <script src="/static/js/userVerification.js"></script>
+{% endblock javascripts %}
+
+

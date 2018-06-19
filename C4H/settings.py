@@ -29,6 +29,8 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 
+OPERATION_TIMEOUT = 90 # minutos
+
 # Application definition
 
 INSTALLED_APPS = [

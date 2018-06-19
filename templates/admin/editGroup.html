@@ -1,21 +1,24 @@
 {% extends "base_dashboard.html" %}
 {% load i18n %}
 
+{% block title %} Editar cuenta {% endblock title %}
 
 {% block stylesheets %}
   {{ block.super }}
-  <link href="/static/css/bootstrap-multiselect.css" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-multiselect.css">
 {% endblock stylesheets %}
-
-{% block title %} Editar banco {% endblock title %}
 
 {% block content %}
   <div class="right_col" role="main">
     <div class="row">
       <div class="col-xs-5 col-xs-offset-3">
+        
         <div class="text-center admin_content">
-          <h3>Editar banco</h3>
+          <h3>
+            Editar cuenta
+          </h3>
         </div>
+        
         <form method="post">
           {% csrf_token %}
           {% for message in messages %}
@@ -30,22 +33,18 @@
             </section>   
           {% endfor %} 
           {% for field in form %}
-            {{ field.label_tag }}     
+            {{ field.label_tag }}
             {{ field }} 
-            {% if field.label == 'Aliados' %} 
-              <br>
-            {% endif %}
             <br>
           {% endfor %}
           <div class="text-center">
             <br>
-            <a class="btn btn-primary" href="{% url 'adminBank' %}" ><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
             <button class="btn btn-primary submit" type="submit">Enviar</button>
           </div>
         </form>
-      </div>  
+
+      </div>
     </div>
-    
   </div>
 {% endblock %}
 
@@ -55,22 +54,14 @@
   <script src="/static/js/bootstrap-multiselect.js"></script>
   <script type="text/javascript">
       $(document).ready(function() {
-          $('#id_allies').multiselect({
+          $('#id_permissions').multiselect({
               enableClickableOptGroups: true,
               enableCollapsibleOptGroups: true,
               enableFiltering: true,
-              nonSelectedText: 'Seleccione los aliados',
+              nonSelectedText: 'Seleccione los permisos',
               includeSelectAllOption: true
-          });
-          $('#id_can_send').multiselect({
-              enableClickableOptGroups: true,
-              enableCollapsibleOptGroups: true,
-              enableFiltering: true,
-              nonSelectedText: 'Seleccione los bancos',
-              includeSelectAllOption: true
-          });
-          $('div[class="btn-group"]').attr('style', 'width: 100%;')
-
+          })
+          $('.btn-group').attr('style', 'width: 100%;')
       });
 
   </script>

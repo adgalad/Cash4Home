@@ -13,6 +13,17 @@
 
 {% block content %}
   <div class="right_col" role="main">
+    {% for message in messages %}
+      <section class="table-view {{message.tags}}">
+        <div class="container" style="text-align: center; vertical-align: middle; padding-left: 15px;">
+            {% if 'safe' in message.tags %}
+              {{ message | safe }}
+            {% else %}
+              {{ message }}
+            {% endif %}
+        </div>
+      </section>   
+    {% endfor %} 
     <div class="">
       <div class="page-title">
         <div class="title_left">

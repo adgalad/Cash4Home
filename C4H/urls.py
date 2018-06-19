@@ -86,6 +86,11 @@ urlpatterns = [
     url(r'^add/country/$', views.addCountry, name="addCountry"),
     url(r'^all/country/$', views.adminCountry, name="adminCountry"),
     url(r'^edit/country/(?P<_country_id>[\w\ ]+)', views.editCountry, name="editCountry"),
+    
+
+    url(r'^add/group$', views.addGroup, name="addGroup"),
+    url(r'^all/group/$', views.adminGroup, name="adminGroup"),
+    url(r'^edit/group/(?P<_group_id>\w+)', views.editGroup, name="editGroup"),
 
     url(r'^add/account/user/(?P<_user_id>\w+)/(?P<_flag>\w+)$', views.addUserAccount, name="addUserAccount"),
     url(r'^all/account/user/(?P<_user_id>\w+)$', views.viewUserAccounts, name="viewUserAccounts"),
@@ -101,8 +106,8 @@ urlpatterns = [
 
     #Dashboards
     url(r'^dashboard/operational/$', views.operationalDashboard, name="operationalDashboard"),
-    url(r'^dashboard/operational/(?P<_operation_id>\w+)/details$', views.operationDetailDashboard, name="operationDetailDashboard"),
-    url(r'^dashboard/operational/(?P<_operation_id>\w+)/edit$', views.operationEditDashboard, name="operationEditDashboard"),
+    url(r'^dashboard/operational/(?P<_operation_id>.+)/details$', views.operationDetailDashboard, name="operationDetailDashboard"),
+    url(r'^dashboard/operational/(?P<_operation_id>.+)/edit$', views.operationEditDashboard, name="operationEditDashboard"),
 ]
 
 

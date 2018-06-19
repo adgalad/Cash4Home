@@ -7,6 +7,7 @@ from functools import partial
 from django.db.models import Q
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.models import Permission, Group
 
 class MyPasswordResetForm(PasswordResetForm):
   def save(self, domain_override=None,
@@ -195,21 +196,23 @@ class EditBankForm(forms.ModelForm):
   swift = forms.CharField(max_length=12, required=True, label="SWIFT", widget = forms.TextInput(attrs={'style': 'width:100%;', 'readonly':'readonly'}))
   can_send = forms.ModelMultipleChoiceField(queryset=Bank.objects.all(), label='Bancos a los que puede transferir', required=False)
   # allies = forms.ModelMultipleChoiceField(queryset=None, required=False, label="Aliados")
+
   def __init__(self, *args, **kwargs):
 
     super(EditBankForm, self).__init__(*args, **kwargs)
-    print(args, kwargs)
     if 'instance' in kwargs:
-      allies = User.objects.filter(user_type='Aliado-1').filter(hasAccount__id_account__id_bank__swift=kwargs['instance'].swift, hasAccount__use_type='Origen')
+      allies = User.objects.filter(groups__name='Aliado-1').filter(hasAccount__id_account__id_bank__swift=kwargs['instance'].swift, hasAccount__use_type='Origen')
       self.fields['allies'].queryset = allies
     else:
       self.fields['allies'].queryset = User.objects.none()
     self.fields['allies'].label = 'Aliados'
+    self.fields['allies'].required = False
+
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
   class Meta:
     model = Bank
-    fields = ('name', 'country', 'swift', 'allies' )
+    fields = ('name', 'country', 'swift', 'allies')
 
 def format(queryset, field):
   dictionary = {}
@@ -274,6 +277,11 @@ class NewCountryForm(forms.Form):
       self.fields['status'].widget.attrs.update({'class' : 'flat'})
 
 
+class PermissionsModelMultipleChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return "%s" % obj.name
+
+
 class NewUserForm(forms.ModelForm):
 
   first_name = forms.CharField(max_length=30, required=True, label='Nombre')
@@ -281,12 +289,10 @@ class NewUserForm(forms.ModelForm):
   id_number = forms.CharField(max_length=30, required=True, label='Número de identificación')
   email = forms.EmailField(required=True, label=_(u"Email"))  
   mobile_phone = forms.RegexField(regex=r'^\+?1?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
-  country = forms.ModelChoiceField(label=_("País de residencia"), required=True, queryset=Country.objects.filter(status=True), empty_label="---")
+  country = forms.ModelChoiceField(label=_("País de residencia"), required=True, queryset=Country.objects.filter(status=True), empty_label="País")
   address = forms.CharField(max_length=100, required=True, label='Dirección')
-  user_choices = (('Cliente', 'Cliente'), ('Aliado-1', 'Aliado-1'), ('Aliado-2', 'Aliado-2'), ('Aliado-3', 'Aliado-3'), ('Operador', 'Operador'), ('Admin', 'Admin'))
-  user_type = forms.ChoiceField(choices=user_choices, required=True, label="Tipo de usuario")
-  referred_by = forms.ModelChoiceField(queryset=User.objects.filter(Q(user_type='Aliado-1')|Q(user_type='Aliado-2')|Q(user_type='Aliado-3')), 
-                                          label='Referido por', empty_label="Ninguno", required=False)
+  referred_by = forms.ModelChoiceField(queryset=User.objects.filter(groups__name__in=['Aliado-1', 'Aliado-2', 'Aliado-3']), 
+                                          label='Referido por', required=False, empty_label="Ninguno")
   choices_buy = ((True, 'Si'), (False, 'No'))
   canBuyDollar = forms.ChoiceField(choices=choices_buy, label='¿Puede comprar dólares?', required=True, 
                                     widget=forms.RadioSelect(attrs={'style': 'width:100%; background-color:white'}))
@@ -309,8 +315,7 @@ class NewUserForm(forms.ModelForm):
 
   class Meta:
     model = User
-    fields = ('first_name', 'last_name', 'email', 'id_number', 'country', 'address', 'mobile_phone', 'user_type', 'referred_by', 'coordinatesUsers', 'canBuyDollar' )
-
+    fields = ('first_name', 'last_name', 'email', 'id_number', 'country', 'address', 'mobile_phone', 'referred_by', 'coordinatesUsers', 'canBuyDollar', 'is_superuser', 'groups' )
 
 class NewOwnAccountAssociatedForm(forms.Form):
 
@@ -365,3 +370,24 @@ class EditExchangerForm(forms.Form):
         for i in self.fields:
             self.fields[i].widget.attrs.update({'class' : 'form-control'})
             self.fields['is_active'].widget.attrs.update({'class' : 'flat'})
+
+class PermissionForm(forms.ModelForm):
+
+  def __init__(self, *args, **kwargs):
+    super(PermissionForm, self).__init__(*args, **kwargs)
+    for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+  class Meta:
+    model = Permission
+    fields = '__all__'
+
+class GroupForm(forms.ModelForm):
+
+  def __init__(self, *args, **kwargs):
+    super(GroupForm, self).__init__(*args, **kwargs)
+    for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+    self.fields['permissions'].choices = format(queryset=Permission.objects.all(), field='content_type')
+  class Meta:
+    model = Group
+    fields = '__all__'

@@ -96,7 +96,19 @@
                       <td>{{ u.first_name }}</td>
                       <td>{{ u.last_name }}</td>
                       <td>{{ u.email }}</td>
-                      <td>{{ u.user_type }}</td>  
+                      <td>
+                        {% if u|has_group:'Aliado-1' %}
+                          Aliado-1
+                        {% elif u|has_group:'Aliado-2' %}
+                          Aliado-2
+                        {% elif u|has_group:'Aliado-3' %}
+                          Aliado-3
+                        {% elif u|has_group:'Operador' %}
+                          Operador
+                        {% else %}
+                          Administrador
+                        {% endif %}
+                      </td>  
                       <td class="btn-actions"><a href="{% url 'viewUser' u.id %}"><i class="fa fa-search"></i>Ver</a><a href="{% url 'editUser' u.id %}"><i class="fa fa-edit"></i>Editar</a><a href="{% url 'viewUserAccounts' u.id %}"><i class="fa fa-bank"></i>Cuentas</a></td>
                     </tr>
                   {% endfor %}

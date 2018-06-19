@@ -409,7 +409,7 @@
             selectedClass: 'active',
             // Maximum height of the dropdown menu.
             // If maximum height is exceeded a scrollbar will be displayed.
-            maxHeight: true,
+            maxHeight: 350,
             includeSelectAllOption: false,
             includeSelectAllIfMoreThan: 0,
             selectAllText: ' Seleccionar todos',
@@ -418,19 +418,19 @@
             selectAllNumber: true,
             selectAllJustVisible: true,
             enableFiltering: false,
-            enableCaseInsensitiveFiltering: false,
+            enableCaseInsensitiveFiltering: true,
             enableFullValueFiltering: false,
             enableClickableOptGroups: false,
             enableCollapsibleOptGroups: false,
-            collapseOptGroupsByDefault: false,
-            filterPlaceholder: 'Search',
+            collapseOptGroupsByDefault: true,
+            filterPlaceholder: 'Buscar',
             // possible options: 'text', 'value', 'both'
             filterBehavior: 'text',
             includeFilterClearBtn: true,
             preventInputChangeEvent: false,
             nonSelectedText: 'Seleccione uno',
-            nSelectedText: 'selected',
-            allSelectedText: 'All selected',
+            nSelectedText: 'selecionados',
+            allSelectedText: 'Todos seleccionados',
             numberDisplayed: 3,
             disableIfEmpty: false,
             disabledText: '',
@@ -958,7 +958,7 @@
             }
 
             if (this.options.enableCollapsibleOptGroups && this.options.multiple) {
-                $('a', $li).append('<span class="caret-container"><b class="caret"></b></span>');
+                $('a', $li).append('<span class="caret-container" style="border: 1px transparent white;"><b class="caret"></b></span>');
             }
 
             if (this.options.enableClickableOptGroups && this.options.multiple) {

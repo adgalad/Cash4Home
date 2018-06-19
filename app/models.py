@@ -117,6 +117,8 @@ class Holiday(models.Model):
     description = models.CharField(max_length=140)
     country = models.ForeignKey(Country)
 
+    def __str__(self):
+        return str(self.date) + ' ' + self.description
 class Currency(models.Model):
     code = models.CharField(max_length=10, primary_key=True, unique=True) # VEF, USD, BTC
     name = models.CharField(max_length=50)
@@ -140,6 +142,7 @@ class Bank(models.Model):
     country = models.ForeignKey('Country', related_name='banks')
     name = models.CharField(max_length=100)
     allies = models.ManyToManyField(User, blank=True)
+    
     def __str__(self):
         return self.name
 
