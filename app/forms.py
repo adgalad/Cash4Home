@@ -181,7 +181,7 @@ class NewBankForm(forms.Form):
   name = forms.CharField(max_length=100, required=True, label="Nombre", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
   country = forms.ModelChoiceField(required=True, label="País", widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}), queryset=Country.objects.all())
   swift = forms.CharField(max_length=12, required=True, label="SWIFT", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
-  can_send = forms.ModelMultipleChoiceField(queryset=Bank.objects.all(), label='Bancos a los que puede transferir', required=True)
+  can_send = forms.ModelMultipleChoiceField(queryset=Bank.objects.all(), label='Bancos a los que puede transferir', required=False)
 
   def __init__(self, *args, **kwargs):
     super(NewBankForm, self).__init__(*args, **kwargs)
@@ -193,7 +193,7 @@ class EditBankForm(forms.ModelForm):
   name = forms.CharField(max_length=100, required=True, label="Nombre", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
   country = forms.ModelChoiceField(required=True, label="País", widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}), queryset=Country.objects.all())
   swift = forms.CharField(max_length=12, required=True, label="SWIFT", widget = forms.TextInput(attrs={'style': 'width:100%;', 'readonly':'readonly'}))
-  can_send = forms.ModelMultipleChoiceField(queryset=Bank.objects.all(), label='Bancos a los que puede transferir', required=True)
+  can_send = forms.ModelMultipleChoiceField(queryset=Bank.objects.all(), label='Bancos a los que puede transferir', required=False)
   # allies = forms.ModelMultipleChoiceField(queryset=None, required=False, label="Aliados")
   def __init__(self, *args, **kwargs):
 
