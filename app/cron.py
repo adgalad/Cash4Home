@@ -14,10 +14,27 @@ class PriceRetriever:
 
   def ask(self):
     # print(requests.get('https://localbitcoins.com//bitcoinaverage/ticker-all-currencies/').content)
-    self.localbitcoins = json.loads(requests.get('https://localbitcoins.com//bitcoinaverage/ticker-all-currencies/').content.decode('utf-8'))
-    self.gemini = json.loads(requests.get('https://api.gemini.com/v1/pubticker/btcusd').content.decode('utf-8'))
-    self.bitinka = json.loads(requests.get('https://www.bitinka.com/api/apinka/ticker?format=json').content.decode('utf-8'))
-    self.ripio = json.loads(requests.get('https://www.ripio.com/api/v1/rates/').content.decode('utf-8'))
+    try:
+        self.localbitcoins = json.loads(requests.get('https://localbitcoins.com//bitcoinaverage/ticker-all-currencies/').content.decode('utf-8'))
+    except:
+        self.localbitcoins = None
+    
+    try:
+        self.gemini = json.loads(requests.get('https://api.gemini.com/v1/pubticker/btcusd').content.decode('utf-8'))
+    except:
+        self.gemini = None
+    
+
+    try:
+        self.bitinka = json.loads(requests.get('https://www.bitinka.com/api/apinka/ticker?format=json').content.decode('utf-8'))
+    except:
+        self.bitinka = None
+    
+
+    try:
+        self.ripio = json.loads(requests.get('https://www.ripio.com/api/v1/rates/').content.decode('utf-8'))
+    except:
+        self.ripio = None
 
   def avg(self, symbol, prices):
     count = 0
@@ -90,7 +107,7 @@ class UpdateBTCPrice():
             file.close()
 
         except Exception as e:
-            print(e, file=sys.stderr)
+            print(e)
 
         
         
