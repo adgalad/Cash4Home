@@ -152,17 +152,20 @@ def userVerification(request):
   if request.user.canVerify:
     if request.method == 'POST':
       print(request.POST)
-      if 'file1' in request.FILES and 'file2' in request.FILES and 'file3' in request.FILES: 
+      if 'file1' in request.FILES and 'file2' in request.FILES and 'file3' in request.FILES and 'file4' in request.FILES: 
         file1 = request.FILES['file1']
         file2 = request.FILES['file2']
         file3 = request.FILES['file3']
+        file4 = request.FILES['file4']
         ok  = file1.name.lower().endswith(('.png', '.jpeg', '.jpg'))
         ok &= file2.name.lower().endswith(('.png', '.jpeg', '.jpg'))
         ok &= file3.name.lower().endswith(('.png', '.jpeg', '.jpg'))
+        ok &= file4.name.lower().endswith(('.png', '.jpeg', '.jpg'))
         if ok:
           request.user.service_image = file1
           request.user.id_front = file2
-          request.user.selfie_image = file3
+          request.user.id_back = file3
+          request.user.selfie_image = file4
 
           request.user.save()
           return render(request, 'dashboard/userVerificationConfirmation.html')      

@@ -131,9 +131,17 @@ class User(AbstractBaseUser, PermissionsMixin):
             return self.service_image.url
         else:
             return '/static/images/placeholder.png'
+
+    @property
+    def id_back_url(self):
+        if self.id_back and hasattr(self.id_back, 'url'):
+            return self.id_back.url
+        else:
+            return '/static/images/placeholder.png'
+
     @property
     def canVerify(self):
-        return not (self.verified or self.id_front or self.selfie_image)
+        return not (self.verified or self.id_front or self.selfie_image or self.id_back)
 
 
 class Holiday(models.Model):
