@@ -23,6 +23,8 @@ class Command(BaseCommand):
         group     = ContentType(app_label='admin', model='Grupos')
         
         btc_price = ContentType(app_label='dashboard', model='BTC_Price')
+        dashboard_operation = ContentType(app_label='dashboard', model='Operation')
+
 
 
         user.save()
@@ -36,7 +38,7 @@ class Command(BaseCommand):
         group.save()
 
         btc_price.save()
-
+        dashboard_operation.save()
         
         add_user  = Permission(name='Crear',  codename='add_user',  content_type=user)
         edit_user = Permission(name='Editar', codename='edit_user', content_type=user)
@@ -86,7 +88,9 @@ class Command(BaseCommand):
         edit_group.save()
 
         btc_price_p = Permission(name='Ver precio BTC', codename='btc_price', content_type=btc_price)
+        operation_operator = Permission(name='Ver opearciones de los demás', codename='operation_operator', content_type=dashboard_operation)
         btc_price_p.save()
+        operation_operator.save()
 
 
         client   = Group(name='Cliente')
@@ -103,6 +107,7 @@ class Command(BaseCommand):
 
         operator.permissions.add(edit_user)
         operator.permissions.add(btc_price)
+        operator.permissions.add(operation_operator)
 
 
 

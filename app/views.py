@@ -84,14 +84,11 @@ def dashboard(request):
               </button>
             </a>'''
       messages.error(request, message, extra_tags="safe alert alert-warning alert-dismissible fade in")
-
-  print(request.user.groups.filter(name__in=['Operador', 'Aliado-1', 'Aliado-2', 'Aliado-3']))
-
   
 
 
   if request.user.groups.filter(name = 'Cliente'):    
-    return pendingOperations(request)
+    return redirect(reverse('pendingOperations'))
 
   else:
     if request.user.groups.filter(name = 'Operador') or (request.user.is_superuser):
