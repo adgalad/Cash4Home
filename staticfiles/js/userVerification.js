@@ -34,6 +34,13 @@ var checkImages = function() {
     $('#img_file3').attr('style', 'border: 1px solid gray;')
   }
 
+  if ($('#file4').val() == ''){
+    $('#img_file4').attr('style', 'border: 1px solid red;')
+    return false
+  } else {
+    $('#img_file4').attr('style', 'border: 1px solid gray;')
+  }
+
   return true
 }
 
@@ -332,10 +339,17 @@ function SmartWizard (target, options) {
      */
 
   SmartWizard.prototype.goForward = function () {
-    if ($('#file'+String(this.curStepIdx+1)).val() == '') {
+    if (this.curStepIdx == 0 && $('#file'+String(this.curStepIdx+1)).val() == ''){
+      checkImages()
+      return false
+    } else if (this.curStepIdx == 1 && ($('#file'+String(this.curStepIdx+1)).val() == '' || $('#file'+String(this.curStepIdx+2)).val() == '') ){
+      checkImages()
+      return false
+    } else if (this.curStepIdx == 2 && $('#file'+String(this.curStepIdx+2)).val() == ''){
       checkImages()
       return false
     }
+    
     var nextStepIdx = this.curStepIdx + 1
     if (this.steps.length <= nextStepIdx) {
       if (!this.options.cycleSteps) {

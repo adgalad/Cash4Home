@@ -66,6 +66,7 @@
                       <input type='file' style="display:none;" name="file1" id="file1" onchange="readURL(this, 'img_file1');" />
                       <input type='file' style="display:none;" name="file2" id="file2" onchange="readURL(this, 'img_file2');" />
                       <input type='file' style="display:none;" name="file3" id="file3" onchange="readURL(this, 'img_file3');" />
+                      <input type='file' style="display:none;" name="file4" id="file4" onchange="readURL(this, 'img_file4');" />
 
                     <div id="step-1">
                       <h2>Recibo de servicio</h2>
@@ -91,16 +92,33 @@
                       <hr>
                       Una imagen de un documento de identidad vigente (cédula, pasaporte, licencia de conducir) que contenga su nombre completo y una foto de su rostro.
                       <div class="row">
-                        <br>
-                        <a href="#" onclick="getAcceptedExtension('file2')">
-                          <div class="col-xs-12 col-sm-12 col-md-6" style="height: 300px; width: 400px; display: table;">
-                            <div style="display: table-cell; vertical-align: middle;">
-                              <div style="display: flex; align-items: center; justify-content: center;">
-                                <img width="100%" class="imageUpload" id="img_file2" src="/static/images/id_placeholder.png" alt="your image"/>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                          <br><br>
+                          <b>Imagen delantera del documento: </b><br><br>
+                          <a href="#" onclick="getAcceptedExtension('file2')">
+                            <div class="col-xs-12 col-sm-12 col-md-6" style="height: 300px; width: 400px; display: table;">
+                              <div style="display: table-cell; vertical-align: middle;">
+                                <div style="display: flex; align-items: center; justify-content: center;">
+                                  <img width="100%" class="imageUpload" id="img_file2" src="/static/images/id_placeholder.png" alt="your image"/>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </a>
+                          </a>
+                        </div>
+
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                          <br><br>
+                          <b>Imagen trasera del documento: </b><br><br>
+                          <a href="#" onclick="getAcceptedExtension('file3')">
+                            <div class="col-xs-12 col-sm-12 col-md-6" style="height: 300px; width: 400px; display: table;">
+                              <div style="display: table-cell; vertical-align: middle;">
+                                <div style="display: flex; align-items: center; justify-content: center;">
+                                  <img width="100%" class="imageUpload" id="img_file3" src="/static/images/id_placeholder.png" alt="your image"/>
+                                </div>
+                              </div>
+                            </div>
+                          </a>
+                        </div>
                         <br>
                       </div>
                     </div>
@@ -110,11 +128,11 @@
                       Una foto de usted sosteniendo su documento documento de identificación.
                       <div class="row">
                         <br>
-                        <a href="#" onclick="getAcceptedExtension('file3')">
+                        <a href="#" onclick="getAcceptedExtension('file4')">
                           <div class="col-xs-12 col-sm-12 col-md-6" style="height: 300px; width: 400px; display: table;">
                             <div style="display: table-cell; vertical-align: middle;">
                               <div style="display: flex; align-items: center; justify-content: center;">
-                                <img width="100%" class="imageUpload" id="img_file3" src="/static/images/selfie_placeholder.png" alt="your image"/>
+                                <img width="100%" class="imageUpload" id="img_file4" src="/static/images/selfie_placeholder.png" alt="your image"/>
                               </div>
                             </div>
                           </div>

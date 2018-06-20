@@ -186,7 +186,7 @@
                   </div>
                   <div class="col-md-3 col-sm-3 col-xs-12 profile-img">
         
-                      <a href="/static/images/selfie_placeholder.png" target="_blank"><img src="/static/images/selfie_placeholder.png" class="img-responsive"></a>
+                      <img class="image" id="selfie_image" src="{{user.selfie_image_url}}" alt="Imagen selfie" style="width:100%;max-width:200px">
                       
                   </div>
                   <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
@@ -194,7 +194,7 @@
                   </div>
                   <div class="col-md-3 col-sm-3 col-xs-12 profile-img">
                     <!--<img src="{{ user.service_image }}" class="img-responsive">-->
-                      <a href="/static/images/selfie_placeholder.png" target="_blank"><img src="/static/images/selfie_placeholder.png" class="img-responsive"></a>
+                      <img class="image" id="service_image" src="{{user.service_image_url}}" alt="Imagen de servicio" style="width:100%;max-width:200px">
                   </div>
                 </div>
                 <div class="row">
@@ -204,13 +204,13 @@
                   </div>
                   <div class="col-md-3 col-sm-3 col-xs-12 profile-img">
                    
-                      <a href="/static/images/selfie_placeholder.png" target="_blank"><img src="/static/images/selfie_placeholder.png" class="img-responsive"></a>
+                      <img class="image" id="id_front" src="{{user.id_front_url}}" alt="DNI Frontal" style="width:100%;max-width:200px">
                   </div>
                   <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
                     <b>DNI Trasera</b>
                   </div>
                   <div class="col-md-3 col-sm-3 col-xs-12 profile-img">
-                    <a href="/static/images/selfie_placeholder.png" target="_blank"><img src="/static/images/selfie_placeholder.png" class="img-responsive"></a>
+                    <img class="image" id="id_back" src="{{user.id_back_url}}" alt="DNI Trasera" style="width:100%;max-width:200px">
                   </div>
                 </div>
                 <div class="row">
@@ -262,20 +262,6 @@
                 </div>
               {% endif %}
               <hr>
-              <div class="row">
-                <div class="col-md-3 col-sm-3 col-xs-12">
-                  <label>Imagen de servicio</label><br>
-                    <img class="image" id="service_image" src="{{user.service_image_url}}" alt="Imagen de servicio" style="width:100%;max-width:200px"><br>
-                </div>
-                <div class="col-md-3 col-sm-3 col-xs-12">
-                  <label>Documento de identificacion</label><br>
-                    <img class="image" id="id_front" src="{{user.id_front_url}}" alt="Documento de identificacion" style="width:100%;max-width:200px"><br>
-                </div>
-                <div class="col-md-3 col-sm-3 col-xs-12">
-                  <label>Selfie</label><br>
-                    <img class="image" id="selfie_image" src="{{user.selfie_image_url}}" alt="Selfie" style="width:100%;max-width:200px"><br>
-                </div>
-              </div>
               <br><br>
               <div style="float:right;">
                 <a class="btn btn-primary" href="{% url 'adminUser' %}" ><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
@@ -329,6 +315,7 @@
     $('#service_image').click(openModal)
     $('#id_front').click(openModal)
     $('#selfie_image').click(openModal)
+    $('#id_back').click(openModal)
 
     // Get the <span> element that closes the modal
     var span = document.getElementsByClassName("close")[0];
