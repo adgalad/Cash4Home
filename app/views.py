@@ -532,7 +532,8 @@ def login(request):
         print(request.POST.get('next',reverse('dashboard')))
         return redirect(request.POST.get('next',reverse('dashboard')))
       else:
-        user = User.objects.get(email= email)
+        try: user = User.objects.get(email= email)
+        except: user = None
         if not (user is None or user.is_active):
           msg = 'Debe verificar su correo electronico antes de poder ingresar. <a href="' + reverse('resendEmailVerification') + '">Reenviar correo</a>'
           messages.error(request, msg, extra_tags="safe alert-warning")
@@ -611,11 +612,14 @@ def signup(request):
       raw_password = form.cleaned_data.get('password1')
       user = authenticate(username=email, password=raw_password)
       user.is_active = False
+      user.groups.add('')
       user.save()
+      client_group = Group.objects.get(name='Cliente') 
+      client_group.user_set.add(user)
       login_auth(request, user)
       sendEmailValidation(user)
       form = AuthenticationForm()
-      msg = 'Debe verificar su correo electronico antes de poder ingresar. <a href="' + reverse('resendEmailVerification') + '">Reenviar correo</a>'
+      msg = 'Debe verificar su correo electrónico antes de poder ingresar. <a href="' + reverse('resendEmailVerification') + '">Reenviar correo</a>'
       messages.error(request, msg, extra_tags="safe alert-warning")
       return render(request, 'registration/login.html', {'form': form})
   else:

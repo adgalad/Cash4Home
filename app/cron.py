@@ -2,6 +2,7 @@ import json
 import requests
 import os
 import time
+import sys
 
 ## Pair: BTCUSD, USDBTC, DASHUSD, etc
 class PriceRetriever:
@@ -13,10 +14,10 @@ class PriceRetriever:
 
   def ask(self):
     # print(requests.get('https://localbitcoins.com//bitcoinaverage/ticker-all-currencies/').content)
-    self.localbitcoins = json.loads(requests.get('https://localbitcoins.com//bitcoinaverage/ticker-all-currencies/').content)
-    self.gemini = json.loads(requests.get('https://api.gemini.com/v1/pubticker/btcusd').content)
-    self.bitinka = json.loads(requests.get('https://www.bitinka.com/api/apinka/ticker?format=json').content)
-    self.ripio = json.loads(requests.get('https://www.ripio.com/api/v1/rates/').content)
+    self.localbitcoins = json.loads(requests.get('https://localbitcoins.com//bitcoinaverage/ticker-all-currencies/').content.decode('utf-8'))
+    self.gemini = json.loads(requests.get('https://api.gemini.com/v1/pubticker/btcusd').content.decode('utf-8'))
+    self.bitinka = json.loads(requests.get('https://www.bitinka.com/api/apinka/ticker?format=json').content.decode('utf-8'))
+    self.ripio = json.loads(requests.get('https://www.ripio.com/api/v1/rates/').content.decode('utf-8'))
 
   def avg(self, symbol, prices):
     count = 0
@@ -89,7 +90,7 @@ class UpdateBTCPrice():
             file.close()
 
         except Exception as e:
-            print(e)
+            print(e, file=sys.stderr)
 
         
         
