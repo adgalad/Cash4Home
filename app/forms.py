@@ -133,8 +133,6 @@ class ToAccountForm(forms.Form):
     return self
 
 
-
-
 class NewCurrencyForm(forms.Form):
 
   code = forms.CharField(max_length=10, required=True, label="Código", 
@@ -184,6 +182,7 @@ class NewBankForm(forms.Form):
   name = forms.CharField(max_length=100, required=True, label="Nombre", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
   country = forms.ModelChoiceField(required=True, label="País", widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}), queryset=Country.objects.all())
   swift = forms.CharField(max_length=12, required=True, label="SWIFT", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+  can_send = forms.ModelMultipleChoiceField(queryset=Bank.objects.all(), label='Bancos a los que puede transferir', required=False)
 
   def __init__(self, *args, **kwargs):
     super(NewBankForm, self).__init__(*args, **kwargs)
@@ -195,6 +194,8 @@ class EditBankForm(forms.ModelForm):
   name = forms.CharField(max_length=100, required=True, label="Nombre", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
   country = forms.ModelChoiceField(required=True, label="País", widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}), queryset=Country.objects.all())
   swift = forms.CharField(max_length=12, required=True, label="SWIFT", widget = forms.TextInput(attrs={'style': 'width:100%;', 'readonly':'readonly'}))
+  can_send = forms.ModelMultipleChoiceField(queryset=Bank.objects.all(), label='Bancos a los que puede transferir', required=False)
+  # allies = forms.ModelMultipleChoiceField(queryset=None, required=False, label="Aliados")
 
   def __init__(self, *args, **kwargs):
 
@@ -206,13 +207,12 @@ class EditBankForm(forms.ModelForm):
       self.fields['allies'].queryset = User.objects.none()
     self.fields['allies'].label = 'Aliados'
     self.fields['allies'].required = False
-    self.fields['acceptBanks'].choices =  format(queryset=Bank.objects.exclude(swift=kwargs['instance'].swift), field='country') 
 
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
   class Meta:
     model = Bank
-    fields = ('name', 'country', 'swift', 'allies', 'acceptBanks' )
+    fields = ('name', 'country', 'swift', 'allies')
 
 def format(queryset, field):
   dictionary = {}
@@ -228,31 +228,13 @@ def format(queryset, field):
     
   return sorted(result, key=lambda tup: str(tup[0]))
 
-class NewAccountForm(forms.Form):
+class NewAccountForm(forms.ModelForm):
 
-    number = forms.CharField(max_length=270, required=True, label="Número de cuenta", widget = forms.TextInput(attrs={'style': 'width:100%;'}))  
-    choices_third = (('Cliente', 'Cliente'), ('Aliado', 'Aliado'), ('Terceros', 'Terceros'))
-    is_thirds = forms.ChoiceField(choices=choices_third, required=True, label="Dueño de la cuenta",
+    number = forms.CharField(max_length=270, required=True, label="Número de cuenta*", widget = forms.TextInput(attrs={'style': 'width:100%;'}))  
+    id_bank = GroupedModelChoiceField(label='Banco*', group_by_field='country', queryset=Bank.objects.all())
+    aba = forms.CharField(max_length=10, required=False, label="ABA (Solo para bancos de USA)", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+    id_currency = forms.ModelChoiceField(required=True, label="Moneda*", queryset=Currency.objects.all(),
                                     widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
-    choices_use = (('Origen', 'Origen'), ('Destino', 'Destino'))
-    use_type = forms.ChoiceField(choices=choices_use, required=True, label="Tipo de uso",
-                                    widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
-    bank = GroupedModelChoiceField(label=_('Banco'), group_by_field='country', queryset=Bank.objects.all())
-    aba = forms.CharField(max_length=10, required=True, label="ABA", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
-    currency = forms.ModelChoiceField(required=True, label="Moneda", queryset=Currency.objects.all(),
-                                    widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
-
-    # Client owner case
-    client = forms.MultipleChoiceField(choices=format(queryset=User.objects.filter(groups__name='Cliente'), field='country'), required=False)
-    # Aliado owner case
-    allie = forms.MultipleChoiceField(choices=format(queryset=User.objects.filter(groups__name__in= ['Aliado-1', 'Aliado-2', 'Aliado-3']), field='country'), required=False)
-
-    #Third one owner case
-    owner = forms.CharField(max_length=64, required=False, label="Titular de la cuenta", widget = forms.TextInput(attrs={'style': 'width:100%;'}))  
-    alias = forms.CharField(max_length=32, required=False, label="Alias", widget = forms.TextInput(attrs={'style': 'width:100%;'}))  
-    email = forms.EmailField(required=False, label="E-mail del titular")
-    id_number = forms.IntegerField(required=False, label="Número de identificación del titular")
-    sub_owners = forms.MultipleChoiceField(choices=format(queryset=User.objects.all(), field='country'))
 
     def __init__(self,*args,**kwargs):
 
@@ -260,6 +242,10 @@ class NewAccountForm(forms.Form):
 
       for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+    class Meta:
+      model = Account
+      fields = ('number', 'id_bank', 'aba', 'id_currency')
 
 class NewHolidayForm(forms.Form):
   DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
@@ -305,24 +291,19 @@ class NewUserForm(forms.ModelForm):
   mobile_phone = forms.RegexField(regex=r'^\+?1?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
   country = forms.ModelChoiceField(label=_("País de residencia"), required=True, queryset=Country.objects.filter(status=True), empty_label="País")
   address = forms.CharField(max_length=100, required=True, label='Dirección')
-  # user_choices = (('Cliente', 'Cliente'), ('Aliado-1', 'Aliado-1'), ('Aliado-2', 'Aliado-2'), ('Aliado-3', 'Aliado-3'), ('Operador', 'Operador'), ('Admin', 'Admin'))
-  # user_type = forms.ChoiceField(choices=user_choices, required=True, label="Tipo de usuario")
-  referred_by = forms.ModelChoiceField(queryset=None, label='Referido por', required=False, empty_label="Ninguno")
+  referred_by = forms.ModelChoiceField(queryset=User.objects.filter(groups__name__in=['Aliado-1', 'Aliado-2', 'Aliado-3']), 
+                                          label='Referido por', required=False, empty_label="Ninguno")
   choices_buy = ((True, 'Si'), (False, 'No'))
   canBuyDollar = forms.ChoiceField(choices=choices_buy, label='¿Puede comprar dólares?', required=True, 
                                     widget=forms.RadioSelect(attrs={'style': 'width:100%; background-color:white'}))
 
   def __init__(self, *args, **kwargs):
-    alliesChoices = kwargs.pop('alliesC') 
+
     super(NewUserForm, self).__init__(*args, **kwargs)
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
         self.fields['canBuyDollar'].widget.attrs.update({'class' : 'flat'})
 
-
-    self.fields['referred_by'].queryset = alliesChoices
-    self.fields['coordinatesUsers'].queryset = alliesChoices
-    self.fields['coordinatesUsers'].required = False
   def clean_email(self):
     return self.cleaned_data['email'].lower()
   
@@ -336,6 +317,59 @@ class NewUserForm(forms.ModelForm):
     model = User
     fields = ('first_name', 'last_name', 'email', 'id_number', 'country', 'address', 'mobile_phone', 'referred_by', 'coordinatesUsers', 'canBuyDollar', 'is_superuser', 'groups' )
 
+class NewOwnAccountAssociatedForm(forms.Form):
+
+  account = forms.ModelChoiceField(label="Número de cuenta", queryset=Account.objects.all(), required=True, empty_label="---")
+  choices = (('Origen', 'Origen'), ('Destino', 'Destino'))
+  use_type = forms.ChoiceField(choices=choices, required=True, label="Tipo de uso")
+
+  def __init__(self, *args, **kwargs):
+
+    super(NewOwnAccountAssociatedForm, self).__init__(*args, **kwargs)
+    for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+
+class NewThirdAccountAssociatedForm(forms.Form):
+
+  account = forms.ModelChoiceField(label="Número de cuenta", queryset=Account.objects.all(), required=True, empty_label="---")
+  owner = forms.CharField(max_length=64, required=True, label="Titular de la cuenta")
+  alias = forms.CharField(max_length=32, required=False, label="Alias")
+  email = forms.EmailField(label="Email", required=True)
+  id_number = forms.CharField(label='N° de identificación del titular', required=True, max_length=70)
+
+  def __init__(self, *args, **kwargs):
+
+    super(NewThirdAccountAssociatedForm, self).__init__(*args, **kwargs)
+    for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+class NewExchangerForm(forms.Form):
+    name = forms.CharField(required=True, label="Nombre", max_length=140)
+    currency = forms.ModelMultipleChoiceField(required=True, label="Monedas que acepta", queryset=Currency.objects.all())
+
+    def __init__(self, *args, **kwargs):
+
+      super(NewExchangerForm, self).__init__(*args, **kwargs)
+      for i in self.fields:
+          self.fields[i].widget.attrs.update({'class' : 'form-control'})    
+
+class EditExchangerForm(forms.Form):
+    name = forms.CharField(max_length=140, required=True, label="Nombre", widget = forms.TextInput(attrs={'style': 'width:100%;', 'readonly':'readonly'}))
+    currency = forms.CharField(max_length=50, required=True, label="Moneda", widget = forms.TextInput(attrs={'style': 'width:100%;', 'readonly':'readonly'}))
+    status_choices = ((False, 'Inactivo',), (True, 'Activo'))
+    is_active = forms.ChoiceField(required = True,
+                    widget=forms.RadioSelect(attrs={'style': 'width:100%; background-color:white'}), 
+                    label = "Estado",
+                    choices=status_choices)
+    amount = forms.DecimalField(label="Cantidad acumulada", required=True)
+
+    def __init__(self, *args, **kwargs):
+
+        super(EditExchangerForm, self).__init__(*args, **kwargs)
+        for i in self.fields:
+            self.fields[i].widget.attrs.update({'class' : 'form-control'})
+            self.fields['is_active'].widget.attrs.update({'class' : 'flat'})
 
 class PermissionForm(forms.ModelForm):
 

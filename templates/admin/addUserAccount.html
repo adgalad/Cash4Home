@@ -1,14 +1,16 @@
 {% extends "base_dashboard.html" %}
-{% load i18n %}
 
-{% block title %} Editar país {% endblock title %}
+{% block title %} Asociar cuenta {% endblock title %}
 
 {% block content %}
   <div class="right_col" role="main">
-    <div class="row">
-        <div class="col-xs-5 col-xs-offset-3">
+    <div class="">
+      <div class="clearfix"></div>
+
+      <div class="row">
+       <div class="col-xs-5 col-xs-offset-3">
           <div class="text-center admin_content">
-            <h3>Editar país</h3>
+            <h3>Asociar cuenta</h3>
           </div>
           <form method="post">
             {% csrf_token %}
@@ -28,13 +30,15 @@
               {{ field }} 
               <br>
             {% endfor %}
+            
             <div class="text-center">
               <br>
-              <a class="btn btn-primary" href="{% url 'adminCountry' %}" ><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
+              <a class="btn btn-primary" href="{% url 'viewUserAccounts' u.id %}" ><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
               <button class="btn btn-primary submit" type="submit">Enviar</button>
             </div>
           </form>
-        </div>
+        </div>    
+      </div>
     </div>
   </div>
-{% endblock %}
+{% endblock content %}

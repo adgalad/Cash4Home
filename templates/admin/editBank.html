@@ -30,8 +30,7 @@
             </section>   
           {% endfor %} 
           {% for field in form %}
-            {{ field.label_tag }}
-            
+            {{ field.label_tag }}     
             {{ field }} 
             {% if field.label == 'Aliados' %} 
               <br>
@@ -40,11 +39,13 @@
           {% endfor %}
           <div class="text-center">
             <br>
+            <a class="btn btn-primary" href="{% url 'adminBank' %}" ><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
             <button class="btn btn-primary submit" type="submit">Enviar</button>
           </div>
         </form>
-      </div>
+      </div>  
     </div>
+    
   </div>
 {% endblock %}
 
@@ -60,18 +61,16 @@
               enableFiltering: true,
               nonSelectedText: 'Seleccione los aliados',
               includeSelectAllOption: true
-          })
-          
-
-          $('#id_acceptBanks').multiselect({
+          });
+          $('#id_can_send').multiselect({
               enableClickableOptGroups: true,
               enableCollapsibleOptGroups: true,
               enableFiltering: true,
               nonSelectedText: 'Seleccione los bancos',
               includeSelectAllOption: true
-          })
-
+          });
           $('div[class="btn-group"]').attr('style', 'width: 100%;')
+
       });
 
   </script>

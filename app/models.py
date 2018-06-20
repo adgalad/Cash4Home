@@ -8,6 +8,21 @@ import os
 from django.utils import timezone
 import datetime
 import random
+
+
+class Country(models.Model):
+    name = models.CharField(max_length=70, primary_key=True, unique=True)
+    status = models.BooleanField(default=True)
+    iso_code = models.CharField(max_length=4)
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
 class MyUserManager(BaseUserManager):
     """
     A custom user manager to deal with emails as unique identifiers for auth
@@ -74,9 +89,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     user_type = models.CharField(choices=user_choices, max_length=9, blank=True)
     referred_by = models.ForeignKey('self', null=True, blank=True)
     canBuyDollar = models.BooleanField(default=False)
-    country = models.CharField(max_length=70)
+    country = models.ForeignKey(Country, null=True, blank=True)
 
-    coordinatesUsers = models.ManyToManyField('self', verbose_name='Aliados que coordina')
+    coordinatesUsers = models.ManyToManyField('self', verbose_name='Aliados que coordina', blank=True)
 
     USERNAME_FIELD = 'email'
     objects = MyUserManager()
@@ -100,7 +115,7 @@ class Holiday(models.Model):
     #The primary key is the django id
     date = models.DateField()
     description = models.CharField(max_length=140)
-    country = models.CharField(max_length=70)
+    country = models.ForeignKey(Country)
 
     def __str__(self):
         return str(self.date) + ' ' + self.description
@@ -123,12 +138,11 @@ class ExchangeRate(models.Model):
         return str(self.origin_currency) + "/" + str(self.target_currency)
 
 class Bank(models.Model):
-    swift       = models.CharField(max_length=12, primary_key=True, unique=True, blank=True)
-    country     = models.ForeignKey('Country', related_name='banks')
-    name        = models.CharField(max_length=100)
-    allies      = models.ManyToManyField(User)
-    acceptBanks = models.ManyToManyField('Bank', verbose_name='Transferencias instantaneas a')
-
+    swift = models.CharField(max_length=12, primary_key=True, unique=True, blank=True)
+    country = models.ForeignKey('Country', related_name='banks')
+    name = models.CharField(max_length=100)
+    allies = models.ManyToManyField(User, blank=True)
+    
     def __str__(self):
         return self.name
 
@@ -138,7 +152,6 @@ class Bank(models.Model):
 
 class Account(models.Model):
     number = models.CharField(max_length=270)
-    is_client = models.BooleanField()
     
     id_bank = models.ForeignKey(Bank)
     id_currency = models.ForeignKey(Currency)
@@ -157,6 +170,7 @@ class AccountBelongsTo(models.Model):
     alias = models.CharField(max_length=32, null=True)
     email = models.EmailField(null=True)
     id_number = models.IntegerField(verbose_name='ID number', null=True)
+    active = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ('id_account', 'id_client')
@@ -260,20 +274,6 @@ class Comission(models.Model):
     choices = (('Pagado', 'Pagado'), ('Por pagar', 'Por pagar'), ('Pagado parcialmente', 'Pagado parcialmente'))
     status = models.CharField(choices=choices, max_length=20)
     remaining = models.DecimalField(max_digits=40, decimal_places=40)
-
-
-class Country(models.Model):
-    name = models.CharField(max_length=70, primary_key=True, unique=True)
-    status = models.BooleanField(default=True)
-    iso_code = models.CharField(max_length=4)
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
 
 class CanSendTo(models.Model):
     # The primary key is the django id

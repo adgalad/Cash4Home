@@ -30,12 +30,13 @@
               <div class="clearfix"></div>
             </div>
             <div class="x_content">
-              <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive" cellspacing="0" width="100%">
+              <table id="datatable-buttons" class="table table-striped table-bordered dt-responsive" cellspacing="0" width="100%">
                 <thead>
                   <tr>
                     <th>Nombre</th>
                     <th>País</th>
                     <th>SWIFT</th>
+                    <th>Puede transferir a </th>
                     <th>Editar</th>
                   </tr>
                 </thead>
@@ -44,7 +45,8 @@
                     <tr>
                       <td>{{ b.name }}</td>
                       <td>{{ b.country }}</td>
-                      <td>{{ b.swift }}</td>  
+                      <td>{{ b.swift }}</td>
+                      <td>{{ b.can_send }}</td>  
                       <td><a href="{% url 'editBank' b.swift %}"><i class="fa fa-edit"></i></a></td>
                     </tr>
                   {% endfor %}

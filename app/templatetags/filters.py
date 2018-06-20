@@ -1,4 +1,5 @@
 from django.template.defaultfilters import register
+from django.contrib.auth.models import Group
 
 @register.filter(name='lookup')
 def lookup(dict, index):
@@ -15,3 +16,8 @@ def currency(value):
         pass    
         
     return ''
+
+@register.filter(name='has_group')
+def has_group(user, group_name):
+    group = Group.objects.get(name=group_name)
+    return True if group in user.groups.all() else False
