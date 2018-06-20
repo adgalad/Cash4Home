@@ -60,7 +60,17 @@
                       {% else %}
                         <td>Por verificar</td>
                       {% endif %}
-                      <td class="btn-actions"><a href="{% url 'viewUser' u.id %}"><i class="fa fa-search"></i>Ver</a><a href="{% url 'editUser' u.id %}"><i class="fa fa-edit"></i>Editar</a><a href="{% url 'viewUserAccounts' u.id %}"><i class="fa fa-bank"></i>Cuentas</a></td>
+                      <td class="btn-actions">
+                        <a href="{% url 'viewUser' u.id %}">
+                          <i class="fa fa-search"></i>Ver
+                        </a>
+                        <a href="{% url 'editUser' u.id %}">
+                          <i class="fa fa-edit"></i>Editar
+                        </a>
+                        <a href="{% url 'viewUserAccounts' u.id %}">
+                          <i class="fa fa-bank"></i>Cuentas
+                        </a>
+                      </td>
                     </tr>
                   {% endfor %}
                 </tbody>

@@ -22,6 +22,9 @@ class Command(BaseCommand):
         currency  = ContentType(app_label='admin', model='Monedas')
         group     = ContentType(app_label='admin', model='Grupos')
         
+        btc_price = ContentType(app_label='dashboard', model='BTC_Price')
+
+
         user.save()
         bank.save()
         account.save()
@@ -31,6 +34,8 @@ class Command(BaseCommand):
         rate.save()
         currency.save()
         group.save()
+
+        btc_price.save()
 
         
         add_user  = Permission(name='Crear',  codename='add_user',  content_type=user)
@@ -80,6 +85,9 @@ class Command(BaseCommand):
         add_group.save()       
         edit_group.save()
 
+        btc_price_p = Permission(name='Ver precio BTC', codename='btc_price', content_type=btc_price)
+        btc_price_p.save()
+
 
         client   = Group(name='Cliente')
         operator = Group(name='Operador')
@@ -94,6 +102,7 @@ class Command(BaseCommand):
         ally3.save()
 
         operator.permissions.add(edit_user)
+        operator.permissions.add(btc_price)
 
 
 

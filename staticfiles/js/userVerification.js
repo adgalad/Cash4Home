@@ -332,7 +332,7 @@ function SmartWizard (target, options) {
      */
 
   SmartWizard.prototype.goForward = function () {
-    if (this.curStepIdx > 0 && $('#file'+String(this.curStepIdx)).val() == '') {
+    if ($('#file'+String(this.curStepIdx+1)).val() == '') {
       checkImages()
       return false
     }

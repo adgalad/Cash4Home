@@ -17,8 +17,8 @@ from django.conf.urls import url,handler404, handler500, handler403
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from app import views
-
-
+from django.conf.urls.static import static
+from C4H.settings import MEDIA_URL, MEDIA_ROOT
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -108,8 +108,7 @@ urlpatterns = [
     url(r'^dashboard/operational/$', views.operationalDashboard, name="operationalDashboard"),
     url(r'^dashboard/operational/(?P<_operation_id>.+)/details$', views.operationDetailDashboard, name="operationDetailDashboard"),
     url(r'^dashboard/operational/(?P<_operation_id>.+)/edit$', views.operationEditDashboard, name="operationEditDashboard"),
-]
-
+] + static(MEDIA_URL, document_root=MEDIA_ROOT)
 
 handler404 = views.handler404
 handler403 = views.handler403

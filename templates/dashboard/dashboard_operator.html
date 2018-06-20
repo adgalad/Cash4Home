@@ -1,7 +1,13 @@
 {% extends "base_dashboard.html" %}
+{% load mathfilters %}
 
-
-{% block content %}
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="/static/vendors/datatables.net-bs/css/dataTables.bootstrap.min.css" rel="stylesheet">
+  <link href="/static/vendors/datatables.net-buttons-bs/css/buttons.bootstrap.min.css" rel="stylesheet">
+  <link href="/static/vendors/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css" rel="stylesheet">
+  <link href="/static/vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css" rel="stylesheet">
+  <link href="/static/vendors/datatables.net-scroller-bs/css/scroller.bootstrap.min.css" rel="stylesheet">
   <style type="text/css">
     /* Dropdown Button */
 
@@ -41,30 +47,91 @@
         white-space:nowrap;
     }
   </style>
+{% endblock stylesheets %}
+
+{% block content %}
+
   <div class="right_col" role="main">
-    {% for message in messages %}
-      <section class="table-view {{message.tags}}">
-        <div class="row">
-        <div class="container" style="text-align: center; vertical-align: middle; padding-left: 15px;">
-            {% if 'safe' in message.tags %}
-              {{ message | safe }}
-            {% else %}
-              {{ message }}
-            {% endif %}
-        </div>
-        <div class="row">
-      </section>   
-    {% endfor %} 
+    <div class="row">
+      {% for message in messages %}
+        <section class="table-view {{message.tags}}">
+          <div class="row">
+          <div class="container" style="text-align: center; vertical-align: middle; padding-left: 15px;">
+              {% if 'safe' in message.tags %}
+                {{ message | safe }}
+              {% else %}
+                {{ message }}
+              {% endif %}
+          </div>
+          <div class="row">
+        </section>   
+      {% endfor %} 
 
-    <div class="">
-      
+      <div class="">
+        
 
-      <div class="clearfix"></div>
-      <div class='row'>
-        <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="clearfix"></div>
+        {% if perms.dashboard.btc_price %}
+          <div class='row'>
+            <div class="col-md-12 col-sm-12 col-xs-12">
+              <div class="x_panel">
+                <div class="x_title">
+                  <h2>Precio de exchangers</h2>
+                  <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                    </li>
+                  </ul>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                  <div class="row tile_count">
+
+                    {% for key, value in prices.items %}
+                      <div class="col-md-3 col-sm-4 col-xs-6 dropdown">
+                        <div class="dropbtn" align="center">
+                          <span class="count_top">
+                            <h2><i class="fa fa-money"></i> <b>BTC/{{ key }}</b></h2></span>
+                            <h2>{{value | lookup:'symbol'}} {{ value | lookup:'avg' | currency }}</h2>
+                          <div class="dropdown-content">
+                            <div style="margin: 5%">
+                              <table class="table" id="t-usd">
+                                <thead>
+                                  <tr> <th> Exchanger </th> <th> Precio</th></tr>
+                                  {% for exchanger, price in value.prices.items %}
+                                  <tr>
+                                    <td> {{ exchanger }} </td>
+                                    <td> {{value | lookup:'symbol'}} {{ price | currency }} </td>
+                                  </tr>
+                                  {% endfor %}
+                                </thead>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                   
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
+        {% if perms.dashboard.operations_operator %}
+          <div class="row tile_count">
+            <div class="col-md-3 col-sm-4 col-xs-6 tile_stats_count">
+              <span class="count_top"><i class="fa fa-clock-o"></i> Operaciones pendientes</span>
+              <div class="count">{{totalOpen}}</div>
+            </div>
+            <div class="col-md-3 col-sm-4 col-xs-6 tile_stats_count">
+              <span class="count_top"><i class="fa fa-check"></i> Operaciones finalizadas</span>
+              <div class="count">{{totalEnded}}</div>
+            </div>
+          </div>
           <div class="x_panel">
             <div class="x_title">
-              <h2>Precio de exchangers</h2>
+              <h2>Lista de operaciones pendientes</h2>
               <ul class="nav navbar-right panel_toolbox">
                 <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                 </li>
@@ -72,37 +139,82 @@
               <div class="clearfix"></div>
             </div>
             <div class="x_content">
-              <div class="row tile_count">
-
-                {% for key, value in prices.items %}
-                  <div class="col-md-3 col-sm-4 col-xs-6 dropdown">
-                    <div class="dropbtn" align="center">
-                      <span class="count_top">
-                        <h2><i class="fa fa-money"></i> <b>BTC/{{ key }}</b></h2></span>
-                        <h2>{{value | lookup:'symbol'}} {{ value | lookup:'avg' | currency }}</h2>
-                      <div class="dropdown-content">
-                        <div style="margin: 5%">
-                          <table class="table" id="t-usd">
-                            <thead>
-                              <tr> <th> Exchanger </th> <th> Precio</th></tr>
-                              {% for exchanger, price in value.prices.items %}
-                              <tr>
-                                <td> {{ exchanger }} </td>
-                                <td> {{value | lookup:'symbol'}} {{ price | currency }} </td>
-                              </tr>
-                              {% endfor %}
-                            </thead>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                {% endfor %}
-               
-              </div>
+              <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive" cellspacing="0" width="100%">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Cliente</th>
+                    <th>Cant. recibida</th>
+                    <th>Cant. enviada</th>
+                    <th>Fecha de creación</th>
+                    <th>Fecha de vencimiento</th>
+                    <th>Aliados</th>
+                    <th>Estado</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for op in actualO %}
+                    <tr>
+                      <td>{{ op.code }}</td>
+                      <td>{{ op.id_client.get_full_name }}</td>
+                      <td>{{ op.fiat_amount | currency }} {{ op.origin_currency.code }}</td>
+                      <td>{{ op.fiat_amount|mul:op.exchange_rate | currency }} {{op.target_currency.code}}</td>  
+                      <td>{{ op.date }}</td>
+                      <td>{{ op.date_ending }}</td>
+                      <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>
+                      <td>{{ op.status }}</td>
+                      <td><a href="{% url 'operationDetailDashboard' op.code %}"><i class="fa fa-search"></i></a><a href="{% url 'operationEditDashboard' op.code %}"><i class="fa fa-edit"></i></a></td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
+
+          <div class="x_panel">
+            <div class="x_title">
+              <h2>Lista de operaciones finalizadas</h2>
+              <ul class="nav navbar-right panel_toolbox">
+                <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+              </ul>
+              <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+              <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive" cellspacing="0" width="100%">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Cliente</th>
+                    <th>Cant. recibida</th>
+                    <th>Cant. enviada</th>
+                    <th>Fecha de creación</th>
+                    <th>Fecha de finalización</th>
+                    <th>Aliados</th>
+                    <th>Estado</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for op in endedO %}
+                    <tr>
+                      <td>{{ op.code }}</td>
+                      <td>{{ op.id_client.get_full_name }}</td>
+                      <td>{{ op.fiat_amount | currency }} {{ op.origin_currency.code }}</td>
+                      <td>{{ op.fiat_amount|mul:op.exchange_rate | currency }} {{op.target_currency.code}}</td>  
+                      <td>{{ op.date }}</td>
+                      <td>{{ op.date_ending }}</td>
+                      <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>
+                      <td>{{ op.status }}</td>
+                      <td><a href="{% url 'operationDetailDashboard' op.code %}"><i class="fa fa-search"></i></a></td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -112,7 +224,34 @@
   {{ block.super }}
   <!-- Chart.js -->
   <script src="/static/vendors/Chart.js/dist/Chart.min.js"></script>
+  <script type="text/javascript">
+    function modal (url) {
+      $('#popup').load(url, function () {
+        $(this).modal('show')
+        // $('#closeModal').onclick(function(){ return false })
+      })
+      return false
+    }
+    {% if request.GET.operation %}
+      $('#{{request.GET.operation}}').click()
+    {% endif %}
 
+  </script>
+  <script src="/static/vendors/datatables.net/js/jquery.dataTables.min.js"></script>
+  <script src="/static/vendors/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+  <script src="/static/vendors/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+  <script src="/static/vendors/datatables.net-buttons-bs/js/buttons.bootstrap.min.js"></script>
+  <script src="/static/vendors/datatables.net-buttons/js/buttons.flash.min.js"></script>
+  <script src="/static/vendors/datatables.net-buttons/js/buttons.html5.min.js"></script>
+  <script src="/static/vendors/datatables.net-buttons/js/buttons.print.min.js"></script>
+  <script src="/static/vendors/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js"></script>
+  <script src="/static/vendors/datatables.net-keytable/js/dataTables.keyTable.min.js"></script>
+  <script src="/static/vendors/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+  <script src="/static/vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js"></script>
+  <script src="/static/vendors/datatables.net-scroller/js/dataTables.scroller.min.js"></script>
+  <script src="/static/vendors/jszip/dist/jszip.min.js"></script>
+  <script src="/static/vendors/pdfmake/build/pdfmake.min.js"></script>
+  <script src="/static/vendors/pdfmake/build/vfs_fonts.js"></script>
 {% endblock javascripts %}
 
 

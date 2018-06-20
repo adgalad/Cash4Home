@@ -86,15 +86,32 @@ def dashboard(request):
       messages.error(request, message, extra_tags="safe alert alert-warning alert-dismissible fade in")
 
   print(request.user.groups.filter(name__in=['Operador', 'Aliado-1', 'Aliado-2', 'Aliado-3']))
-  if request.user.is_superuser:
+
+  
+
+
+  if request.user.groups.filter(name = 'Cliente'):    
+    return pendingOperations(request)
+
+  else:
+    if request.user.groups.filter(name = 'Operador') or (request.user.is_superuser):
+      actualOperations = Operation.objects.filter(is_active=True).order_by('date')
+      endedOperations = Operation.objects.filter(is_active=False).order_by('date')
+        
+    elif request.user.groups.filter(name = 'Aliado-1'):
+      actualOperations = Operation.objects.filter(Q(is_active=True) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
+      endedOperations = Operation.objects.filter(Q(is_active=False) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
+
+    for i in actualOperations:
+      i.isCanceled()
+    
+    totalOpen = actualOperations.count()
+    totalEnded = endedOperations.count()
+
     file = open(os.path.join(MEDIA_ROOT, "BTCPrice.json"), "r")
     prices = json.loads(file.read())
     file.close()
-    return render(request, 'dashboard/dashboard_operator.html', {'prices': prices})
-  elif request.user.groups.filter(name__in=['Operador', 'Aliado-1', 'Aliado-2', 'Aliado-3']):
-    return operationalDashboard(request)
-  else:
-    return pendingOperations(request)
+    return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations, 'endedO': endedOperations, 'totalOpen': totalOpen, 'totalEnded': totalEnded})
 
 
 def company(request):
@@ -611,7 +628,6 @@ def signup(request):
       raw_password = form.cleaned_data.get('password1')
       user = authenticate(username=email, password=raw_password)
       user.is_active = False
-      user.groups.add('')
       user.save()
       client_group = Group.objects.get(name='Cliente') 
       client_group.user_set.add(user)
@@ -1021,7 +1037,6 @@ def viewUser(request, _user_id):
         actualUser = User.objects.get(id=_user_id)
     except:
         raise Http404
-
     return render(request, 'admin/viewUser.html', {'user': actualUser})
 
 def verifyUser(request, _user_id):
@@ -1030,11 +1045,14 @@ def verifyUser(request, _user_id):
     except:
         raise Http404
 
+    if actualUser.verified:
+      messages.error(request, "Este usuario ya estaba verificado.", extra_tags="alert-warning")
+      return render(request, 'admin/viewUser.html', {'user': actualUser})  
     actualUser.verified = True
 
     actualUser.save()
 
-    msg = "El usuario se verificó con éxito"
+    msg = "El usuario se verificó con éxito."
     messages.error(request, msg, extra_tags="alert-success")
     return render(request, 'admin/viewUser.html', {'user': actualUser})
 

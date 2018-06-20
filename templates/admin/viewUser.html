@@ -9,6 +9,77 @@
   <link href="/static/vendors/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css" rel="stylesheet">
   <link href="/static/vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css" rel="stylesheet">
   <link href="/static/vendors/datatables.net-scroller-bs/css/scroller.bootstrap.min.css" rel="stylesheet">
+  <style type="text/css">
+    .image {
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .image:hover {opacity: 0.7;}
+
+    /* The Modal (background) */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 100px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+    }
+
+    /* Modal Content (Image) */
+    .modal-content {
+        margin: auto;
+        display: block;
+        width: 80%;
+        max-width: 700px;
+    }
+
+    /* Caption of Modal Image (Image Text) - Same Width as the Image */
+    #caption {
+        margin: auto;
+        display: block;
+        width: 80%;
+        max-width: 700px;
+        text-align: center;
+        color: #ccc;
+        padding: 10px 0;
+        height: 150px;
+    }
+
+
+
+    /* The Close Button */
+    .close {
+        position: absolute;
+        top: 15px;
+        right: 35px;
+        color: #f1f1f1;
+        font-size: 40px;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: #bbb;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    /* 100% Image Width on Smaller Screens */
+    @media only screen and (max-width: 700px){
+        .modal-content {
+            width: 100%;
+        }
+    }
+  </style>
 {% endblock stylesheets %}
 
 {% block content %}
@@ -29,6 +100,21 @@
           </section>   
           <br>
         {% endfor %}
+
+
+        <!-- The Modal -->
+        <div id="myModal" class="modal">
+
+          <!-- The Close Button -->
+          <span class="close">&times;</span>
+
+          <!-- Modal Content (The Image) -->
+          <img class="modal-content" id="img01">
+
+          <!-- Modal Caption (Image Text) -->
+          <div id="caption"></div>
+        </div>
+
         <div class="col-md-12 col-sm-12 col-xs-12">
           <div class="x_panel">
             <div class="x_title">
@@ -176,10 +262,28 @@
                 </div>
               {% endif %}
               <hr>
+              <div class="row">
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  <label>Imagen de servicio</label><br>
+                    <img class="image" id="service_image" src="{{user.service_image_url}}" alt="Imagen de servicio" style="width:100%;max-width:200px"><br>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  <label>Documento de identificacion</label><br>
+                    <img class="image" id="id_front" src="{{user.id_front_url}}" alt="Documento de identificacion" style="width:100%;max-width:200px"><br>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  <label>Selfie</label><br>
+                    <img class="image" id="selfie_image" src="{{user.selfie_image_url}}" alt="Selfie" style="width:100%;max-width:200px"><br>
+                </div>
+              </div>
+              <br><br>
               <div style="float:right;">
                 <a class="btn btn-primary" href="{% url 'adminUser' %}" ><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
-                <a class="btn btn-primary" href="{% url 'editUser' user.id %}" ><i class="fa fa-edit"></i>&nbsp Editar</a>  
-                <a class="btn btn-primary" href="{% url 'verifyUser' user.id %}" ><i class="fa fa-check"></i>&nbsp Verificar cuenta</a> 
+                <a class="btn btn-primary" href="{% url 'editUser' user.id %}" ><i class="fa fa-edit"></i>&nbsp Editar</a>
+
+                <a class="btn btn-primary" {% if user.verified %} onclick="return false" disabled {% endif %} href="{% url 'verifyUser' user.id %}" >
+                  <i class="fa fa-check"></i>&nbsp Verificar cuenta
+                </a> 
               </div>
               
             </div>
@@ -210,4 +314,28 @@
   <script src="/static/vendors/jszip/dist/jszip.min.js"></script>
   <script src="/static/vendors/pdfmake/build/pdfmake.min.js"></script>
   <script src="/static/vendors/pdfmake/build/vfs_fonts.js"></script>
+  <script type="text/javascript">
+    var modal = document.getElementById('myModal');
+
+    // Get the image and insert it inside the modal - use its "alt" text as a caption
+    var img = document.getElementById('selfie_image');
+    var modalImg = document.getElementById("img01");
+    var captionText = document.getElementById("caption");
+    openModal = function(){
+        modal.style.display = "block";
+        modalImg.src = this.src;
+        captionText.innerHTML = this.alt;
+    }
+    $('#service_image').click(openModal)
+    $('#id_front').click(openModal)
+    $('#selfie_image').click(openModal)
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() { 
+      modal.style.display = "none";
+    }
+  </script>
 {% endblock javascripts %}

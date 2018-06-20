@@ -19,6 +19,7 @@ class Country(models.Model):
 
     class Meta:
         ordering = ['name']
+        default_permissions = ()
 
     def __str__(self):
         return self.name
@@ -38,13 +39,18 @@ class MyUserManager(BaseUserManager):
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save()
+        client_group = Group.objects.get(name='Cliente') 
+        client_group.user_set.add(user)
+        print('hola')
         return user
 
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
-
+        client_group = Group.objects.all()
+        for i in client_group:
+            i.user_set.add(user)
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
@@ -107,6 +113,25 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.first_name
 
     @property
+    def id_front_url(self):
+        if self.id_front and hasattr(self.id_front, 'url'):
+            return self.id_front.url
+        else:
+            return '/static/images/placeholder.png'
+    @property
+    def selfie_image_url(self):
+        if self.selfie_image and hasattr(self.selfie_image, 'url'):
+            return self.selfie_image.url
+        else:
+            return '/static/images/placeholder.png'
+    
+    @property
+    def service_image_url(self):
+        if self.service_image and hasattr(self.service_image, 'url'):
+            return self.service_image.url
+        else:
+            return '/static/images/placeholder.png'
+    @property
     def canVerify(self):
         return not (self.verified or self.id_front or self.selfie_image)
 
@@ -119,6 +144,8 @@ class Holiday(models.Model):
 
     def __str__(self):
         return str(self.date) + ' ' + self.description
+    class Meta:
+        default_permissions = ()
 class Currency(models.Model):
     code = models.CharField(max_length=10, primary_key=True, unique=True) # VEF, USD, BTC
     name = models.CharField(max_length=50)
@@ -127,6 +154,9 @@ class Currency(models.Model):
 
     def __str__(self):
         return self.code
+
+    class Meta:
+        default_permissions = ()
 
 class ExchangeRate(models.Model):
     # The primary key is the django id
@@ -137,6 +167,9 @@ class ExchangeRate(models.Model):
     def __str__(self):
         return str(self.origin_currency) + "/" + str(self.target_currency)
 
+    class Meta:
+        default_permissions = ()
+
 class Bank(models.Model):
     swift = models.CharField(max_length=12, primary_key=True, unique=True, blank=True)
     country = models.ForeignKey('Country', related_name='banks')
@@ -146,9 +179,9 @@ class Bank(models.Model):
     def __str__(self):
         return self.name
 
-# class AllyToBank(models.Model):
-#      bank = models.ForeignKey('', related_name='banks')
-#      country = models.ForeignKey('Country', related_name='banks')
+    class Meta:
+        default_permissions = ()
+
 
 class Account(models.Model):
     number = models.CharField(max_length=270)
@@ -159,6 +192,9 @@ class Account(models.Model):
 
     def __str__(self):
         return str(self.id_bank) + " " + str(self.number)
+    
+    class Meta:
+        default_permissions = ()
 
 class AccountBelongsTo(models.Model):
     # The primary key is the django id
@@ -174,6 +210,7 @@ class AccountBelongsTo(models.Model):
 
     class Meta:
         unique_together = ('id_account', 'id_client')
+        default_permissions = ()
 
     def __str__(self):
         name = str(self.id_account)
@@ -232,6 +269,8 @@ class Operation(models.Model):
             return True
         return False
 
+    class Meta:
+        default_permissions = ()
 
 class OperationGoesTo(models.Model):
     # The primary key is the django id
@@ -241,6 +280,7 @@ class OperationGoesTo(models.Model):
 
     class Meta:
         unique_together = ('operation_code', 'number_account')
+        default_permissions = ()
 
 class Transaction(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True, default=pkgenTransaction)
@@ -251,12 +291,18 @@ class Transaction(models.Model):
     origin_account = models.ForeignKey(Account, blank=True, null=True, related_name='origin_account')
     target_account = models.ForeignKey(Account, blank=True, null=True, related_name='target_account')
 
+    class Meta:
+        default_permissions = ()
+
 class Repurchase(models.Model):
     # The primary key is the django id
     date = models.DateTimeField()
     rate = models.FloatField()
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_purchase')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_purchase')
+
+    class Meta:
+        default_permissions = ()
 
 class RepurchaseCameFrom(models.Model):
     # The primary key is the django id
@@ -265,6 +311,7 @@ class RepurchaseCameFrom(models.Model):
 
     class Meta:
         unique_together = ('id_repurchase', 'id_operation')
+        default_permissions = ()
 
 class Comission(models.Model):
     # The primary key is the django id
@@ -274,6 +321,9 @@ class Comission(models.Model):
     choices = (('Pagado', 'Pagado'), ('Por pagar', 'Por pagar'), ('Pagado parcialmente', 'Pagado parcialmente'))
     status = models.CharField(choices=choices, max_length=20)
     remaining = models.DecimalField(max_digits=40, decimal_places=40)
+    
+    class Meta:
+        default_permissions = ()
 
 class CanSendTo(models.Model):
     # The primary key is the django id
@@ -282,6 +332,8 @@ class CanSendTo(models.Model):
 
     class Meta:
         unique_together = ('origin_bank', 'target_bank')
+        default_permissions = ()
+
 
 class OperationStateChange(models.Model):
     # The primary key is the django id
@@ -290,16 +342,25 @@ class OperationStateChange(models.Model):
     status_choices = (('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
                       ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'))
     original_status = models.CharField(choices=status_choices, max_length=20)
+    
+    class Meta:
+        default_permissions = ()
 
 class Exchanger(models.Model):
     name = models.CharField(max_length=140, primary_key=True, unique=True)
     is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        default_permissions = ()
 
 class ExchangerAccepts(models.Model):
     # The primary key is the django id
     exchanger = models.ForeignKey(Exchanger)
     currency = models.ForeignKey(Currency)
     amount_acc = models.DecimalField(max_digits=30, decimal_places=15)
+    
+    class Meta:
+        default_permissions = ()
 
 class BoxClosure(models.Model):
     # The primary key is the django id
@@ -311,3 +372,4 @@ class BoxClosure(models.Model):
 
     class Meta:
         unique_together = ('date', 'exchanger', 'currency')
+        default_permissions = ()
