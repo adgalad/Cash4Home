@@ -18,14 +18,14 @@
         <div class="list list-profile">
           <div class="list-item">
             <div class="row">
-              <div class="col-xs-9">
+              <div class="col-xs-3">
                   <strong>Estatus</strong>
               </div>
-              <div class="col-xs-3">
-                {% if not user.canVerify %}
-                  <p style="color:orange"> Por verificar</p>
-                {% elif user.verified %} 
+              <div class="col-xs-9">
+                {% if user.verified %}
                   <p style="color:green"><i class="fa fa-check"></i> Verificado</p>
+                {% elif not user.canVerify %} 
+                  <p style="color:orange"> Por verificar</p>
                 {% else %}
                   <div class="list-action">
                     <a href="{% url 'userVerification' %}">

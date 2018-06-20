@@ -611,11 +611,14 @@ def signup(request):
       raw_password = form.cleaned_data.get('password1')
       user = authenticate(username=email, password=raw_password)
       user.is_active = False
+      
       user.save()
+      client_group = Group.objects.get(name='Cliente') 
+      client_group.user_set.add(user)
       login_auth(request, user)
       sendEmailValidation(user)
       form = AuthenticationForm()
-      msg = 'Debe verificar su correo electronico antes de poder ingresar. <a href="' + reverse('resendEmailVerification') + '">Reenviar correo</a>'
+      msg = 'Debe verificar su correo electrónico antes de poder ingresar. <a href="' + reverse('resendEmailVerification') + '">Reenviar correo</a>'
       messages.error(request, msg, extra_tags="safe alert-warning")
       return render(request, 'registration/login.html', {'form': form})
   else:
@@ -1286,5 +1289,6 @@ def editGroup(request, _group_id):
 #       form.save()
 #       messages.error(request, 'El permiso fue agregado con exito', extra_tags="alert-success")
 #   return render(request, 'admin/addPermission.html', {'form': form})
+
 
 
