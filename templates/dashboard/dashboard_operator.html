@@ -164,7 +164,14 @@
                       <td>{{ op.date_ending }}</td>
                       <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>
                       <td>{{ op.status }}</td>
-                      <td><a href="{% url 'operationDetailDashboard' op.code %}"><i class="fa fa-search"></i></a><a href="{% url 'operationEditDashboard' op.code %}"><i class="fa fa-edit"></i></a></td>
+                      <td>
+                        <a href="{% url 'operationDetailDashboard' op.code %}">
+                          <i class="fa fa-search"></i>
+                        </a>
+                        <a href="{% url 'operationEditDashboard' op.code %}">
+                          <i class="fa fa-edit"></i>
+                        </a>
+                      </td>
                     </tr>
                   {% endfor %}
                 </tbody>

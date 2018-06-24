@@ -23,4 +23,4 @@ def decrypt(source, decode=True):
     padding = data[-1]  # pick the padding value from the end; Python 2.x: ord(data[-1])
     if data[-padding:] != bytes([padding]) * padding:  # Python 2.x: chr(padding) * padding
         raise ValueError("Invalid padding...")
-    return data[:-padding]  # remove the padding
+    return data[:-padding].decode("utf-8")  # remove the padding

@@ -282,7 +282,7 @@ class Operation(models.Model):
 
 class OperationGoesTo(models.Model):
     # The primary key is the django id
-    operation_code = models.ForeignKey(Operation)
+    operation_code = models.ForeignKey(Operation, related_name='goesTo')
     number_account = models.ForeignKey(Account)
     amount = models.FloatField(blank=True, null=True)
 
@@ -293,11 +293,20 @@ class OperationGoesTo(models.Model):
 class Transaction(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True, default=pkgenTransaction)
     date = models.DateTimeField()
-    choices = (('TO', 'TO'), ('TD', 'TD'), ('TE', 'TE')) #TO-Transaccion origen, TD-Transaccion destino, TC-transaccion crypto
+    choices = (('TO', 'TO'), ('TD', 'TD'), ('TC', 'TC')) #TO-Transaccion origen, TD-Transaccion destino, TC-transaccion crypto
     operation_type = models.CharField(choices=choices, max_length=3)
     transfer_image = models.ImageField(upload_to=get_image_path)
+    id_operation   = models.ForeignKey(Operation, blank=True, null=True, related_name='transactions')
     origin_account = models.ForeignKey(Account, blank=True, null=True, related_name='origin_account')
     target_account = models.ForeignKey(Account, blank=True, null=True, related_name='target_account')
+    to_exchanger   = models.ForeignKey(Exchanger, blank=True, null=True)
+
+    @property
+    def image_url(self):
+        if self.transfer_image and hasattr(self.transfer_image, 'url'):
+            return self.transfer_image.url
+        else:
+            return '/static/images/placeholder.png'
 
     class Meta:
         default_permissions = ()
@@ -335,8 +344,8 @@ class Comission(models.Model):
 
 class CanSendTo(models.Model):
     # The primary key is the django id
-    origin_bank = models.ForeignKey(Bank, related_name='origin_bank')
-    target_bank = models.ForeignKey(Bank, related_name='target_bank')
+    origin_bank = models.ForeignKey(Bank, related_name='canSendTo')
+    target_bank = models.ForeignKey(Bank, related_name='canReceiveFrom')
 
     class Meta:
         unique_together = ('origin_bank', 'target_bank')
@@ -345,11 +354,12 @@ class CanSendTo(models.Model):
 
 class OperationStateChange(models.Model):
     # The primary key is the django id
-    date = models.DateTimeField()
+    date = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User)
     status_choices = (('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
                       ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'))
     original_status = models.CharField(choices=status_choices, max_length=20)
+    operation = models.ForeignKey(Operation, null=True, related_name='changeHistory')
     
     class Meta:
         default_permissions = ()
