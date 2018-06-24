@@ -407,14 +407,14 @@ class GroupForm(forms.ModelForm):
 class TransactionForm(forms.ModelForm):
 
   def __init__(self, *args, **kwargs):
-    super(GroupForm, self).__init__(*args, **kwargs)
+    super(TransactionForm, self).__init__(*args, **kwargs)
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
-    self.fields['permissions'].choices = format(queryset=Permission.objects.all(), field='content_type')
+
   
   class Meta:
-    model = Group
-    fields = ('operation_type', 'transfer_image', 'id_operation', 'origin_account', 'target_account', 'to_exchanger')
+    model = Transaction
+    fields = ('operation_type', 'transfer_image', 'origin_account', 'target_account', 'to_exchanger')
 
 
 

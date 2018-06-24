@@ -1360,10 +1360,16 @@ def operationAddTransaction(request, _operation_id):
     abt = AccountBelongsTo.objects.filter(id_client=operation.id_client, id_account__pk__in=accounts).order_by('id_account__pk')
     
     if request.method == "POST":
-      pass
+      form = TransactionForm(request.POST)
+      form.fields['to_exchanger'] = Exchanger.objects.all()
+      form.fields['origin_account'] = request.user.hasAccount.all().values_list('id_account', flat=True)
+      form.fields['target_account'] = operation.goesTo.all().values_list('number_account', flat=True)
     else:
-      pass
-    return render(request, 'admin/addTransaction.html')#, {'form':form, 'operation': operation, 'transactions':transactions, 'ogt': list(zip(ogt, abt))})
+      form = TransactionForm()
+      form.fields['to_exchanger'] = Exchanger.objects.all()
+      form.fields['origin_account'] = request.user.hasAccount.all().values_list('id_account', flat=True)
+      form.fields['target_account'] = operation.goesTo.all().values_list('number_account', flat=True)
+    return render(request, 'admin/addTransaction.html', {'form':form})# 'operation': operation, 'transactions':transactions, 'ogt': list(zip(ogt, abt))})
 
 def operationEditDashboard(request, _operation_id):
     pass

@@ -39,16 +39,12 @@ class MyUserManager(BaseUserManager):
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save()
-        client_group = Group.objects.get(name='Cliente') 
-        client_group.user_set.add(user)
-        print('hola')
         return user
 
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
-        client_group = Group.objects.all()
         for i in client_group:
             i.user_set.add(user)
         if extra_fields.get('is_staff') is not True:
@@ -299,7 +295,7 @@ class Transaction(models.Model):
     id_operation   = models.ForeignKey(Operation, blank=True, null=True, related_name='transactions')
     origin_account = models.ForeignKey(Account, blank=True, null=True, related_name='origin_account')
     target_account = models.ForeignKey(Account, blank=True, null=True, related_name='target_account')
-    to_exchanger   = models.ForeignKey(Exchanger, blank=True, null=True)
+    to_exchanger   = models.ForeignKey('Exchanger', blank=True, null=True)
 
     @property
     def image_url(self):
