@@ -105,7 +105,6 @@ urlpatterns = [
     url(r'^edit/repurchase/(?P<_rep_id>\w+)', views.editRepurchase, name="editRepurchase"),
 
     #Dashboards
-    url(r'^dashboard/operational/$', views.operationalDashboard, name="operationalDashboard"),
     url(r'^dashboard/operational/(?P<_operation_id>.+)/details$', views.operationDetailDashboard, name="operationDetailDashboard"),
     url(r'^dashboard/operational/(?P<_operation_id>.+)/edit$', views.operationEditDashboard, name="operationEditDashboard"),
     url(r'^dashboard/operational/(?P<_operation_id>.+)/transaction$', views.operationAddTransaction, name="operationAddTransaction"),
