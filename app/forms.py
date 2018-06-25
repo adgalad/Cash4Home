@@ -369,7 +369,7 @@ class EditExchangerForm(forms.Form):
         super(EditExchangerForm, self).__init__(*args, **kwargs)
         for i in self.fields:
             self.fields[i].widget.attrs.update({'class' : 'form-control'})
-            self.fields['is_active'].widget.attrs.update({'class' : 'flat'})
+        self.fields['is_active'].widget.attrs.update({'class' : 'flat'})
 
 class PermissionForm(forms.ModelForm):
 
@@ -391,3 +391,41 @@ class GroupForm(forms.ModelForm):
   class Meta:
     model = Group
     fields = '__all__'
+
+class NewRepurchaseOpForm(forms.Form):
+  selected = forms.BooleanField(label="Seleccionar", required=False)
+  operation = forms.CharField(label="Código de la Operación", required=False)
+  amount = forms.FloatField(required=False, label="Monto")
+  DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
+
+  date = forms.DateField(label = "Fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
+
+  def __init__(self, *args, **kwargs):
+    super(NewRepurchaseOpForm, self).__init__(*args, **kwargs)
+    for i in self.fields:
+      self.fields[i].widget.attrs.update({'class' : 'form-control'})
+    self.fields['operation'].widget.attrs.update({'readonly': 'readonly'})
+    self.fields['amount'].widget.attrs.update({'readonly': 'readonly'})
+    self.fields['date'].widget.attrs.update({'readonly': 'readonly'})
+    self.fields['selected'].widget.attrs.update({'class' : 'flat'})
+
+class NewRepurchaseForm(forms.Form):
+    DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
+
+    date = forms.DateField(label = "Fecha", required = True, widget = DateInput(), input_formats = ['%d/%m/%Y'])
+    rate = forms.FloatField(required=True, label="Tasa de cambio" , min_value=0)
+    currency = GroupedModelChoiceField(queryset=ExchangerAccepts.objects.filter(currency__in=Currency.objects.filter(currency_type='Crypto')),
+                                               group_by_field='exchanger', required=True, label="Criptomoneda comprada")
+    def __init__(self, *args, **kwargs):
+      super(NewRepurchaseForm, self).__init__(*args, **kwargs)
+      for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+class SelectCurrencyForm(forms.Form):
+
+    currency = forms.ModelChoiceField(queryset=Currency.objects.all(), required=True, label="Moneda origen")
+
+    def __init__(self, *args, **kwargs):
+      super(SelectCurrencyForm, self).__init__(*args, **kwargs)
+      for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})

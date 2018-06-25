@@ -39,18 +39,13 @@ class MyUserManager(BaseUserManager):
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save()
-        client_group = Group.objects.get(name='Cliente') 
-        client_group.user_set.add(user)
-        print('hola')
         return user
 
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
-        client_group = Group.objects.all()
-        for i in client_group:
-            i.user_set.add(user)
+        
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
@@ -154,6 +149,7 @@ class Holiday(models.Model):
         return str(self.date) + ' ' + self.description
     class Meta:
         default_permissions = ()
+
 class Currency(models.Model):
     code = models.CharField(max_length=10, primary_key=True, unique=True) # VEF, USD, BTC
     name = models.CharField(max_length=50)
@@ -172,6 +168,7 @@ class ExchangeRate(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_pair')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_pair')
+    
     def __str__(self):
         return str(self.origin_currency) + "/" + str(self.target_currency)
 
@@ -302,12 +299,36 @@ class Transaction(models.Model):
     class Meta:
         default_permissions = ()
 
+class Exchanger(models.Model):
+    name = models.CharField(max_length=140, primary_key=True, unique=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        default_permissions = ()
+
+    def __str__(self):
+        return self.name
+
+class ExchangerAccepts(models.Model):
+    # The primary key is the django id
+    exchanger = models.ForeignKey(Exchanger)
+    currency = models.ForeignKey(Currency)
+    amount_acc = models.DecimalField(max_digits=30, decimal_places=15)
+    
+    class Meta:
+        default_permissions = ()
+
+    def __str__(self):
+        return str(self.currency.code)
+
 class Repurchase(models.Model):
     # The primary key is the django id
     date = models.DateTimeField()
     rate = models.FloatField()
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_purchase')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_purchase')
+    exchanger = models.ForeignKey(Exchanger)
+    profit = models.FloatField(default=0)
 
     class Meta:
         default_permissions = ()
@@ -350,22 +371,6 @@ class OperationStateChange(models.Model):
     status_choices = (('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
                       ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'))
     original_status = models.CharField(choices=status_choices, max_length=20)
-    
-    class Meta:
-        default_permissions = ()
-
-class Exchanger(models.Model):
-    name = models.CharField(max_length=140, primary_key=True, unique=True)
-    is_active = models.BooleanField(default=True)
-    
-    class Meta:
-        default_permissions = ()
-
-class ExchangerAccepts(models.Model):
-    # The primary key is the django id
-    exchanger = models.ForeignKey(Exchanger)
-    currency = models.ForeignKey(Currency)
-    amount_acc = models.DecimalField(max_digits=30, decimal_places=15)
     
     class Meta:
         default_permissions = ()

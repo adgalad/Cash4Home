@@ -98,11 +98,12 @@ urlpatterns = [
 
     url(r'^add/exchanger/$', views.addExchanger, name="addExchanger"),
     url(r'^all/exchanger/$', views.adminExchanger, name="adminExchanger"),
-    url(r'^edit/exchanger/(?P<_ex_id>\w+)/(?P<_currency_id>\w+)', views.editExchanger, name="editExchanger"),
+    url(r'^edit/exchanger/(?P<_ex_id>[\w\ ]+)/(?P<_currency_id>\w+)', views.editExchanger, name="editExchanger"),
 
-    url(r'^add/repurchase/$', views.addRepurchase, name="addRepurchase"),
+    url(r'^add/repurchase/$', views.addRepurchaseGeneral, name="addRepurchaseGeneral"),
+    url(r'^add/repurchase/(?P<_currency_id>\w+)$', views.addRepurchase, name="addRepurchase"),
     url(r'^all/repurchase/$', views.adminRepurchase, name="adminRepurchase"),
-    url(r'^edit/repurchase/(?P<_rep_id>\w+)', views.editRepurchase, name="editRepurchase"),
+    url(r'^view/repurchase/(?P<_repurchase_id>\w+)$', views.viewRepurchase, name="viewRepurchase"),
 
     #Dashboards
     url(r'^dashboard/operational/$', views.operationalDashboard, name="operationalDashboard"),
