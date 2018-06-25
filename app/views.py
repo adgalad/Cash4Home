@@ -963,7 +963,7 @@ def editAccount(request, _account_id):
             number = form.cleaned_data['number']
             bank = form.cleaned_data['id_bank']
 
-            if (Account.objects.filter(number=number,bank=bank).exists()):
+            if (Account.objects.filter(number=number,id_bank=bank).exists()):
                 msg = "La cuenta que ingresaste ya existe en ese banco"
                 messages.error(request, msg, extra_tags="alert-warning")
                 return render(request, 'admin/editAccount.html', {'form': form})
