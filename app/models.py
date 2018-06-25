@@ -39,18 +39,12 @@ class MyUserManager(BaseUserManager):
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save()
-        client_group = Group.objects.get(name='Cliente') 
-        client_group.user_set.add(user)
-        print('hola')
         return user
 
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
-        client_group = Group.objects.all()
-        for i in client_group:
-            i.user_set.add(user)
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
@@ -154,6 +148,7 @@ class Holiday(models.Model):
         return str(self.date) + ' ' + self.description
     class Meta:
         default_permissions = ()
+
 class Currency(models.Model):
     code = models.CharField(max_length=10, primary_key=True, unique=True) # VEF, USD, BTC
     name = models.CharField(max_length=50)
@@ -172,6 +167,7 @@ class ExchangeRate(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_pair')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_pair')
+    
     def __str__(self):
         return str(self.origin_currency) + "/" + str(self.target_currency)
 
@@ -248,22 +244,20 @@ class Operation(models.Model):
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_used')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_used')
     is_active = models.BooleanField(default=True)
-    account_allie_origin = models.ForeignKey(Account, related_name='account_allie_origin', blank=True, null=True)
-    id_allie_origin = models.ForeignKey(User, related_name='user_allie_origin', blank=True, null=True)
-    account_allie_target = models.ForeignKey(Account, related_name='account_allie_target', blank=True, null=True)
-    id_allie_target = models.ForeignKey(User, related_name='user_allie_target', blank=True, null=True)
+    account_allie_origin = models.ForeignKey(Account, related_name='account_allie_origin', verbose_name="Cuenta aliado origen", blank=True, null=True)
+    id_allie_origin = models.ForeignKey(User, related_name='user_allie_origin', verbose_name="Aliado origen", blank=True, null=True)
+    account_allie_target = models.ForeignKey(Account, related_name='account_allie_target', verbose_name="Cuenta aliado origen", blank=True, null=True)
+    id_allie_target = models.ForeignKey(User, related_name='user_allie_target', verbose_name="Aliado destino", blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        if (self.pk):
-            self.is_active = (timezone.now() < self.date_ending)
+        if (self.pk and self.is_active):
+            self.is_active = (not self.status == 'Falta verificacion') or (timezone.now() < self.date_ending)
         super(Operation, self).save(*args, **kwargs)
 
 
     def _save(self, fromCountry, toCountry, date, *args, **kwargs):
         
         self.code = "MT-%s-%s-%s-%s"%(fromCountry, toCountry, date.strftime("%d%m%Y"), Operation.objects.all().count())
-        if (self.pk):
-            self.is_active = (self.date < self.date_ending)
         self.save(*args, **kwargs)
         return self.code
 
@@ -282,7 +276,7 @@ class Operation(models.Model):
 
 class OperationGoesTo(models.Model):
     # The primary key is the django id
-    operation_code = models.ForeignKey(Operation)
+    operation_code = models.ForeignKey(Operation, related_name='goesTo')
     number_account = models.ForeignKey(Account)
     amount = models.FloatField(blank=True, null=True)
 
@@ -292,15 +286,46 @@ class OperationGoesTo(models.Model):
 
 class Transaction(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True, default=pkgenTransaction)
-    date = models.DateTimeField()
-    choices = (('TO', 'TO'), ('TD', 'TD'), ('TE', 'TE')) #TO-Transaccion origen, TD-Transaccion destino, TC-transaccion crypto
-    operation_type = models.CharField(choices=choices, max_length=3)
-    transfer_image = models.ImageField(upload_to=get_image_path)
-    origin_account = models.ForeignKey(Account, blank=True, null=True, related_name='origin_account')
-    target_account = models.ForeignKey(Account, blank=True, null=True, related_name='target_account')
+    date = models.DateTimeField(auto_now=True)
+    choices = (('TO', 'TO'), ('TD', 'TD'), ('TC', 'TC')) #TO-Transaccion origen, TD-Transaccion destino, TC-transaccion crypto
+    operation_type = models.CharField(choices=choices, max_length=3, verbose_name="Tipo de transacción")
+    transfer_image = models.ImageField(upload_to=get_image_path, verbose_name="Imagen del comprobante")
+    id_operation   = models.ForeignKey(Operation, blank=True, null=True, related_name='transactions', verbose_name="Operación asociada")
+    origin_account = models.ForeignKey(Account, blank=True, null=True, related_name='origin_account', verbose_name="Cuenta origen")
+    target_account = models.ForeignKey(Account, blank=True, null=True, related_name='target_account', verbose_name="Cuenta destino")
+    to_exchanger   = models.ForeignKey('Exchanger', blank=True, null=True, verbose_name="Exchanger")
+
+    @property
+    def image_url(self):
+        if self.transfer_image and hasattr(self.transfer_image, 'url'):
+            return self.transfer_image.url
+        else:
+            return '/static/images/placeholder.png'
 
     class Meta:
         default_permissions = ()
+
+class Exchanger(models.Model):
+    name = models.CharField(max_length=140, primary_key=True, unique=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        default_permissions = ()
+
+    def __str__(self):
+        return self.name
+
+class ExchangerAccepts(models.Model):
+    # The primary key is the django id
+    exchanger = models.ForeignKey(Exchanger)
+    currency = models.ForeignKey(Currency)
+    amount_acc = models.DecimalField(max_digits=30, decimal_places=15)
+    
+    class Meta:
+        default_permissions = ()
+
+    def __str__(self):
+        return str(self.currency.code)
 
 class Repurchase(models.Model):
     # The primary key is the django id
@@ -308,6 +333,8 @@ class Repurchase(models.Model):
     rate = models.FloatField()
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_purchase')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_purchase')
+    exchanger = models.ForeignKey(Exchanger)
+    profit = models.FloatField(default=0)
 
     class Meta:
         default_permissions = ()
@@ -335,8 +362,8 @@ class Comission(models.Model):
 
 class CanSendTo(models.Model):
     # The primary key is the django id
-    origin_bank = models.ForeignKey(Bank, related_name='origin_bank')
-    target_bank = models.ForeignKey(Bank, related_name='target_bank')
+    origin_bank = models.ForeignKey(Bank, related_name='canSendTo')
+    target_bank = models.ForeignKey(Bank, related_name='canReceiveFrom')
 
     class Meta:
         unique_together = ('origin_bank', 'target_bank')
@@ -345,27 +372,12 @@ class CanSendTo(models.Model):
 
 class OperationStateChange(models.Model):
     # The primary key is the django id
-    date = models.DateTimeField()
+    date = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User)
     status_choices = (('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
                       ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'))
     original_status = models.CharField(choices=status_choices, max_length=20)
-    
-    class Meta:
-        default_permissions = ()
-
-class Exchanger(models.Model):
-    name = models.CharField(max_length=140, primary_key=True, unique=True)
-    is_active = models.BooleanField(default=True)
-    
-    class Meta:
-        default_permissions = ()
-
-class ExchangerAccepts(models.Model):
-    # The primary key is the django id
-    exchanger = models.ForeignKey(Exchanger)
-    currency = models.ForeignKey(Currency)
-    amount_acc = models.DecimalField(max_digits=30, decimal_places=15)
+    operation = models.ForeignKey(Operation, null=True, related_name='changeHistory')
     
     class Meta:
         default_permissions = ()

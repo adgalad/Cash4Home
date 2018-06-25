@@ -25,24 +25,29 @@
         <div class="x_panel">
           <div class="x_content">
             {% if own %}
-            <h4>Cuenta origen</h4>
-            <p>Introduzca los datos de su cuenta, desde la cual quiere enviar dinero para remesas.</p>
+              <h4>Cuenta origen</h4>
+              <p>Introduzca los datos de su cuenta, desde la cual quiere enviar dinero para remesas.</p>
             {% else %}
-            <h4>Cuenta destino</h4>
-            <p>Introduzca los datos de la cuenta de su familiar, amigo o propia a la cual quiere enviar dinero en Venezuela.</p>
+              <h4>Cuenta destino</h4>
+              <p>Introduzca los datos de la cuenta de su familiar, amigo o propia a la cual quiere enviar dinero en Venezuela.</p>
             {% endif %}
             {% for message in messages %}
-            <br>
-            <div class="alert alert-warning" style="background-color: #d96d00; border-color: #d96d00; max-width: 500px; color:white">
-              {{ message }}
-            </div>
+              <br>
+              <div class="alert alert-warning" style="background-color: #d96d00; border-color: #d96d00; max-width: 500px; color:white">
+                {{ message }}
+              </div>
             {% endfor %}
             <form class="form-horizontal form-label-left" method="post" style="margin-left: 2%; max-width: 500px;">
               {% csrf_token %}
+              {{ form.errors }}
+              {{ form.non_field_errors }}
               {% for field in form %}
                 <div class="form-group has-feedback">
                   <label>{{ field.label}}</label> 
                   {{ field }}
+                  {% for error in field.errors %}
+                    <p style="color: red">{{ error }}</p>
+                  {% endfor %}
                 </div>
               {% endfor %}
               <br>
