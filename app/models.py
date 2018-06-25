@@ -45,8 +45,6 @@ class MyUserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
-        for i in client_group:
-            i.user_set.add(user)
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
@@ -244,22 +242,20 @@ class Operation(models.Model):
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_used')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_used')
     is_active = models.BooleanField(default=True)
-    account_allie_origin = models.ForeignKey(Account, related_name='account_allie_origin', blank=True, null=True)
-    id_allie_origin = models.ForeignKey(User, related_name='user_allie_origin', blank=True, null=True)
-    account_allie_target = models.ForeignKey(Account, related_name='account_allie_target', blank=True, null=True)
-    id_allie_target = models.ForeignKey(User, related_name='user_allie_target', blank=True, null=True)
+    account_allie_origin = models.ForeignKey(Account, related_name='account_allie_origin', verbose_name="Cuenta aliado origen", blank=True, null=True)
+    id_allie_origin = models.ForeignKey(User, related_name='user_allie_origin', verbose_name="Aliado origen", blank=True, null=True)
+    account_allie_target = models.ForeignKey(Account, related_name='account_allie_target', verbose_name="Cuenta aliado origen", blank=True, null=True)
+    id_allie_target = models.ForeignKey(User, related_name='user_allie_target', verbose_name="Aliado destino", blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        if (self.pk):
-            self.is_active = (timezone.now() < self.date_ending)
+        if (self.pk and self.is_active):
+            self.is_active = (not self.status == 'Falta verificacion') or (timezone.now() < self.date_ending)
         super(Operation, self).save(*args, **kwargs)
 
 
     def _save(self, fromCountry, toCountry, date, *args, **kwargs):
         
         self.code = "MT-%s-%s-%s-%s"%(fromCountry, toCountry, date.strftime("%d%m%Y"), Operation.objects.all().count())
-        if (self.pk):
-            self.is_active = (self.date < self.date_ending)
         self.save(*args, **kwargs)
         return self.code
 
@@ -288,14 +284,14 @@ class OperationGoesTo(models.Model):
 
 class Transaction(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True, default=pkgenTransaction)
-    date = models.DateTimeField()
+    date = models.DateTimeField(auto_now=True)
     choices = (('TO', 'TO'), ('TD', 'TD'), ('TC', 'TC')) #TO-Transaccion origen, TD-Transaccion destino, TC-transaccion crypto
-    operation_type = models.CharField(choices=choices, max_length=3)
-    transfer_image = models.ImageField(upload_to=get_image_path)
-    id_operation   = models.ForeignKey(Operation, blank=True, null=True, related_name='transactions')
-    origin_account = models.ForeignKey(Account, blank=True, null=True, related_name='origin_account')
-    target_account = models.ForeignKey(Account, blank=True, null=True, related_name='target_account')
-    to_exchanger   = models.ForeignKey('Exchanger', blank=True, null=True)
+    operation_type = models.CharField(choices=choices, max_length=3, verbose_name="Tipo de transacción")
+    transfer_image = models.ImageField(upload_to=get_image_path, verbose_name="Imagen del comprobante")
+    id_operation   = models.ForeignKey(Operation, blank=True, null=True, related_name='transactions', verbose_name="Operación asociada")
+    origin_account = models.ForeignKey(Account, blank=True, null=True, related_name='origin_account', verbose_name="Cuenta origen")
+    target_account = models.ForeignKey(Account, blank=True, null=True, related_name='target_account', verbose_name="Cuenta destino")
+    to_exchanger   = models.ForeignKey('Exchanger', blank=True, null=True, verbose_name="Exchanger")
 
     @property
     def image_url(self):

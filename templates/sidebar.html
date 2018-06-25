@@ -30,6 +30,16 @@
           </a>
         </li>
       </ul>
+      {% if perms.dashboard.operations_operator or perms.dashboard.btc_price%}
+      <ul class="nav side-menu">
+        <li>
+          <a href="{% url 'pendingOperations' %}">
+            <i class="fa fa-book"></i> Historial operaciones
+          </a>
+        </li>
+      </ul>
+      {% endif %}
+      
       <ul class="nav side-menu">
         <li><a><i class="fa fa-bank"></i> Cuentas bancarias <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
@@ -54,7 +64,7 @@
       
       <ul class="nav side-menu">
 
-        {% if perms.admin.edit_operation or perms.admin.add_operation %}
+<!--         {% if perms.admin.edit_operation or perms.admin.add_operation %}
         <li><a><i class="fa fa-book"></i> Operaciones <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
             {% if perms.admin.edit_operation %}
@@ -62,7 +72,7 @@
             {% endif %}
           </ul>
         </li>
-        {% endif %}
+        {% endif %} -->
 
         {% if perms.admin.edit_rate or perms.admin.add_rate %}
         <li><a><i class="fa fa-percent"></i> Tasas <span class="fa fa-chevron-down"></span></a>
