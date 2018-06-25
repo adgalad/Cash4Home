@@ -1263,6 +1263,14 @@ def canChangeStatus(operation, newStatus):
   else:
     return False
 
+def canChangeStatusAdmin(operation, newStatus, is_superuser):
+  if not is_superuser:
+    return False
+  else:
+    operation.status = newStatus
+    operation.is_active = not newStatus in ['Cancelada', 'Fondos transferidos']
+  return True
+
 def sendEmailOperationFinished(operation):
   plain_message = 'La operación <b>%s</b> ha sido finalizada y los fondos han sido transferidos.'%operation.code
   
@@ -1315,7 +1323,7 @@ def operationDetailDashboard(request, _operation_id):
       if form.is_valid():
         status = form.cleaned_data['status']
         original_status = operation.status
-        if canChangeStatus(operation, status):
+        if operation.status != 'Cancelada' and (canChangeStatusAdmin(operation, status, request.user.is_superuser) or canChangeStatus(operation, status)):
           operation.save()
           OperationStateChange(operation=operation, 
                                user=request.user,
@@ -1379,6 +1387,9 @@ def operationEditDashboard(request, _operation_id):
     operation = Operation.objects.get(code=_operation_id)
   except Exception as e: 
     raise Http404
+
+  if not operation.is_active:
+    raise PermissionDenied
 
   alliesFrom = User.objects.filter(groups__name='Aliado-1', hasAccount__id_account__id_currency=operation.origin_currency).distinct()
   alliesTo = User.objects.filter(groups__name='Aliado-1', hasAccount__id_account__id_currency=operation.target_currency).distinct()
@@ -1461,6 +1472,15 @@ def operationEditDashboard(request, _operation_id):
                     'initialTo': operation.account_allie_target.id if operation.account_allie_target else ""
                   }
                 )
+
+@permission_required('admin.edit_operation', login_url='/login/')
+def operationHistory(request, _operation_id):
+  try:
+    operation = Operation.objects.get(code=_operation_id)
+  except Exception as e: 
+    raise Http404
+
+  return render(request, 'admin/historyOperation.html', {'operation': operation, 'history': operation.changeHistory.all()})
 
 def viewUserAccounts(request, _user_id):
     try:

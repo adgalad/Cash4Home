@@ -109,6 +109,7 @@ urlpatterns = [
     url(r'^dashboard/operational/(?P<_operation_id>.+)/details$', views.operationDetailDashboard, name="operationDetailDashboard"),
     url(r'^dashboard/operational/(?P<_operation_id>.+)/edit$', views.operationEditDashboard, name="operationEditDashboard"),
     url(r'^dashboard/operational/(?P<_operation_id>.+)/transaction$', views.operationAddTransaction, name="operationAddTransaction"),
+    url(r'^dashboard/operational/(?P<_operation_id>.+)/history$', views.operationHistory, name="operationHistory"),
 ] + static(MEDIA_URL, document_root=MEDIA_ROOT)
 
 handler404 = views.handler404
