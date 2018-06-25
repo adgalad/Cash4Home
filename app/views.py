@@ -87,11 +87,11 @@ def dashboard(request):
     return redirect(reverse('pendingOperations'))
 
   else:
-    if request.user.groups.filter(name = 'Operador') or (request.user.is_superuser):
+    if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
       actualOperations = Operation.objects.filter(is_active=True).order_by('date')
       endedOperations = Operation.objects.filter(is_active=False).order_by('date')
         
-    elif request.user.groups.filter(name = 'Aliado-1'):
+    else:
       actualOperations = Operation.objects.filter(Q(is_active=True) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
       endedOperations = Operation.objects.exclude(status="Cancelada").filter(Q(is_active=False) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
 
@@ -1242,23 +1242,6 @@ def editCountry(request, _country_id):
         form = NewCountryForm(initial={'name': actualCountry.name})
 
     return render(request, 'admin/editCountry.html', {'form': form})
-
-def operationalDashboard(request):
-    if (request.method == 'GET'):
-        if request.user.groups.filter(name = 'Operador') or (request.user.is_superuser):
-            actualOperations = Operation.objects.filter(is_active=True).order_by('date')
-            endedOperations = Operation.objects.filter(is_active=False).order_by('date')
-            
-        elif request.user.groups.filter(name = 'Aliado-1'):
-            actualOperations = Operation.objects.filter(Q(is_active=True) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
-            endedOperations = Operation.objects.filter(Q(is_active=False) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
-
-        totalOpen = actualOperations.count()
-        totalEnded = endedOperations.count()
-
-        return render(request, 'dashboard/operationalDashboard.html', 
-                            {'actualO': actualOperations, 'endedO': endedOperations, 'totalOpen': totalOpen, 'totalEnded': totalEnded})
-
 
 
 def canChangeStatus(operation, newStatus):

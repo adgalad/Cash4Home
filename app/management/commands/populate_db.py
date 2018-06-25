@@ -100,10 +100,12 @@ class Command(BaseCommand):
         add_exchanger.save()       
         edit_exchanger.save()
 
-        btc_price_p = Permission(name='Ver precio BTC', codename='btc_price', content_type=btc_price)
-        operation_operator = Permission(name='Ver opearciones de los demás', codename='operation_operator', content_type=dashboard_operation)
+        btc_price_p         = Permission(name='Ver precio BTC', codename='btc_price', content_type=btc_price)
+        operations_operator = Permission(name='Ver dashboard de operaciones', codename='operations_operator', content_type=dashboard_operation)
+        operations_all      = Permission(name='Ver todas las operaciones', codename='operations_all', content_type=dashboard_operation)
         btc_price_p.save()
-        operation_operator.save()
+        operations_operator.save()
+        operations_all.save()
 
 
         client   = Group(name='Cliente')
@@ -120,7 +122,7 @@ class Command(BaseCommand):
 
         operator.permissions.add(edit_user)
         operator.permissions.add(btc_price)
-        operator.permissions.add(operation_operator)
+        operator.permissions.add(operations_operator)
 
 
 
