@@ -110,11 +110,14 @@
             {% endif %}
           </ul>
         </li>
+        {% endif %}
+        
+        {% if perms.admin.edit_exchanger or perms.admin.add_exchanger %}
         <li><a><i class="fa fa-exchange"></i> Exchangers <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
               <li><a href="{% url 'addExchanger' %}">Agregar exchanger</a>
               <li><a href="{% url 'adminExchanger' %}">Ver exchangers</a>
-              <li><a href="{% url 'addRepurchase' %}">Agregar recompra</a>
+              <li><a href="{% url 'addRepurchaseGeneral' %}">Agregar recompra</a>
               <li><a href="{% url 'adminRepurchase' %}">Ver recompra</a>
           </ul>
         </li>

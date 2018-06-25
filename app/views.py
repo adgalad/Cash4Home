@@ -149,7 +149,6 @@ def profile(request):
 def userVerification(request):
   if request.user.canVerify:
     if request.method == 'POST':
-      print(request.POST)
       if 'file1' in request.FILES and 'file2' in request.FILES and 'file3' in request.FILES and 'file4' in request.FILES: 
         file1 = request.FILES['file1']
         file2 = request.FILES['file2']
@@ -1610,14 +1609,86 @@ def editExchanger(request, _ex_id, _currency_id):
 
     return render(request, 'admin/editExchanger.html', {'form': form})
 
-def addRepurchase(request):
-    pass
+def addRepurchaseGeneral(request):
+    if (request.method == 'POST'):
+        form = SelectCurrencyForm(request.POST)
+
+        if (form.is_valid()):
+          currency = form.cleaned_data['currency']
+
+          return redirect('addRepurchase', _currency_id=currency.code)
+    else:
+        form = SelectCurrencyForm()
+    return render(request, 'admin/addRepurchaseGeneral.html', {'form': form})
+
+def addRepurchase(request, _currency_id):
+    try:
+      origin_currency = Currency.objects.get(code=_currency_id)
+    except:
+      raise Http404
+
+    existing_rep = RepurchaseCameFrom.objects.values_list('id_operation',flat=True)
+    available_op = Operation.objects.filter(origin_currency=origin_currency).exclude(code__in=existing_rep).values_list('code', 'fiat_amount', 'date')
+    initialForm = [{'operation': op[0], 'amount': op[1], 'date': op[2], 'selected': False} for op in available_op]
+
+    if (request.method == 'POST'):
+        POST = request.POST.copy()
+
+        auxCount = len(initialForm)
+        POST['form-TOTAL_FORMS' ] = auxCount
+        POST['form-INITIAL_FORMS'] = auxCount
+        POST['form-MAX_NUM_FORMS'] = auxCount
+
+        OperationFormSet = formset_factory(NewRepurchaseOpForm, extra=0)
+        formset = OperationFormSet(POST, initial=initialForm)
+        formRep = NewRepurchaseForm(request.POST)
+
+        if (formset.is_valid() and formRep.is_valid()):
+          currency = formRep.cleaned_data['currency'].currency
+          exchanger = formRep.cleaned_data['currency'].exchanger
+          date = formRep.cleaned_data['date']
+          rate = formRep.cleaned_data['rate']
+
+          atLeastOne = False
+          for form in formset:
+              if (form.cleaned_data['selected']):
+                atLeastOne = True
+                codeOperation = form.cleaned_data['operation']
+                operation = Operation.objects.get(code=codeOperation)
+                new_repurchase = Repurchase(date=date,
+                                            rate=rate,
+                                            origin_currency=origin_currency,
+                                            target_currency=currency,
+                                            exchanger=exchanger)
+                new_repurchase.save()
+
+                new_cameFrom = RepurchaseCameFrom(id_repurchase=new_repurchase,id_operation=operation)
+                new_cameFrom.save()
+
+          if not(atLeastOne):
+              msg = "Debes seleccionar al menos una operación"
+              messages.error(request, msg, extra_tags="alert-warning")
+              return render(request, 'admin/addRepurchase.html', {'formOp': formset, 'formRep': formRep})
+
+          msg = "La recompra fue agregada con éxito"
+          messages.error(request, msg, extra_tags="alert-success")
+          return redirect('adminRepurchase')
+    else:
+        OperationFormSet = formset_factory(NewRepurchaseOpForm, extra=0)
+        formset = OperationFormSet(initial=initialForm)
+        formRep = NewRepurchaseForm()
+
+    return render(request, 'admin/addRepurchase.html', {'formOp': formset, 'formRep': formRep})
 
 def adminRepurchase(request):
+    if (request.method == 'GET'):
+      all_repurchases = Repurchase.objects.all()
+
+      return render(request, 'admin/adminRepurchase.html', {'repurchases': all_repurchases})
+
+def viewRepurchase(request, _repurchase_id):
     pass
 
-def editRepurchase(request, _rep_id):
-    pass
 
 @permission_required('admin.add_group', login_url='/login/')
 def addGroup(request):
