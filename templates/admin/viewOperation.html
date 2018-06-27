@@ -230,8 +230,20 @@
                   {% for tx in transactions %}
                     <tr class="even pointer">
                       <td class=" ">{{ tx.code }}</td>
-                      <td class=" ">{{ tx.origin_account }}</td>
-                      <td class=" ">{{ tx.target_account }}</td>
+                      <td class=" ">
+                        {%   if tx.operation_type == "TC" %}
+                          N/A
+                        {% else %}
+                          {{ tx.origin_account }}
+                        {% endif %}
+                      </td>
+                      <td class=" ">
+                        {%   if tx.operation_type == "TC" %}
+                          {{ tx.to_exchanger }}
+                        {% else %}
+                          {{ tx.target_account }}
+                        {% endif %}
+                      </td>
                       <td class=" ">
                         {%   if tx.operation_type == "TO" %}
                           Origen
