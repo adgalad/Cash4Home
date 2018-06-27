@@ -80,7 +80,7 @@ class AuthenticationForm(forms.Form):
 class BankAccountForm(forms.Form):
   bank = GroupedModelChoiceField(label=_('Banco*'), group_by_field='country', required=True, queryset=Bank.objects.all())
   number = forms.CharField(required=True, label=_(u"Número de cuenta*"))
-  router = forms.CharField(required=False, label=_(u"Número ABA (Solo para bancos en EEUU)"))
+  router = forms.CharField(required=False, label=_(u"Número ABA (Routing Number)"))
   id_currency = forms.ModelChoiceField(label=_('Moneda*'), required=True, queryset=Currency.objects.filter(currency_type='FIAT'))
 
   def __init__(self, *args, **kwargs):
