@@ -233,7 +233,8 @@ def createOperation(request):
         else:
           ok = False
           break
-      if ok:
+      strInRrat = (str(fromCurrency) + "/" + str(toCurrency)) in rate
+      if ok and strInRrat:
 
         fromCurrency = fromAccount.id_account.id_currency
         toCurrency = form1.cleaned_data['currency']
@@ -299,7 +300,6 @@ def createOperation(request):
                 holiday = True
             
             if holiday:
-              print('hola')
               messages.error(request, 'Debido a que hoy es un día feriado en alguno de los paises involucrados en la operación, el proceso de la misma puede presentar demoras.', extra_tags="alert-warning")
               
             plain_message = 'Se ha creado una operación para el envio de %s %s desde su cuenta %s'%(fromCurrency, total, fromAccount.id_account) 
@@ -345,8 +345,10 @@ def createOperation(request):
             messages.error(request, 'No se pudo crear la operación, ya que no hay aliados disponibles en este momento. Por favor, intente mas tarde.', extra_tags="alert-error")  
         else:
           messages.error(request, 'No se pudo crear la operación, ya que no hay aliados disponibles en este momento. Por favor, intente mas tarde.', extra_tags="alert-error")  
+      if not strInRrat:
+        messages.error(request, 'Lo sentimos, no es posible crear una operacion de %s a %s en este momento.'%(str(fromCurrency),str(toCurrency)), extra_tags="alert-error")
       else:
-        messages.error(request, 'No se pudo crear la operación. Revise los datos ingresados', extra_tags="alert-error")
+        messages.error(request, 'No se pudo crear la operación. Revise los datos ingresados.', extra_tags="alert-error")
 
   else:
     form1 = FromAccountForm().setQueryset(queryset1)

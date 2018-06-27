@@ -2,23 +2,45 @@
 
 {% block title %} Crear Operación {% endblock title %}
 
+
+{% block stylesheets %}
+  {{ block.super }}
+  <style>
+    /* Tooltip container */
+    .tooltipaba {
+        position: relative;
+        display: inline-block;
+        border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+    }
+
+    /* Tooltip text */
+    .tooltipaba .tooltiptext {
+        visibility: hidden;
+        width: 500px;
+        background-color: white;
+        border: gray solid 1px;
+        padding: 5px 0;
+        border-radius: 6px;
+     
+        /* Position the tooltip text - see examples below! */
+        position: absolute;
+        z-index: 1;
+    }
+
+    /* Show the tooltip text when you mouse over the tooltip container */
+    .tooltipaba:hover .tooltiptext {
+        visibility: visible;
+    }
+  </style>
+{% endblock stylesheets %}
+
+
 {% block content %}
   <div class="right_col" role="main">
     <div class="">
       <div class="page-title">
         <div class="title_left">
           <h3>Añadir una cuenta de banco</h3>
-        </div>
-
-        <div class="title_right">
-          <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
-<!--             <div class="input-group">
-              <input type="text" class="form-control" placeholder="Search for...">
-              <span class="input-group-btn">
-                        <button class="btn btn-default" type="button">Go!</button>
-                    </span>
-            </div> -->
-          </div>
         </div>
       </div>
       <div class="clearfix"></div>
@@ -43,14 +65,29 @@
               {{ form.non_field_errors }}
               {% for field in form %}
                 <div class="form-group has-feedback">
-                  <label>{{ field.label}}</label> 
-                  {{ field }}
+                  <label>
+                    {{ field.label}} 
+                    {% if field.name == "router" %}  
+                      <div class="tooltipaba">
+                        <i style="font-size: 14px; color:blue" class="fa fa-question-circle"></i>
+                        <span class="tooltiptext">
+                          <p style="margin: 10px">El número ABA contiene 9 dígitos y solo aplica para banco en los Estados Unidos. Puede ser hallado en la parte inferior de un cheque de la cuenta como se indica más abajo o visitando su cuenta bancaria en línea.</p>
+                          <img src="/static/images/check-routing-es.jpg" width="500px">
+                        </span>
+                      </div>
+                    {% endif %}  
+                  </label> 
+                  {{ field }}  
                   {% for error in field.errors %}
                     <p style="color: red">{{ error }}</p>
                   {% endfor %}
                 </div>
               {% endfor %}
               <br>
+              
+
+
+              <a class="btn btn-primary" href="{% url 'accounts' %}">Volver</a>
               <button class="btn btn-primary submit" type="submit">Crear</button>
             </form>
           </div>
@@ -64,4 +101,18 @@
   {{ block.super}}
   <!-- jQuery Smart Wizard -->
   <script src="/static/vendors/jQuery-Smart-Wizard/js/jquery.smartWizard.js"></script>
+  <script type="text/javascript">
+    const updateABAField = function(){
+      country = $('option[value="'+$('#id_bank').val()+'"]').parent()[0].label
+      if (country !== undefined){
+        if (country == "Estados Unidos"){
+          $('#id_router').prop('disabled', false)
+        } else {
+          $('#id_router').prop('disabled', true)
+        }
+      }
+    }
+
+    $('#id_bank').change(updateABAField)
+  </script>
 {% endblock javascripts %}
