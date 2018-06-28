@@ -16,7 +16,6 @@
   <div>
     <a class="hiddenanchor" id="signup"></a>
     <a class="hiddenanchor" id="signin"></a>
-
     <div class="login_wrapper">
       <div class="form registration_form">
         <section class="login_content">
@@ -25,11 +24,16 @@
             <h1>Crear cuenta</h1>
             {% for field in form %}
                 <!-- {{ field.label }} -->
+                {% if field.name != 'mobile_phone' %}
+                  {% for error in field.errors %}
+                    <p style="color: red">{{ error }}</p>
+                  {% endfor %}
+                {% endif %}
                 {{ field }}
                 {% if field.name == 'country' %} <br> {% endif %}
-                {% for error in field.errors %}
-                  <p style="color: red">{{ error }}</p>
-                {% endfor %}
+            {% endfor %}
+            {% for error in form.mobile_phone.errors %}
+              <p style="color: red">{{ error }}</p>
             {% endfor %}
             <input id="phone" name="phone" class="form-control" type="tel" placeholder="Número de teléfono ( Ej 2125834456 )">
             <br>
@@ -84,9 +88,16 @@
       utilsScript: "build/js/utils.js"
     });
     $("#id_mobile_phone").attr('type', 'hidden')
+    if ($("#id_mobile_phone").val() != ""){
+      $("#phone").val($("#id_mobile_phone").val())
+    } 
     $('#submit').click(function(){
       var code = $("#phone").intlTelInput("getSelectedCountryData")['dialCode']
-      $("#id_mobile_phone").val('+' + code + $("#phone").val())
+      phone = $("#phone").val().replace(' ','')
+      if (phone[0] != '+'){
+        phone = '+' + code + phone
+      }
+      $("#id_mobile_phone").val(phone)
     })
   </script>
 

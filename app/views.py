@@ -74,8 +74,8 @@ def home(request):
 
 @login_required(login_url="/login/")
 def dashboard(request):
-
-  if request.user.canVerify:
+  if not (request.user.has_perm('dashboard.btc_price') or request.user.has_perm('dashboard.operations_operator')):    
+    if request.user.canVerify:
       message = ''' <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
             Su cuenta no esta verificada. Para poder realizar una operación es necesario que verifique su cuenta.
             <a href=" '''+ reverse('userVerification') + '''"> 
@@ -84,20 +84,16 @@ def dashboard(request):
               </button>
             </a>'''
       messages.error(request, message, extra_tags="safe alert alert-warning alert-dismissible fade in")
-  
-
-
-  if request.user.groups.filter(name = 'Cliente'):    
     return redirect(reverse('pendingOperations'))
 
   else:
-    if request.user.groups.filter(name = 'Operador') or (request.user.is_superuser):
+    if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
       actualOperations = Operation.objects.filter(is_active=True).order_by('date')
       endedOperations = Operation.objects.filter(is_active=False).order_by('date')
         
-    elif request.user.groups.filter(name = 'Aliado-1'):
+    else:
       actualOperations = Operation.objects.filter(Q(is_active=True) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
-      endedOperations = Operation.objects.filter(Q(is_active=False) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
+      endedOperations = Operation.objects.exclude(status="Cancelada").filter(Q(is_active=False) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
 
     for i in actualOperations:
       i.isCanceled()
@@ -235,7 +231,8 @@ def createOperation(request):
         else:
           ok = False
           break
-      if ok:
+      strInRrat = (str(fromCurrency) + "/" + str(toCurrency)) in rate
+      if ok and strInRrat:
 
         fromCurrency = fromAccount.id_account.id_currency
         toCurrency = form1.cleaned_data['currency']
@@ -243,26 +240,29 @@ def createOperation(request):
         bank   = fromAccount.id_account.id_bank
         allies = bank.allies.all()
 
+        
         if allies.count() == 0:
-          for bank in fromAccount.id_account.id_bank.acceptBanks:
-            allies = bank.allies.all()
+          for cst in fromAccount.id_account.id_bank.canSendTo.all():
+            print(cst)
+            allies = cst.target_bank.allies.all()
+            print(allies)
             if allies.count() > 0:
               break
-
+        cst = fromAccount.id_account.id_bank.canSendTo.all().values_list('target_bank', flat=True)
         if allies.count() != 0:
 
           ally = allies[random.randint(0, allies.count()-1)]
           print('++>', ally)
           try:
 
-            belongsTo = ally.hasAccount.filter(use_type='Origen', id_account__id_bank=bank)[0]
+            belongsTo = ally.hasAccount.filter(use_type='Origen', id_account__id_bank__in=cst)[0]
             account = belongsTo.id_account
             print('>>', belongsTo, account)
           except:
             for ally in allies:
               print('-->', ally)
               try:
-                belongsTo = ally.hasAccount.filter(use_type='Origen', id_account__id_bank=bank)[0]
+                belongsTo = ally.hasAccount.filter(use_type='Origen', id_account__id_bank__in=cst)[0]
                 account = belongsTo.id_account
                 print('**>', belongsTo, account)
               except:
@@ -298,7 +298,6 @@ def createOperation(request):
                 holiday = True
             
             if holiday:
-              print('hola')
               messages.error(request, 'Debido a que hoy es un día feriado en alguno de los paises involucrados en la operación, el proceso de la misma puede presentar demoras.', extra_tags="alert-warning")
               
             plain_message = 'Se ha creado una operación para el envio de %s %s desde su cuenta %s'%(fromCurrency, total, fromAccount.id_account) 
@@ -344,8 +343,10 @@ def createOperation(request):
             messages.error(request, 'No se pudo crear la operación, ya que no hay aliados disponibles en este momento. Por favor, intente mas tarde.', extra_tags="alert-error")  
         else:
           messages.error(request, 'No se pudo crear la operación, ya que no hay aliados disponibles en este momento. Por favor, intente mas tarde.', extra_tags="alert-error")  
+      if not strInRrat:
+        messages.error(request, 'Lo sentimos, no es posible crear una operacion de %s a %s en este momento.'%(str(fromCurrency),str(toCurrency)), extra_tags="alert-error")
       else:
-        messages.error(request, 'No se pudo crear la operación. Revise los datos ingresados', extra_tags="alert-error")
+        messages.error(request, 'No se pudo crear la operación. Revise los datos ingresados.', extra_tags="alert-error")
 
   else:
     form1 = FromAccountForm().setQueryset(queryset1)
@@ -390,11 +391,19 @@ def operationModal(request, _operation_id):
 
 @login_required(login_url="/login/")
 def cancelOperation(request, _operation_id):
-  try: operation = Operation.objects.get(code=_operation_id, id_client=request.user.id)
+  admin = request.user.has_perm('admin.cancel_operation')
+  try: 
+    if admin:
+      operation = Operation.objects.get(code=_operation_id)
+    else:
+      operation = Operation.objects.get(code=_operation_id, id_client=request.user.id)
   except: raise PermissionDenied
 
-  if operation.status == 'Falta verificacion':
+  if (admin and not operation.status in ['Cancelada', 'Fondos transferidos']) or operation.status == 'Falta verificacion':
     operation.status = 'Cancelada'
+    operation.is_active = False
+    print(operation.code)
+    print(operation.is_active)
     operation.save()
     return render(request, 'dashboard/cancelOperation.html', {'operation':operation}) 
   else:
@@ -419,14 +428,13 @@ def verifyOperation(request, _operation_id):
       if file.name.endswith(('.png', 'jpeg', 'jpg')):
         operation.status = "Por verificar"
         operation.save()
-        ogt = OperationGoesTo.objects.all()
-        for i in ogt:
-          trans = Transaction(date = timezone.now(),
-                              operation_type = "TO",
-                              transfer_image = file,
-                              origin_account = operation.id_account,
-                              target_account = i.number_account )
-          trans.save()
+        trans = Transaction(date = timezone.now(),
+                            operation_type = "TO",
+                            transfer_image = file,
+                            id_operation   = operation,
+                            origin_account = operation.id_account,
+                            target_account = operation.account_allie_origin )
+        trans.save()
         return render(request, 'dashboard/verificationConfirmation.html')      
       else:
         messages.error(request, 'Solo puede subir imagenes PNG y JPG.', extra_tags="alert-error")
@@ -461,24 +469,33 @@ def createAccount(request):
   own = own == "1"
 
   if request.method == 'POST':
-    form = BankAccountForm(request.POST, canBuyDollar = request.user.canBuyDollar) if own else BankAccountDestForm(request.POST)
+    form = BankAccountForm(request.POST) if own else BankAccountDestForm(request.POST)
+    if request.user.canBuyDollar or not own:
+      form.fields['bank'].queryset = Bank.objects.all()
+    else:
+      form.fields['bank'].queryset = Bank.objects.all().exclude(country="Venezuela")
+
     if form.is_valid():
       number = form.cleaned_data.get('number')
       bank = form.cleaned_data.get('bank')
       acc = Account.objects.filter(number=number, id_bank=bank)
       currency = form.cleaned_data.get('id_currency')
       router = form.cleaned_data.get('router')
+      print(router == "", bank.country)
+      if bank.country.name == "Estados Unidos":
+        if router == "" or len(router) != 9:
+          messages.error(request,'El número ABA que ingresó es incorrecto. Introduzca un valor valido.', extra_tags="alert-error")
+          return render(request, 'dashboard/createAccount.html', {"form": form, 'own':own})
+      else:
+        router = ""
+
       if acc.count() == 0:
         acc = Account(number=number,
                       id_bank=bank,
                       id_currency=currency,
-                      is_client=True,
-                      active=True,
                       aba=router)
       else:
         acc = acc[0]
-        acc.is_client = own
-
       if AccountBelongsTo.objects.filter(id_client=request.user.id).filter(id_account=acc.id).count() > 0:
           messages.error(request,'Esta cuenta ya se encuentra asociada', extra_tags="alert-warning")
           return redirect("/account/new?own="+request.GET.get('own'))
@@ -487,6 +504,7 @@ def createAccount(request):
       if own:
         AccountBelongsTo.objects.create(id_client=request.user, 
                                         use_type="Origen" if own else "Destino",
+                                        active=True,
                                         id_account=acc)
       else:
         email = form.cleaned_data.get('email').lower()
@@ -500,11 +518,18 @@ def createAccount(request):
                                         email=email,
                                         alias=alias,
                                         owner=owner,
+                                        active=True,
                                         id_number=id_number)
-             
       return redirect('accounts')
+    else:
+      return render(request, 'dashboard/createAccount.html', {"form": form, 'own':own})
   else:
-    form = BankAccountForm(canBuyDollar = request.user.canBuyDollar) if own else BankAccountDestForm()
+
+    form = BankAccountForm() if own else BankAccountDestForm()
+    if request.user.canBuyDollar or not own:
+      form.fields['bank'].queryset = Bank.objects.all()
+    else:
+      form.fields['bank'].queryset = Bank.objects.all().exclude(country="Venezuela")
   return render(request, 'dashboard/createAccount.html', {"form": form, 'own':own})
 
 
@@ -577,7 +602,7 @@ def sendEmailValidation(user):
     Gracias por elegirnos<br><br>
     Para poder ingresar al sistema, es necesario que valide su correo electrónico ingresando al siguiente enlace: <br><br>
     <a href="%s"> Validar correo </a>
-    <br><br><br>
+    <br><br>
     Sinceramente,<br>
     Equipo de soporte de Cash4Home
   '''%(link)
@@ -883,7 +908,8 @@ def editBank(request, _bank_id):
             all_banks = Bank.objects.all()
             return render(request, 'admin/editBank.html', {'form': form})
     else:
-        form = EditBankForm(instance=actualBank)
+      cst = actualBank.canSendTo.all().values_list('target_bank__pk', flat=True)
+      form = EditBankForm(instance=actualBank, initial={'can_send':Bank.objects.filter(pk__in=cst)})
 
     return render(request, 'admin/editBank.html', {'form': form})
 
@@ -937,7 +963,7 @@ def editAccount(request, _account_id):
             number = form.cleaned_data['number']
             bank = form.cleaned_data['id_bank']
 
-            if (Account.objects.filter(number=number,bank=bank).exists()):
+            if (Account.objects.filter(number=number,id_bank=bank).exists()):
                 msg = "La cuenta que ingresaste ya existe en ese banco"
                 messages.error(request, msg, extra_tags="alert-warning")
                 return render(request, 'admin/editAccount.html', {'form': form})
@@ -1038,6 +1064,29 @@ def viewUser(request, _user_id):
         raise Http404
     return render(request, 'admin/viewUser.html', {'user': actualUser})
 
+
+def sendEmailUserVerification(user):
+
+  plain_message = 'Hemos verificado su cuenta. A partir de ahora podrá realizar operaciones dentro de la plataforma de Cash4Home'
+  
+  message = '''
+    A partir de ahora podras realizar operaciones dentro de la plataforma de Cash4Home y enviar remesas a amigos y familiares.
+    <br><br>
+    Sinceramente,<br>
+    Equipo de soporte de Cash4Home
+  '''
+
+  html_message = loader.render_to_string(
+          'registration/base_email.html',
+          {
+              'message': message,
+              'tittle': "¡%s, hemos verificado tu cuenta!"%user.get_short_name(),
+              'url': DEFAULT_DOMAIN,
+          }
+      )
+  send_mail(subject="Tu cuenta ha sido verificada", message=plain_message, html_message=html_message, from_email=DEFAULT_FROM_EMAIL, recipient_list=[user.email])
+
+
 def verifyUser(request, _user_id):
     try:
         actualUser = User.objects.get(id=_user_id)
@@ -1053,6 +1102,7 @@ def verifyUser(request, _user_id):
 
     msg = "El usuario se verificó con éxito."
     messages.error(request, msg, extra_tags="alert-success")
+    sendEmailUserVerification(actualUser)
     return render(request, 'admin/viewUser.html', {'user': actualUser})
 
 
@@ -1192,27 +1242,245 @@ def editCountry(request, _country_id):
 
     return render(request, 'admin/editCountry.html', {'form': form})
 
-def operationalDashboard(request):
-    if (request.method == 'GET'):
-        if request.user.groups.filter(name = 'Operador') or (request.user.is_superuser):
-            actualOperations = Operation.objects.filter(is_active=True).order_by('date')
-            endedOperations = Operation.objects.filter(is_active=False).order_by('date')
-            
-        elif request.user.groups.filter(name = 'Aliado-1'):
-            actualOperations = Operation.objects.filter(Q(is_active=True) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
-            endedOperations = Operation.objects.filter(Q(is_active=False) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
 
-        totalOpen = actualOperations.count()
-        totalEnded = endedOperations.count()
+def canChangeStatus(operation, newStatus):
+  if operation.status == 'Falta verificacion' and newStatus == 'Por verificar':
+    operation.status = newStatus
+    return True
+  if operation.status == 'Por verificar' and newStatus == 'Verificado' and operation.transactions.filter(operation_type='TO').count() > 0:
+    operation.status = newStatus
+    return True
+  if operation.status == 'Verificado' and newStatus == 'Fondos por ubicar':
+    operation.status = newStatus
+    return True
+  if operation.status == 'Fondos por ubicar' and newStatus == 'Fondos ubicados':
+    operation.status = newStatus
+    return True
+  if operation.status == 'Fondos ubicados' and newStatus == 'Fondos transferidos' and operation.transactions.filter(operation_type='TD').count() > 0:
+    operation.status = newStatus
+    operation.is_active = False
+    return True
+  else:
+    return False
 
-        return render(request, 'dashboard/operationalDashboard.html', 
-                            {'actualO': actualOperations, 'endedO': endedOperations, 'totalOpen': totalOpen, 'totalEnded': totalEnded})
+def canChangeStatusAdmin(operation, newStatus, is_superuser):
+  if not is_superuser:
+    return False
+  else:
+    operation.status = newStatus
+    operation.is_active = not newStatus in ['Cancelada', 'Fondos transferidos']
+  return True
+
+def sendEmailOperationFinished(operation):
+  plain_message = 'La operación <b>%s</b> ha sido finalizada y los fondos han sido transferidos.'%operation.code
+  
+  message = '''
+    La operación <b>%s</b> ha sido finalizada y los fondos han sido transferidos. Para ver los detalles de la operacion entre en el siguiente enlace.
+    <br>
+    <div align="center">
+      <a href="%s">
+        <button class="btn btn-primary">
+          Ver detalles de la operación 
+        </button>
+      </a>
+    </div>
+    <br><br>
+    Sinceramente,<br>
+    Equipo de soporte de Cash4Home
+  '''%(operation.code, DEFAULT_DOMAIN+'operation/pending?operation=' + operation.code)
+
+  html_message = loader.render_to_string(
+          'registration/base_email.html',
+          {
+              'message': message,
+              'tittle': "Su operación ha sido finalizada ",
+              'url': DEFAULT_DOMAIN,
+          }
+      )
+  send_mail(subject="Operación finalizada", message=plain_message, html_message=html_message, from_email=DEFAULT_FROM_EMAIL, recipient_list=[operation.id_client.email])
+
 
 def operationDetailDashboard(request, _operation_id):
-    pass
+    try:
+      operation = Operation.objects.get(code=_operation_id)
+    except Exception as e: 
+      raise Http404
+    user = request.user
 
+    if not ( user.has_perm('admin.edit_operation') or 
+             user.has_perm('admin.cancel_operation') or 
+             (operation.id_allie_origin and operation.id_allie_origin.id == user.id) or 
+             (operation.id_allie_target and operation.id_allie_target.id == user.id)):
+      return redirect(reverse('dashboard'))
+
+    transactions = operation.transactions.all()
+    ogt = operation.goesTo.all().order_by('number_account__pk')
+    accounts = ogt.values_list('number_account__pk', flat=True)
+    abt = AccountBelongsTo.objects.filter(id_client=operation.id_client, id_account__pk__in=accounts).order_by('id_account__pk')
+
+    if request.method == "POST":
+      form = ChangeOperationStatusForm(request.POST)
+      if form.is_valid():
+        status = form.cleaned_data['status']
+        original_status = operation.status
+        if operation.status != 'Cancelada' and (canChangeStatusAdmin(operation, status, request.user.is_superuser) or canChangeStatus(operation, status)):
+          operation.save()
+          OperationStateChange(operation=operation, 
+                               user=request.user,
+                               original_status=original_status).save()
+          if status == "Fondos transferidos":
+            sendEmailOperationFinished(operation)
+
+        else:
+          msg = "No se puede cambiar el status a %s" % status
+          messages.error(request, msg, extra_tags="alert-warning")  
+          form = ChangeOperationStatusForm(initial={'status':operation.status})
+      else:
+        form = ChangeOperationStatusForm(initial={'status':operation.status})
+    else:
+      form = ChangeOperationStatusForm(initial={'status':operation.status})
+    return render(request, 'admin/viewOperation.html', {'form':form, 'operation': operation, 'transactions':transactions, 'ogt': list(zip(ogt, abt))})
+    
+@permission_required('admin.add_transaction', login_url='/login/')
+def operationAddTransaction(request, _operation_id):
+    try:
+      operation = Operation.objects.get(code=_operation_id)
+    except Exception as e: 
+      raise Http404
+    
+    if not operation.is_active:
+      messages.error(request, "Esta operación fue cancelada o ya finalizó.", extra_tags="alert-warning")
+      return redirect('operationDetailDashboard', _operation_id=_operation_id)
+    
+    if request.method == "POST":
+      print(request.FILES)
+      form = TransactionForm(request.POST, request.FILES)
+      if form.is_valid():
+        type = form.cleaned_data['operation_type']
+        file = request.FILES['transfer_image']
+        if type in ['TD', 'TO']:
+          Transaction(id_operation   = operation,
+                      operation_type = type,
+                      transfer_image = file,
+                      origin_account = form.cleaned_data['origin_account'],
+                      target_account = form.cleaned_data['target_account']).save()  
+        
+        elif type == 'TC':
+          Transaction(id_operation   = operation,
+                      operation_type = type,
+                      transfer_image = file,
+                      to_exchanger   = form.cleaned_data['to_exchanger']).save()
+        messages.error(request, 'La transacción ha sido agregada con éxito', extra_tags="alert-success")
+      else:
+        return render(request, 'admin/addTransaction.html', {'form':form, 'operation':operation})
+    form = TransactionForm()
+    target_accounts_ids = operation.goesTo.all().values_list('number_account', flat=True)
+    form.fields['to_exchanger'].queryset = Exchanger.objects.all()
+    form.fields['origin_account'].queryset = Account.objects.filter(belongsTo__id_client=request.user)
+    form.fields['target_account'].queryset = Account.objects.filter(pk__in=target_accounts_ids)
+    return render(request, 'admin/addTransaction.html', {'form':form, 'operation':operation})
+
+
+@permission_required('admin.edit_operation', login_url='/login/')
 def operationEditDashboard(request, _operation_id):
-    pass
+  try:
+    operation = Operation.objects.get(code=_operation_id)
+  except Exception as e: 
+    raise Http404
+
+  if not operation.is_active:
+    raise PermissionDenied
+
+  alliesFrom = User.objects.filter(groups__name='Aliado-1', hasAccount__id_account__id_currency=operation.origin_currency).distinct()
+  alliesTo = User.objects.filter(groups__name='Aliado-1', hasAccount__id_account__id_currency=operation.target_currency).distinct()
+
+  accountFrom = {}
+  accountTo = {}
+
+  for i in alliesFrom:
+    accountFrom[i.id] = []  
+    for j in i.hasAccount.filter(id_account__id_currency=operation.origin_currency):
+      accountFrom[i.id].append({'id':j.id_account.id, 'number': str(j.id_account)})
+  
+  for i in alliesTo:
+    accountTo[i.id] = []
+    for j in i.hasAccount.filter(id_account__id_currency=operation.target_currency):
+      accountTo[i.id].append({'id':j.id_account.id, 'number': str(j.id_account)})
+
+  if request.method == "POST":
+    form = EditOperationForm(request.POST, instance=operation)
+    form.fields['id_allie_origin'].queryset = alliesFrom
+    form.fields['id_allie_target'].queryset = alliesTo
+    if form.is_valid():
+      origin_id = form.cleaned_data['id_allie_origin']
+      origin_account = form.cleaned_data['account_allie_origin']
+      target_id = form.cleaned_data['id_allie_target']
+      target_account = form.cleaned_data['account_allie_target']
+
+      ok = True
+      if origin_id is not None:
+        if origin_account is None or origin_id.hasAccount.filter(id_account=origin_account).count() == 0:
+          ok = False
+          messages.error(request, 'El aliado origen o la cuenta origen son incorrectos.', extra_tags="alert-error")
+      
+      if target_id is not None:
+        if target_account is None or target_id.hasAccount.filter(id_account=target_account).count() == 0:
+          messages.error(request, 'El aliado destino o la cuenta destino son incorrectos.', extra_tags="alert-error")
+          ok = False
+
+      if ok:
+        operation.id_allie_origin = origin_id
+        operation.account_allie_origin = origin_account
+        operation.id_allie_target = target_id
+        operation.account_allie_target = target_account
+        print(operation.is_active)
+        operation.save()
+        print(operation.is_active)
+        messages.error(request, 'La operación se actualizó exitosamente', extra_tags="alert-success")
+      else:
+        return render(request, 'admin/editOperation.html', 
+                      { 'form':form,
+                        'operation':operation,
+                        'accountFrom':json.dumps(accountFrom),
+                        'accountTo':json.dumps(accountTo),
+                        'initialFrom': operation.account_allie_origin.id if operation.account_allie_origin else "",
+                        'initialTo': operation.account_allie_target.id if operation.account_allie_target else ""
+                      }
+                    )
+    else:
+      messages.error(request, 'Hubo un error al actualizar la operación', extra_tags="alert-error")
+      return render(request, 'admin/editOperation.html', 
+                      { 'form':form,
+                        'operation':operation,
+                        'accountFrom':json.dumps(accountFrom),
+                        'accountTo':json.dumps(accountTo),
+                        'initialFrom': operation.account_allie_origin.id if operation.account_allie_origin else "",
+                        'initialTo': operation.account_allie_target.id if operation.account_allie_target else ""
+                      }
+                    )
+  
+  form = EditOperationForm(instance=operation)   
+  form.fields['id_allie_origin'].queryset = alliesFrom
+  form.fields['id_allie_target'].queryset = alliesTo
+  
+  return render(request, 'admin/editOperation.html', 
+                  { 'form':form,
+                    'operation':operation,
+                    'accountFrom':json.dumps(accountFrom),
+                    'accountTo':json.dumps(accountTo),
+                    'initialFrom': operation.account_allie_origin.id if operation.account_allie_origin else "",
+                    'initialTo': operation.account_allie_target.id if operation.account_allie_target else ""
+                  }
+                )
+
+@permission_required('admin.edit_operation', login_url='/login/')
+def operationHistory(request, _operation_id):
+  try:
+    operation = Operation.objects.get(code=_operation_id)
+  except Exception as e: 
+    raise Http404
+
+  return render(request, 'admin/historyOperation.html', {'operation': operation, 'history': operation.changeHistory.all()})
 
 def viewUserAccounts(request, _user_id):
     try:
@@ -1226,6 +1494,7 @@ def viewUserAccounts(request, _user_id):
         thirdAccounts = AccountBelongsTo.objects.filter(id_client=user, use_type='Destino')
 
     return render(request, 'admin/viewUserAccounts.html', {'origin': ownAccounts, 'dest': thirdAccounts, 'u': user})
+
 
 def deactivateUserAccount(request, _user_id, _account_id):
     try:
@@ -1296,6 +1565,7 @@ def addUserAccount(request, _user_id, _flag):
 
     return render(request, 'admin/addUserAccount.html', {'form': form, 'u': user})
 
+@permission_required('admin.add_exchanger', login_url='/login/')
 def addExchanger(request):
     if (request.method=='POST'):
         form = NewExchangerForm(request.POST)
@@ -1325,12 +1595,14 @@ def addExchanger(request):
 
     return render(request, 'admin/addExchanger.html', {'form': form})
 
+@permission_required('admin.edit_exchanger', login_url='/login/')
 def adminExchanger(request):
     if (request.method=='GET'):
         exchangers = ExchangerAccepts.objects.all()
 
         return render(request, 'admin/adminExchanger.html', {'exchangers': exchangers})
 
+@permission_required('admin.edit_exchanger', login_url='/login/')
 def editExchanger(request, _ex_id, _currency_id):
     try:
         actual_exchanger = Exchanger.objects.get(name=_ex_id)
@@ -1446,7 +1718,7 @@ def addGroup(request):
     form = GroupForm(request.POST)
     if form.is_valid():
       form.save()
-      messages.error(request, 'El grupo fue agregado con exito', extra_tags="alert-success")
+      messages.error(request, 'El grupo fue agregado con éxito', extra_tags="alert-success")
   return render(request, 'admin/addGroup.html', {'form': form})
 
 @permission_required('admin.edit_group', login_url='/login/')
@@ -1468,7 +1740,7 @@ def editGroup(request, _group_id):
     form = GroupForm(request.POST, instance=actualGroup)
     if form.is_valid():
       form.save()
-      messages.error(request, 'El grupo fue editado con exito', extra_tags="alert-success")
+      messages.error(request, 'El grupo fue editado con éxito', extra_tags="alert-success")
   return render(request, 'admin/editGroup.html', {'form': form})
 
 
@@ -1481,5 +1753,5 @@ def editGroup(request, _group_id):
 #     form = PermissionForm(request.POST)
 #     if form.is_valid():
 #       form.save()
-#       messages.error(request, 'El permiso fue agregado con exito', extra_tags="alert-success")
+#       messages.error(request, 'El permiso fue agregado con éxito', extra_tags="alert-success")
 #   return render(request, 'admin/addPermission.html', {'form': form})

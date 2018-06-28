@@ -78,24 +78,19 @@ class AuthenticationForm(forms.Form):
                 
 
 class BankAccountForm(forms.Form):
-  bank = GroupedModelChoiceField(label=_('Banco*'), group_by_field='country', queryset=None)
+  bank = GroupedModelChoiceField(label=_('Banco*'), group_by_field='country', required=True, queryset=Bank.objects.all())
   number = forms.CharField(required=True, label=_(u"Número de cuenta*"))
-  router = forms.CharField(required=False, label=_(u"Número ABA (Solo para bancos en EEUU)"))
+  router = forms.CharField(required=False, label=_(u"Número ABA (Routing Number)"))
   id_currency = forms.ModelChoiceField(label=_('Moneda*'), required=True, queryset=Currency.objects.filter(currency_type='FIAT'))
 
-  def __init__(self, canBuyDollar = False, *args, **kwargs):
+  def __init__(self, *args, **kwargs):
     super(BankAccountForm, self).__init__(*args, **kwargs)
-    if canBuyDollar:
-      self.fields['bank'].queryset = Bank.objects.all()
-    else:
-      self.fields['bank'].queryset = Bank.objects.all().exclude(country="Venezuela")
     # self.fields['account'].widget.attrs.update({'class' : 'form-control', 'placeholder':'Ej 1013232012'})
     for i in self.fields:
       self.fields[i].widget.attrs.update({'class' : 'form-control'})
 
 
 class BankAccountDestForm(BankAccountForm):
-  bank = ModelChoiceField(label=_('Banco*'), required=True, queryset=Bank.objects.all())
   owner = forms.CharField(required=True, label=_(u"Nombre del titular*"))
   id_number = forms.CharField(max_length=30, required=True, label=_(u'Número de identificación*'))
   email = forms.EmailField(required=True, label=_(u"Email del titular*"))
@@ -200,10 +195,13 @@ class EditBankForm(forms.ModelForm):
   def __init__(self, *args, **kwargs):
 
     super(EditBankForm, self).__init__(*args, **kwargs)
+    print('hola')
     if 'instance' in kwargs:
+      print('chao')
       allies = User.objects.filter(groups__name='Aliado-1').filter(hasAccount__id_account__id_bank__swift=kwargs['instance'].swift, hasAccount__use_type='Origen')
       self.fields['allies'].queryset = allies
     else:
+      print('jamon')
       self.fields['allies'].queryset = User.objects.none()
     self.fields['allies'].label = 'Aliados'
     self.fields['allies'].required = False
@@ -214,7 +212,7 @@ class EditBankForm(forms.ModelForm):
     model = Bank
     fields = ('name', 'country', 'swift', 'allies')
 
-def format(queryset, field):
+def format(queryset, field=None):
   dictionary = {}
   for i in queryset:
     if hasattr(i, field):
@@ -371,6 +369,20 @@ class EditExchangerForm(forms.Form):
             self.fields[i].widget.attrs.update({'class' : 'form-control'})
         self.fields['is_active'].widget.attrs.update({'class' : 'flat'})
 
+class ChangeOperationStatusForm(forms.Form):
+  status_choices = (('Falta verificacion', 'Falta verificacion'),
+                    ('Por verificar', 'Por verificar'),
+                    ('Verificado', 'Verificado'),
+                    ('Fondos por ubicar', 'Fondos por ubicar'),
+                    ('Fondos ubicados', 'Fondos ubicados'),
+                    ('Fondos transferidos', 'Fondos transferidos'))
+  status = forms.ChoiceField(required=True, choices=status_choices, label="Status de la operación")
+
+  def __init__(self, *args, **kwargs):
+    super(ChangeOperationStatusForm, self).__init__(*args, **kwargs)
+    for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
 class PermissionForm(forms.ModelForm):
 
   def __init__(self, *args, **kwargs):
@@ -391,6 +403,34 @@ class GroupForm(forms.ModelForm):
   class Meta:
     model = Group
     fields = '__all__'
+
+
+class TransactionForm(forms.ModelForm):
+
+  def __init__(self, *args, **kwargs):
+    super(TransactionForm, self).__init__(*args, **kwargs)
+    for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+    choices = (('TD', 'Destino'), ('TO', 'Origen'), ('TC', 'Crypto'))
+    self.fields['operation_type'].choices = choices
+  
+  class Meta:
+    model = Transaction
+    fields = ('operation_type', 'origin_account', 'target_account', 'to_exchanger',  'transfer_image')
+
+class EditOperationForm(forms.ModelForm):
+
+  def __init__(self, *args, **kwargs):
+    super(EditOperationForm, self).__init__(*args, **kwargs)
+    for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+
+  class Meta:
+    model = Operation
+    fields = ('id_allie_origin', 'account_allie_origin', 'id_allie_target', 'account_allie_target')
+
+
 
 class NewRepurchaseOpForm(forms.Form):
   selected = forms.BooleanField(label="Seleccionar", required=False)

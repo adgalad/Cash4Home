@@ -12,18 +12,20 @@ class Command(BaseCommand):
         ContentType.objects.all().delete()
         Group.objects.all().delete()
 
-        user      = ContentType(app_label='admin', model='Usuarios')
-        bank      = ContentType(app_label='admin', model='Bancos')
-        account   = ContentType(app_label='admin', model='Cuentas')
-        country   = ContentType(app_label='admin', model='Paises')
-        holiday   = ContentType(app_label='admin', model='Feriados')
-        operation = ContentType(app_label='admin', model='Operaciones')
-        rate      = ContentType(app_label='admin', model='Tasas')
-        currency  = ContentType(app_label='admin', model='Monedas')
-        group     = ContentType(app_label='admin', model='Grupos')
+        user        = ContentType(app_label='admin', model='Usuarios')
+        bank        = ContentType(app_label='admin', model='Bancos')
+        account     = ContentType(app_label='admin', model='Cuentas')
+        country     = ContentType(app_label='admin', model='Paises')
+        holiday     = ContentType(app_label='admin', model='Feriados')
+        operation   = ContentType(app_label='admin', model='Operaciones')
+        transaction = ContentType(app_label='admin', model='Transacciones')
+        rate        = ContentType(app_label='admin', model='Tasas')
+        currency    = ContentType(app_label='admin', model='Monedas')
+        group       = ContentType(app_label='admin', model='Grupos')
+        exchanger   = ContentType(app_label='admin', model='Exchanger')
         
-        btc_price = ContentType(app_label='dashboard', model='BTC_Price')
-        dashboard_operation = ContentType(app_label='dashboard', model='Operation')
+        btc_price = ContentType(app_label='dashboard', model='PrecioBTC')
+        dashboard_operation = ContentType(app_label='dashboard', model='OperacionesDashboard')
 
 
 
@@ -33,9 +35,11 @@ class Command(BaseCommand):
         country.save()
         holiday.save()
         operation.save()
+        transaction.save()
         rate.save()
         currency.save()
         group.save()
+        exchanger.save()
 
         btc_price.save()
         dashboard_operation.save()
@@ -70,11 +74,15 @@ class Command(BaseCommand):
         edit_holiday.save()
         
 
-        add_operation  = Permission(name='Crear',  codename='add_operation',  content_type=operation)
-        edit_operation = Permission(name='Editar', codename='edit_operation', content_type=operation)
+        add_operation    = Permission(name='Crear',    codename='add_operation',    content_type=operation)
+        edit_operation   = Permission(name='Editar',   codename='edit_operation',   content_type=operation)
+        cancel_operation = Permission(name='Cancelar', codename='cancel_operation', content_type=operation)
         add_operation.save()       
         edit_operation.save()
+        cancel_operation.save()
         
+        add_transaction = Permission(name='Crear', codename='add_transaction', content_type=transaction)
+        add_transaction.save()
 
         add_rate  = Permission(name='Crear',  codename='add_rate',  content_type=rate)
         edit_rate = Permission(name='Editar', codename='edit_rate', content_type=rate)
@@ -87,10 +95,17 @@ class Command(BaseCommand):
         add_group.save()       
         edit_group.save()
 
-        btc_price_p = Permission(name='Ver precio BTC', codename='btc_price', content_type=btc_price)
-        operation_operator = Permission(name='Ver opearciones de los demás', codename='operation_operator', content_type=dashboard_operation)
+        add_exchanger  = Permission(name='Crear',  codename='add_exchanger',  content_type=exchanger)
+        edit_exchanger = Permission(name='Editar', codename='edit_exchanger', content_type=exchanger)
+        add_exchanger.save()       
+        edit_exchanger.save()
+
+        btc_price_p         = Permission(name='Ver precio BTC', codename='btc_price', content_type=btc_price)
+        operations_operator = Permission(name='Ver dashboard de operaciones', codename='operations_operator', content_type=dashboard_operation)
+        operations_all      = Permission(name='Ver todas las operaciones', codename='operations_all', content_type=dashboard_operation)
         btc_price_p.save()
-        operation_operator.save()
+        operations_operator.save()
+        operations_all.save()
 
 
         client   = Group(name='Cliente')
@@ -107,7 +122,7 @@ class Command(BaseCommand):
 
         operator.permissions.add(edit_user)
         operator.permissions.add(btc_price)
-        operator.permissions.add(operation_operator)
+        operator.permissions.add(operations_operator)
 
 
 
