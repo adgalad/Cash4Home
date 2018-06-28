@@ -97,8 +97,6 @@ def dashboard(request):
 
     for i in actualOperations:
       i.isCanceled()
-
-    
     
     totalOpen = actualOperations.count()
     totalEnded = endedOperations.count()
