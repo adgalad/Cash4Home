@@ -116,6 +116,9 @@ class RepurchaseCameFromAdmin(admin.ModelAdmin):
 class ComissionAdmin(admin.ModelAdmin):
     pass
 
+class CountryAdmin(admin.ModelAdmin):
+    pass
+
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Holiday, HolidayAdmin)
@@ -130,3 +133,4 @@ admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(Repurchase, RepurchaseAdmin)
 admin.site.register(RepurchaseCameFrom, RepurchaseCameFromAdmin)
 admin.site.register(Comission, ComissionAdmin)
+admin.site.register(Country, CountryAdmin)

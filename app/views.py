@@ -1330,7 +1330,14 @@ def operationDetailDashboard(request, _operation_id):
                                original_status=original_status).save()
           if status == "Fondos transferidos":
             sendEmailOperationFinished(operation)
+          elif status == "Fondos ubicados":
+            crypto_used = form.cleaned_data['crypto_used']
+            rate = form.cleaned_data['rate']
 
+            operation.crypto_rate = rate
+            operation.exchanger = crypto_used.exchanger
+            operation.crypto_used = crypto_used.currency
+            operation.save()
         else:
           msg = "No se puede cambiar el status a %s" % status
           messages.error(request, msg, extra_tags="alert-warning")  
@@ -1630,15 +1637,22 @@ def editExchanger(request, _ex_id, _currency_id):
     return render(request, 'admin/editExchanger.html', {'form': form})
 
 def addRepurchaseGeneral(request):
+    allCurrencies = Currency.objects.all()
+    currenciesC = []
+    for c in allCurrencies.iterator():
+        tmp = Operation.objects.filter(origin_currency=c).exists()
+        if (tmp):
+          currenciesC.append((c.code, c.code))
+
     if (request.method == 'POST'):
-        form = SelectCurrencyForm(request.POST)
+        form = SelectCurrencyForm(request.POST, currenciesC=currenciesC)
 
         if (form.is_valid()):
           currency = form.cleaned_data['currency']
 
-          return redirect('addRepurchase', _currency_id=currency.code)
+          return redirect('addRepurchase', _currency_id=currency)
     else:
-        form = SelectCurrencyForm()
+        form = SelectCurrencyForm(currenciesC=currenciesC)
     return render(request, 'admin/addRepurchaseGeneral.html', {'form': form})
 
 def addRepurchase(request, _currency_id):
@@ -1648,7 +1662,7 @@ def addRepurchase(request, _currency_id):
       raise Http404
 
     existing_rep = RepurchaseCameFrom.objects.values_list('id_operation',flat=True)
-    available_op = Operation.objects.filter(origin_currency=origin_currency).exclude(code__in=existing_rep).values_list('code', 'fiat_amount', 'date')
+    available_op = Operation.objects.filter(origin_currency=origin_currency, status="Fondos transferidos").exclude(code__in=existing_rep).values_list('code', 'fiat_amount', 'date')
     initialForm = [{'operation': op[0], 'amount': op[1], 'date': op[2], 'selected': False} for op in available_op]
 
     if (request.method == 'POST'):
@@ -1670,17 +1684,22 @@ def addRepurchase(request, _currency_id):
           rate = formRep.cleaned_data['rate']
 
           atLeastOne = False
+          firstSelected = True
+          new_repurchase = Repurchase(date=date,
+                                      rate=rate,
+                                      origin_currency=origin_currency,
+                                      target_currency=currency,
+                                      exchanger=exchanger)
           for form in formset:
               if (form.cleaned_data['selected']):
                 atLeastOne = True
+
                 codeOperation = form.cleaned_data['operation']
                 operation = Operation.objects.get(code=codeOperation)
-                new_repurchase = Repurchase(date=date,
-                                            rate=rate,
-                                            origin_currency=origin_currency,
-                                            target_currency=currency,
-                                            exchanger=exchanger)
-                new_repurchase.save()
+
+                if (firstSelected):
+                  new_repurchase.save()
+                  firstSelected = False
 
                 new_cameFrom = RepurchaseCameFrom(id_repurchase=new_repurchase,id_operation=operation)
                 new_cameFrom.save()
@@ -1707,7 +1726,15 @@ def adminRepurchase(request):
       return render(request, 'admin/adminRepurchase.html', {'repurchases': all_repurchases})
 
 def viewRepurchase(request, _repurchase_id):
-    pass
+    try:
+        actual_repurchase = Repurchase.objects.get(id=_repurchase_id)
+    except:
+        raise Http404
+
+    if (request.method == 'GET'):
+        came_from = RepurchaseCameFrom.objects.filter(id_repurchase=actual_repurchase)
+
+        return render(request, 'admin/viewRepurchase.html', {'rep': actual_repurchase, 'came_from': came_from})
 
 
 @permission_required('admin.add_group', login_url='/login/')

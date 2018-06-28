@@ -1,0 +1,133 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %} Detalles del usuario {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="/static/vendors/datatables.net-bs/css/dataTables.bootstrap.min.css" rel="stylesheet">
+  <link href="/static/vendors/datatables.net-buttons-bs/css/buttons.bootstrap.min.css" rel="stylesheet">
+  <link href="/static/vendors/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css" rel="stylesheet">
+  <link href="/static/vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css" rel="stylesheet">
+  <link href="/static/vendors/datatables.net-scroller-bs/css/scroller.bootstrap.min.css" rel="stylesheet">
+  
+{% endblock stylesheets %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="clearfix"></div>
+
+      <div class="row">
+        {% for message in messages %}
+          <section class="table-view {{message.tags}}">
+            <div class="container" style="display: table-cell; text-align: center; vertical-align: middle; padding-left: 15px;">
+                {% if 'safe' in message.tags %}
+                  {{ message | safe }}
+                {% else %}
+                  {{ message }}
+                {% endif %}
+            </div>
+          </section>   
+          <br>
+        {% endfor %}
+
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <div class="x_title">
+              <h2>Detalles de la recompra</h2>
+              <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+              <div class="row">
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Código</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ rep.id }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>Fecha</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ rep.date }}
+                </div>
+              </div>
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Moneda origen</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ rep.origin_currency.code }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>Moneda destino</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ rep.target_currency.code }}
+                </div>
+              </div>
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Tasa de cambio</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ rep.rate }}{{ rep.target_currency.code }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>Exchanger</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ rep.exchanger.name }}
+                </div>
+              </div>
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Operaciones asociadas</b>
+                </div>
+                <div class="col-md-10 col-sm-10 col-xs-12">
+                    <p>
+                      {% for came in came_from %}
+                        {{came.id_operation.code}}, 
+                      {% endfor %}
+                    </p>
+                </div>
+                
+              </div>
+              <hr>
+              <br><br>
+              <div style="float:right;">
+                <a class="btn btn-primary" href="{% url 'adminRepurchase' %}" ><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+
+        
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <!-- Datatables -->
+  <script src="/static/vendors/datatables.net/js/jquery.dataTables.min.js"></script>
+  <script src="/static/vendors/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+  <script src="/static/vendors/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+  <script src="/static/vendors/datatables.net-buttons-bs/js/buttons.bootstrap.min.js"></script>
+  <script src="/static/vendors/datatables.net-buttons/js/buttons.flash.min.js"></script>
+  <script src="/static/vendors/datatables.net-buttons/js/buttons.html5.min.js"></script>
+  <script src="/static/vendors/datatables.net-buttons/js/buttons.print.min.js"></script>
+  <script src="/static/vendors/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js"></script>
+  <script src="/static/vendors/datatables.net-keytable/js/dataTables.keyTable.min.js"></script>
+  <script src="/static/vendors/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+  <script src="/static/vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js"></script>
+  <script src="/static/vendors/datatables.net-scroller/js/dataTables.scroller.min.js"></script>
+  <script src="/static/vendors/jszip/dist/jszip.min.js"></script>
+  <script src="/static/vendors/pdfmake/build/pdfmake.min.js"></script>
+  <script src="/static/vendors/pdfmake/build/vfs_fonts.js"></script>
+{% endblock javascripts %}

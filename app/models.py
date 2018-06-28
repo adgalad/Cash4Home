@@ -226,16 +226,38 @@ class AccountBelongsTo(models.Model):
 def pkgenTransaction():
     return "Tx"+str(round(timezone.now().timestamp()))+str(random.randint(0,10000))
 
+class Exchanger(models.Model):
+    name = models.CharField(max_length=140, primary_key=True, unique=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        default_permissions = ()
+
+    def __str__(self):
+        return self.name
+
+class ExchangerAccepts(models.Model):
+    # The primary key is the django id
+    exchanger = models.ForeignKey(Exchanger)
+    currency = models.ForeignKey(Currency)
+    amount_acc = models.DecimalField(max_digits=30, decimal_places=15)
+    
+    class Meta:
+        default_permissions = ()
+
+    def __str__(self):
+        return str(self.currency.code)
 
 class Operation(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True)
     fiat_amount = models.DecimalField(max_digits=30, decimal_places=15)
     crypto_rate = models.FloatField(blank=True, null=True)
+    crypto_used = models.ForeignKey(Currency, related_name='crypto_used', blank=True, null=True)
     status_choices = (('Cancelada', 'Cancelada'), ('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), 
                       ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
                       ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'))
     status = models.CharField(choices=status_choices, max_length=20)
-    exchanger = models.CharField(max_length=70, blank=True, null=True)
+    exchanger = models.ForeignKey(Exchanger, blank=True, null=True)
     date = models.DateTimeField()
     date_ending = models.DateTimeField()
     id_client = models.ForeignKey(User, related_name="user_client")
@@ -304,28 +326,6 @@ class Transaction(models.Model):
 
     class Meta:
         default_permissions = ()
-
-class Exchanger(models.Model):
-    name = models.CharField(max_length=140, primary_key=True, unique=True)
-    is_active = models.BooleanField(default=True)
-    
-    class Meta:
-        default_permissions = ()
-
-    def __str__(self):
-        return self.name
-
-class ExchangerAccepts(models.Model):
-    # The primary key is the django id
-    exchanger = models.ForeignKey(Exchanger)
-    currency = models.ForeignKey(Currency)
-    amount_acc = models.DecimalField(max_digits=30, decimal_places=15)
-    
-    class Meta:
-        default_permissions = ()
-
-    def __str__(self):
-        return str(self.currency.code)
 
 class Repurchase(models.Model):
     # The primary key is the django id

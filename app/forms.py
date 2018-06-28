@@ -377,6 +377,10 @@ class ChangeOperationStatusForm(forms.Form):
                     ('Fondos ubicados', 'Fondos ubicados'),
                     ('Fondos transferidos', 'Fondos transferidos'))
   status = forms.ChoiceField(required=True, choices=status_choices, label="Status de la operación")
+  crypto_used = GroupedModelChoiceField(required=False, label="Criptomoneda utilizada", 
+                                          queryset=ExchangerAccepts.objects.filter(currency__in=Currency.objects.filter(currency_type='Crypto')),
+                                               group_by_field='exchanger')
+  rate = forms.FloatField(required=False, label="Tasa de cambio" , min_value=0)
 
   def __init__(self, *args, **kwargs):
     super(ChangeOperationStatusForm, self).__init__(*args, **kwargs)
@@ -463,9 +467,13 @@ class NewRepurchaseForm(forms.Form):
 
 class SelectCurrencyForm(forms.Form):
 
-    currency = forms.ModelChoiceField(queryset=Currency.objects.all(), required=True, label="Moneda origen")
+    currency = forms.ChoiceField(required=True, label="Moneda origen")
 
     def __init__(self, *args, **kwargs):
+      currenciesC = kwargs.pop('currenciesC')
+
       super(SelectCurrencyForm, self).__init__(*args, **kwargs)
       for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
+        
+      self.fields['currency'].choices = currenciesC
