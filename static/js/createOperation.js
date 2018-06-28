@@ -507,14 +507,22 @@ function deleteAccountInput () {
   }
 }
 currencyf = function(value){
-  v = parseFloat(value)
+  if (typeof(value) == 'string'){
+    v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
+  } else {
+    v = parseFloat(value)  
+  }
   console.log(value, v)
   if (isNaN(v)) return 0
   return v.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
 }
 
 fcurrency = function(value){
-  v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
+  if (value instanceof String){
+    v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
+  } else {
+    v = parseFloat(value)  
+  }
   if (isNaN(v)) return 0
   return v
 }
@@ -522,7 +530,7 @@ fcurrency = function(value){
 toCurrencyf = function(field){
   for (var i = 0; i < nOptions; ++i) {
     f = $('#id_form-' + i + '-amount')
-    console.log(f, f.val(), currencyf(f.val()))
+    // console.log(f, f.val(), currencyf(f.val()))
     f.val(currencyf(f.val()))
   }
 }

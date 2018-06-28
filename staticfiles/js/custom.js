@@ -2432,8 +2432,8 @@ function init_DataTables () {
   console.log('init_DataTables')
 
   var handleDataTableButtons = function () {
-    if ($('#datatable-buttons').length) {
-      $('#datatable-buttons').DataTable({
+    if ($('table[id="datatable-buttons"]').length) {
+      $('table[id="datatable-buttons"]').DataTable({
         dom: 'Bfrtip',
         buttons: [{
           extend: 'copy',

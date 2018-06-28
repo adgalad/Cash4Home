@@ -53,8 +53,8 @@ function SmartWizard (target, options) {
     elmActionBar.append($this.loader)
     $this.target.append($this.elmStepContainer)
     elmActionBar.append($this.buttons.previous)
-                    .append($this.buttons.next)
-                    .append($this.buttons.finish)
+                .append($this.buttons.next)
+                .append($this.buttons.finish)
     $this.target.append(elmActionBar)
     this.contentWidth = $this.elmStepContainer.width()
 
@@ -507,29 +507,44 @@ function deleteAccountInput () {
   }
 }
 currencyf = function(value){
-  v = parseFloat(value)
+  v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
+  console.log(value, v)
   if (isNaN(v)) return 0
   return v.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
 }
-    
+
+fcurrency = function(value){
+  v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
+  if (isNaN(v)) return 0
+  return v
+}
+
+toCurrencyf = function(field){
+  for (var i = 0; i < nOptions; ++i) {
+    f = $('#id_form-' + i + '-amount')
+    console.log(f, f.val(), currencyf(f.val()))
+    f.val(currencyf(f.val()))
+  }
+}
+
 summary = function () {
   var total = 0
   for (var i = 0; i < nOptions; ++i) {
     var field = $('#id_form-' + i + '-amount')
     if (field.parent().is(':visible')) {
-      var v = parseInt(field.val())
+      var v = fcurrency(field.val())
       total += isNaN(v) ? 0 : v
     }
   }
   toCurrency = $('#id_currency').val()
   if (parseInt($('#id_account').val())) {
     fromCurrency = fromAccs[parseInt($('#id_account').val())]['currency']
-    _rate = currencyf(rate[fromCurrency + '/' + toCurrency])
+    _rate = rate[fromCurrency + '/' + toCurrency]
     _fee = String(fee * 100) + '%'
     amount = fromCurrency + ' ' + currencyf(total)
     net = fromCurrency + ' ' + currencyf(total * (1 - fee))
     __rate = currencyf(_rate) + ' ' + fromCurrency + '/' + toCurrency
-    vef = toCurrency + ' ' + currencyf(total * (1 - fee) * 800000)
+    vef = toCurrency + ' ' + currencyf(total * (1 - fee) * _rate)
     amountIn = 'Total en ' + toCurrency
 
     $('#fee').html(_fee)
@@ -552,13 +567,15 @@ summary = function () {
     table.html('')
     for (var i = 0; i < nOptions - 1; ++i) {
       var acc = toAccs[$('#id_form-' + i + '-account').val()]
-      var amount = parseInt($('#id_form-' + i + '-amount').val()) * _rate
+      var amount = fcurrency($('#id_form-' + i + '-amount').val())
       if (!acc) continue
       table.append(`
                   <tr>
                     <td><b>Cuenta ` + String(i + 1) + `</b></td>
                     <td>` + acc['name'] + `</td>
-                    <td>` + acc['currency'] + ' ' + currencyf(amount) + `</td>
+                    <td>` + fromCurrency + ' ' + currencyf(amount) + `<br>
+                        (`+ acc['currency'] + ' ' + currencyf(amount * _rate) + `)
+                    </td>
                   </tr>`)
     }
   }
@@ -600,8 +617,8 @@ for (var i = 0; i < nOptions; ++i) {
   $('#id_form-' + i + '-account').change(selectAccount)
 
   var field = $('#id_form-' + i + '-amount')
-
-  field.keyup(summary).change(summary).val(0.0)
+  field.attr('type', 'text')
+  field.keyup(summary).change(summary).blur(toCurrencyf).val(0.0)
   if (i > 0) {
     field.parent().hide()
     $('#id_form-' + i + '-account').parent().hide()

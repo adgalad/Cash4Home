@@ -21,10 +21,10 @@ function SmartWizard(target, options) {
     this.elmStepContainer = $('<div></div>').addClass("stepContainer");
     this.loader = $('<div>Loading</div>').addClass("loader");
     this.buttons = {
-        next : $('<a>'+options.labelNext+'</a>').attr("href","#").addClass("buttonNext"),
-        previous : $('<a>'+options.labelPrevious+'</a>').attr("href","#").addClass("buttonPrevious"),
-        finish  : $('<a>'+options.labelFinish+'</a>').attr("href","#").addClass("buttonFinish")
-    };
+        next: $('<button class="btn btn-primary" type="button">' + options.labelNext + '</button>').addClass('buttonNext'),
+        previous: $('<button class="btn btn-primary" type="button">' + options.labelPrevious + '</button>').addClass('buttonPrevious'),
+        finish: $('<button class="btn submit" type="submit">' + options.labelFinish + '</button>').addClass('buttonFinish')
+    }
 
     /*
      * Private functions
@@ -52,9 +52,9 @@ function SmartWizard(target, options) {
         $this.elmStepContainer.append(allDivs);
         elmActionBar.append($this.loader);
         $this.target.append($this.elmStepContainer);
-        elmActionBar.append($this.buttons.finish)
+        elmActionBar.append($this.buttons.previous)
                     .append($this.buttons.next)
-                    .append($this.buttons.previous);
+                    .append($this.buttons.finish);
         $this.target.append(elmActionBar);
         this.contentWidth = $this.elmStepContainer.width();
 
@@ -262,7 +262,7 @@ function SmartWizard(target, options) {
         if (! $this.options.cycleSteps){
             if (0 >= $this.curStepIdx) {
                 $($this.buttons.previous).addClass("buttonDisabled");
-        if ($this.options.hideButtonsOnDisabled) {
+				if ($this.options.hideButtonsOnDisabled) {
                     $($this.buttons.previous).hide();
                 }
             }else{
@@ -426,24 +426,23 @@ $.fn.smartWizard = function(method) {
 };
 
 // Default Properties and Events
-$.fn.smartWizard.defaults = {
+  $.fn.smartWizard.defaults = {
     selected: 0,  // Selected Step, 0 = first step
-    keyNavigation: true, // Enable/Disable key navigation(left and right keys are used if enabled)
+    keyNavigation: false, // Enable/Disable key navigation(left and right keys are used if enabled)
     enableAllSteps: false,
     transitionEffect: 'fade', // Effect on navigation, none/fade/slide/slideleft
-    contentURL:null, // content url, Enables Ajax content loading
-    contentCache:true, // cache step contents, if false content is fetched always from ajax url
+    contentURL: null, // content url, Enables Ajax content loading
+    contentCache: true, // cache step contents, if false content is fetched always from ajax url
     cycleSteps: false, // cycle step navigation
     enableFinishButton: false, // make finish button enabled always
     hideButtonsOnDisabled: false, // when the previous/next/finish buttons are disabled, hide them instead?
-    errorSteps:[],    // Array Steps with errors
-    labelNext:'Next',
-    labelPrevious:'Previous',
-    labelFinish:'Finish',
+    errorSteps: [],    // Array Steps with errors
+    labelNext: 'Siguiente',
+    labelPrevious: 'Anterior',
+    labelFinish: 'Finalizar',
     noForwardJumping: false,
     onLeaveStep: null, // triggers when leaving a step
     onShowStep: null,  // triggers when showing a step
     onFinish: null  // triggers when Finish button is clicked
-};
-
+  }
 })(jQuery);

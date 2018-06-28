@@ -225,6 +225,7 @@ def createOperation(request):
       for i in form2:
         acc = i.cleaned_data["account"]
         amount = i.cleaned_data["amount"]
+        print(acc and amount > 0, acc, amount)
         if acc and amount > 0:
           toAccounts.append((acc, amount))
           total += amount
@@ -233,16 +234,15 @@ def createOperation(request):
         else:
           ok = False
           break
-      strInRrat = (str(fromCurrency) + "/" + str(toCurrency)) in rate
+      fromCurrency = fromAccount.id_account.id_currency
+      toCurrency = form1.cleaned_data['currency']
+      strInRrat = (str(fromCurrency) + "/" + str(toCurrency)) in rates
+      
       if ok and strInRrat:
-
-        fromCurrency = fromAccount.id_account.id_currency
-        toCurrency = form1.cleaned_data['currency']
         rate   = rates[str(fromCurrency) + "/" + str(toCurrency)]
         bank   = fromAccount.id_account.id_bank
         allies = bank.allies.all()
 
-        
         if allies.count() == 0:
           for cst in fromAccount.id_account.id_bank.canSendTo.all():
             print(cst)
@@ -251,6 +251,7 @@ def createOperation(request):
             if allies.count() > 0:
               break
         cst = fromAccount.id_account.id_bank.canSendTo.all().values_list('target_bank', flat=True)
+        cst = Bank.objects.filter(Q(pk__in=cst) | Q(pk=fromAccount.id_account.id_bank.pk))
         if allies.count() != 0:
 
           ally = allies[random.randint(0, allies.count()-1)]
@@ -264,10 +265,15 @@ def createOperation(request):
             for ally in allies:
               print('-->', ally)
               try:
-                belongsTo = ally.hasAccount.filter(use_type='Origen', id_account__id_bank__in=cst)[0]
+                a = ally.hasAccount.filter()
+                b = ally.hasAccount.filter(use_type='Origen')
+                print(cst)
+                print(a, b, ally.hasAccount.filter(use_type='Origen', id_account__id_bank__in=cst), ally.hasAccount.filter(use_type='Origen', id_account__id_bank__pk__in=cst))
+                belongsTo = ally.hasAccount.filter(use_type='Origen', id_account__id_bank__pk__in=cst)[0]
                 account = belongsTo.id_account
                 print('**>', belongsTo, account)
-              except:
+              except Exception as e:
+                print(e)
                 account = None
 
           if account is not None:
@@ -345,7 +351,7 @@ def createOperation(request):
             messages.error(request, 'No se pudo crear la operación, ya que no hay aliados disponibles en este momento. Por favor, intente mas tarde.', extra_tags="alert-error")  
         else:
           messages.error(request, 'No se pudo crear la operación, ya que no hay aliados disponibles en este momento. Por favor, intente mas tarde.', extra_tags="alert-error")  
-      if not strInRrat:
+      elif not strInRrat:
         messages.error(request, 'Lo sentimos, no es posible crear una operacion de %s a %s en este momento.'%(str(fromCurrency),str(toCurrency)), extra_tags="alert-error")
       else:
         messages.error(request, 'No se pudo crear la operación. Revise los datos ingresados.', extra_tags="alert-error")
