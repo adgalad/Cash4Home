@@ -279,21 +279,39 @@
               
               {% if perms.admin.edit_operation and operation.is_active or request.user.is_superuser %}
               <form method="post">
+                {% csrf_token %}
                 <div class="row">
-                    {% for field in form %}
-                      {% csrf_token %}
+                    
                       <div class="col-md-3 col-sm-3 col-xs-12">
-                        <b>{{ field.label }}</b>
+                        <b>{{ form.status.label_tag }}</b>
                       </div>
                       <div class="col-md-4 col-sm-4 col-xs-12">
-                        {{field}}
+                        {{ form.status }}
                       </div>
-                    {% endfor %}
+                    
                     <div class="col-md-4 col-sm-4 col-xs-12">
                       <button class="btn btn-primary" type="submit">
                         Cambiar Status
                       </button>    
                     </div>
+                </div>
+                <div id="aditionalFields" style="display: none;">
+                  <div class="row">
+                      <div class="col-md-3 col-sm-3 col-xs-12">
+                          <b>{{ form.crypto_used.label_tag }}</b>
+                      </div>
+                      <div class="col-md-4 col-sm-4 col-xs-12">
+                          {{ form.crypto_used }}
+                        </div>
+                  </div>
+                  <div class="row">
+                      <div class="col-md-3 col-sm-3 col-xs-12">
+                          <b>{{ form.rate.label_tag }}</b>
+                      </div>
+                      <div class="col-md-4 col-sm-4 col-xs-12">
+                          {{ form.rate }}
+                        </div>
+                  </div>
                 </div>
               </form>
               {% endif %}
@@ -348,5 +366,18 @@
     span.onclick = function() { 
       modal.style.display = "none";
     }
+  </script>
+  <script type="text/javascript">
+    $("#id_status").change(function(){
+      if ($("#id_status").val()=='Fondos ubicados'){
+        $("#aditionalFields").show();
+        document.getElementById("id_crypto_used").required = true;
+        document.getElementById("id_rate").required = true;
+      } else {
+        $("#aditionalFields").hide();
+        document.getElementById("id_crypto_used").required = false;
+        document.getElementById("id_rate").required = false;
+      }
+    });
   </script>
 {% endblock javascripts %}

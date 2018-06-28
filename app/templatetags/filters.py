@@ -17,7 +17,7 @@ def currency(value):
         
     return value
 
-def crypto(value)
+def crypto(value):
     try:
         v = float(value)
         return '{:,.8f}'.format(v)

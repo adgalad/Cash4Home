@@ -302,6 +302,24 @@ function SmartWizard(target, options) {
      */
 
     SmartWizard.prototype.goForward = function(){
+        $("#id_date").change(function(){
+            if (($("#id_rate").val()=="") || ($("#id_currency").val()=="")){
+                console.log("HOLA");
+                return false
+            }
+        });
+        $("#id_rate").change(function(){
+            if (($("#id_date").val()=="") || ($("#id_currency").val()=="")){
+                console.log("HOLA2");
+                return false
+            }
+        });
+        $("#id_currency").change(function(){
+            if (($("#id_rate").val()=="") || ($("#id_date").val()=="")){
+                console.log("HOLA");
+                return false
+            }
+        });
         var nextStepIdx = this.curStepIdx + 1;
         if (this.steps.length <= nextStepIdx){
             if (! this.options.cycleSteps){
