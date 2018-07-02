@@ -9,6 +9,18 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.models import Permission, Group
 
+
+class GlobalSettingsForm(forms.ModelForm):
+  
+  def __init__(self, *args, **kwargs):
+      super(GlobalSettingsForm, self).__init__(*args, **kwargs)
+      for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+  class Meta:
+    model = GlobalSettings
+    fields = "__all__"
+
 class MyPasswordResetForm(PasswordResetForm):
   def save(self, domain_override=None,
            subject_template_name='registration/password_reset_subject.txt',

@@ -105,6 +105,8 @@ urlpatterns = [
     url(r'^all/repurchase/$', views.adminRepurchase, name="adminRepurchase"),
     url(r'^view/repurchase/(?P<_repurchase_id>\w+)$', views.viewRepurchase, name="viewRepurchase"),
 
+    url(r'^admin/settings$', views.globalSettings, name="globalSettings"),
+
     #Dashboards
     url(r'^dashboard/operational/(?P<_operation_id>.+)/details$', views.operationDetailDashboard, name="operationDetailDashboard"),
     url(r'^dashboard/operational/(?P<_operation_id>.+)/edit$', views.operationEditDashboard, name="operationEditDashboard"),

@@ -9,6 +9,21 @@ from django.utils import timezone
 import datetime
 import random
 
+class GlobalSettings(models.Model):
+    OPERATION_TIMEOUT = models.IntegerField(verbose_name='Expiración de la operación')
+    EMAIL_VALIDATION_EXPIRATION = models.IntegerField(verbose_name='Expiración del email de validación')
+
+
+    def get():
+        settings = GlobalSettings.objects.all()
+        if not settings:
+            settings = GlobalSettings(OPERATION_TIMEOUT = 90,
+                                      EMAIL_VALIDATION_EXPIRATION = 60*3
+                                    ).save()
+            return settings
+        else:
+            return settings[0]
+
 
 class Country(models.Model):
     name = models.CharField(max_length=70, primary_key=True, unique=True)

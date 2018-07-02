@@ -11,6 +11,16 @@
  * http://tech-laboratory.blogspot.com
  */
 
+checkFields = function(){ 
+        console.log("HOLA");
+        $('button[type="submit"]').prop('disabled', $("#id_date").val() == "" || ($("#id_rate").val()=="") || ($("#id_currency").val()==""))
+    }
+$("#id_date").change(checkFields)
+$("#id_rate").change(checkFields);
+$("#id_currency").change(checkFields);
+$('button[type="submit"]').prop('disabled', true)
+
+
 function SmartWizard(target, options) {
     this.target       = target;
     this.options      = options;
@@ -300,26 +310,11 @@ function SmartWizard(target, options) {
     /*
      * Public methods
      */
+    
+    
 
     SmartWizard.prototype.goForward = function(){
-        $("#id_date").change(function(){
-            if (($("#id_rate").val()=="") || ($("#id_currency").val()=="")){
-                console.log("HOLA");
-                return false
-            }
-        });
-        $("#id_rate").change(function(){
-            if (($("#id_date").val()=="") || ($("#id_currency").val()=="")){
-                console.log("HOLA2");
-                return false
-            }
-        });
-        $("#id_currency").change(function(){
-            if (($("#id_rate").val()=="") || ($("#id_date").val()=="")){
-                console.log("HOLA");
-                return false
-            }
-        });
+        checkFields()
         var nextStepIdx = this.curStepIdx + 1;
         if (this.steps.length <= nextStepIdx){
             if (! this.options.cycleSteps){
@@ -464,3 +459,8 @@ $.fn.smartWizard = function(method) {
     onFinish: null  // triggers when Finish button is clicked
   }
 })(jQuery);
+
+
+
+
+

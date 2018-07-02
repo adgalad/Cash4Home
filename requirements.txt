@@ -11,5 +11,4 @@ psycopg2==2.7.1
 requests==2.17.3
 Pillow==5.1.0
 django-mathfilters==0.4.0
-django-cron
 pycrypto==2.6.1

@@ -23,7 +23,9 @@ from app.forms import *
 from app.models import *
 import requests
 import datetime
-from C4H.settings import MEDIA_ROOT, STATIC_ROOT, EMAIL_HOST_USER, DEFAULT_DOMAIN, DEFAULT_FROM_EMAIL, OPERATION_TIMEOUT
+from C4H.settings import (MEDIA_ROOT, STATIC_ROOT, EMAIL_HOST_USER,
+                          DEFAULT_DOMAIN, DEFAULT_FROM_EMAIL, 
+                          OPERATION_TIMEOUT, EMAIL_VALIDATION_EXPIRATION)
 from app.encryptation import encrypt, decrypt
 import random
 from django.db.models import Q
@@ -62,12 +64,25 @@ def activateEmail(request, token):
   info = json.loads(decrypted)
   if not ('operation' in info and info['operation'] == 'activateUserByEmail'):
     raise PermissionDenied
+  print(info)
+  expiration = int(info['expiration'])
+  now = int(timezone.now().strftime('%s'))
+  print('expiration: ', expiration)
+  print('now: ', now)
+  print('comp: ', expiration < now)
+  if expiration < now:
+    messages.error(request,'Este link expiró. Vuelva a intentarlo enviando un nuevo correo de activación.', extra_tags="alert-warning")
+    return redirect(reverse('resendEmailVerification'))
+  try:
+    user = User.objects.get(id=info['id'], email=info['email'])
+  except:
+    raise PermissionDenied
 
-  user = User.objects.filter(id=info['id'], email=info['email']).first()
-  user.is_active = True
-  user.save()
-  messages.error(request,'Su correo electrónico ha sido validado exitosamente.', extra_tags="alert-success")
-  return redirect('/login')
+  if not user.is_active:
+    user.is_active = True
+    user.save()
+    messages.error(request,'Su correo electrónico ha sido validado exitosamente.', extra_tags="alert-success")
+  return redirect(reverse('login'))
 
 def home(request):
   return render(request, 'index.html')
@@ -185,6 +200,7 @@ def createOperation(request):
   rates      = {}
   toAccs     = {}
   fromAccs   = {}
+  currencies = []
   queryset1  = abt.filter(use_type='Origen') # Cuentas origen
   queryset2  = abt.filter(use_type='Destino') # Cuentas destino
   ToAccountFormSet = formset_factory(ToAccountForm)
@@ -203,6 +219,7 @@ def createOperation(request):
       'currency':str(i.id_account.id_currency),
       'name': str(i)
     }
+    currencies.append(i.id_account.id_currency.pk)
 
   if request.method == 'POST':
     POST = request.POST.copy()
@@ -281,7 +298,7 @@ def createOperation(request):
                                   status          = 'Falta verificacion',
                                   exchanger       = None,
                                   date            = timezone.now(),
-                                  date_ending     = timezone.now()+datetime.timedelta(seconds=OPERATION_TIMEOUT*60), # 90 minutos
+                                  date_ending     = timezone.now()+datetime.timedelta(seconds=GlobalSettings.get().OPERATION_TIMEOUT*60), # 90 minutos
                                   id_client       = request.user,
                                   id_account      = fromAccount.id_account,
                                   exchange_rate   = rate,
@@ -356,6 +373,7 @@ def createOperation(request):
 
   else:
     form1 = FromAccountForm().setQueryset(queryset1)
+    form1.fields['currency'].queryset = Currency.objects.filter(currency_type='FIAT', pk__in=currencies)
     data = {
       'form-TOTAL_FORMS': '5',
       'form-INITIAL_FORMS': '5',
@@ -597,7 +615,8 @@ def sendEmailValidation(user):
   token = {
     'email': user.email,
     'id': user.id,
-    'operation': 'activateUserByEmail'
+    'operation': 'activateUserByEmail',
+    'expiration': (timezone.now()+datetime.timedelta(seconds=GlobalSettings.get().EMAIL_VALIDATION_EXPIRATION*60)).strftime('%s')
   }
   token = encrypt(str.encode(json.dumps(token)))
 
@@ -664,7 +683,7 @@ def signup(request):
       login_auth(request, user)
       sendEmailValidation(user)
       form = AuthenticationForm()
-      msg = 'Debe verificar su correo electrónico antes de poder ingresar. <a href="' + reverse('resendEmailVerification') + '">Reenviar correo</a>'
+      msg = 'Te hemos enviado un correo de confirmación.'
       messages.error(request, msg, extra_tags="safe alert-warning")
       return render(request, 'registration/login.html', {'form': form})
   else:
@@ -1776,6 +1795,15 @@ def editGroup(request, _group_id):
       messages.error(request, 'El grupo fue editado con éxito', extra_tags="alert-success")
   return render(request, 'admin/editGroup.html', {'form': form})
 
+@permission_required('admin.edit_settings', login_url='/login/')
+def globalSettings(request):
+  if request.method == "POST":
+    form = GlobalSettingsForm(request.POST, instance=GlobalSettings.get())
+    if form.is_valid():
+      form.save()
+  else:
+    form = GlobalSettingsForm(instance=GlobalSettings.get())
+  return render(request, 'admin/editSettings.html', {'form': form})
 
 
 # Me parece q crear permiso no sirve de mucho, ya que hay q tocar codigo o crear un mecanismo dinamico que asigne el permiso a una view.

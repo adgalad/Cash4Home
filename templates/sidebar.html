@@ -188,8 +188,19 @@
         </li>
         {% endif %}
 
+        {% if perms.admin.edit_settings %}
+        <ul class="nav side-menu">
+          <li>
+            <a href="{% url 'globalSettings' %}">
+              <i class="fa fa-book"></i> Configración 
+            </a>
+          </li>
+        </ul>
+        {% endif %}
+
       </ul>
       {% endif %}
+
     </div>
   </div>
   <!-- /sidebar menu -->

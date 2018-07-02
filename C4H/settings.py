@@ -15,7 +15,8 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-DEFAULT_DOMAIN = 'http://ec2-18-222-150-152.us-east-2.compute.amazonaws.com/'
+# DEFAULT_DOMAIN = 'http://ec2-18-222-150-152.us-east-2.compute.amazonaws.com/'
+DEFAULT_DOMAIN = 'http://0.0.0.0:8000/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -30,7 +31,7 @@ ALLOWED_HOSTS = ['*']
 
 
 OPERATION_TIMEOUT = 90 # minutos
-
+EMAIL_VALIDATION_EXPIRATION = 60*3 # 3 horas
 # Application definition
 
 INSTALLED_APPS = [
@@ -41,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'mathfilters',
-    'django_cron',
     'app',
 ]
 

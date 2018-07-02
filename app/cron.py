@@ -15,7 +15,7 @@ class PriceRetriever:
   def ask(self):
     # print(requests.get('https://localbitcoins.com//bitcoinaverage/ticker-all-currencies/').content)
     try:
-        self.localbitcoins = json.loads(requests.get('https://localbitcoins.com//bitcoinaverage/ticker-all-currencies/').content.decode('utf-8'))
+        self.localbitcoins = json.loads(requests.get('https://localbitcoins.com/bitcoinaverage/ticker-all-currencies/').content.decode('utf-8'))
     except:
         self.localbitcoins = None
     
@@ -50,9 +50,9 @@ class PriceRetriever:
   def getPriceInformation(self):
     prices = {
                 'USD': { 'prices':{}, 'name':'', 'avg': 0 },
+                'VEF': { 'prices':{}, 'name':'', 'avg': 0 },
                 'ARS': { 'prices':{}, 'name':'', 'avg': 0 },
                 'PEN': { 'prices':{}, 'name':'', 'avg': 0 },
-                'VEF': { 'prices':{}, 'name':'', 'avg': 0 }
             }
 
     if self.localbitcoins:

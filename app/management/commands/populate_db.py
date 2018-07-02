@@ -23,6 +23,7 @@ class Command(BaseCommand):
         currency    = ContentType(app_label='admin', model='Monedas')
         group       = ContentType(app_label='admin', model='Grupos')
         exchanger   = ContentType(app_label='admin', model='Exchanger')
+        settings    = ContentType(app_label='admin', model='Configuración')
         
         btc_price = ContentType(app_label='dashboard', model='PrecioBTC')
         dashboard_operation = ContentType(app_label='dashboard', model='OperacionesDashboard')
@@ -40,6 +41,7 @@ class Command(BaseCommand):
         currency.save()
         group.save()
         exchanger.save()
+        settings.save()
 
         btc_price.save()
         dashboard_operation.save()
@@ -95,6 +97,9 @@ class Command(BaseCommand):
         add_group.save()       
         edit_group.save()
 
+        edit_settings = Permission(name='Editar', codename='edit_settings', content_type=group)
+        edit_settings.save()
+
         add_exchanger  = Permission(name='Crear',  codename='add_exchanger',  content_type=exchanger)
         edit_exchanger = Permission(name='Editar', codename='edit_exchanger', content_type=exchanger)
         add_exchanger.save()       
@@ -123,7 +128,6 @@ class Command(BaseCommand):
         operator.permissions.add(edit_user)
         operator.permissions.add(btc_price)
         operator.permissions.add(operations_operator)
-
 
 
 

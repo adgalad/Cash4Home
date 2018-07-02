@@ -46,6 +46,10 @@
         width:1%;
         white-space:nowrap;
     }
+
+    table.precio {
+      table-layout: auto;
+    }
   </style>
 {% endblock stylesheets %}
 
@@ -93,17 +97,22 @@
                             <h2><i class="fa fa-money"></i> <b>BTC/{{ key }}</b></h2></span>
                             <h2>{{value | lookup:'symbol'}} {{ value | lookup:'avg' | currency }}</h2>
                           <div class="dropdown-content">
-                            <div style="margin: 5%">
-                              <table class="table" id="t-usd">
+                            <div style="margin: 5%; padding-right: 25px">
+                              <table class="table precio" id="t-usd">
                                 <thead>
-                                  <tr> <th> Exchanger </th> <th> Precio</th></tr>
+                                  <tr> 
+                                    <th> Exchanger </th> 
+                                    <th> Precio</th>
+                                  </tr>
+                                  </thead>
+                                  <tbody>
                                   {% for exchanger, price in value.prices.items %}
                                   <tr>
                                     <td> {{ exchanger }} </td>
                                     <td> {{value | lookup:'symbol'}} {{ price | currency }} </td>
                                   </tr>
                                   {% endfor %}
-                                </thead>
+                                </tbody>
                               </table>
                             </div>
                           </div>
