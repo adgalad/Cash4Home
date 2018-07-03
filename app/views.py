@@ -1395,13 +1395,20 @@ def operationAddTransaction(request, _operation_id):
                       operation_type = type,
                       transfer_image = file,
                       origin_account = form.cleaned_data['origin_account'],
-                      target_account = form.cleaned_data['target_account']).save()  
+                      target_account = form.cleaned_data['target_account'],
+                      date           = form.cleaned_data['date'],
+                      amount         = form.cleaned_data['amount'],
+                      currency       = form.cleaned_data['currency']).save()  
         
         elif type == 'TC':
           Transaction(id_operation   = operation,
                       operation_type = type,
                       transfer_image = file,
-                      to_exchanger   = form.cleaned_data['to_exchanger']).save()
+                      to_exchanger   = form.cleaned_data['to_exchanger'],
+                      date           = form.cleaned_data['date'],
+                      amount         = form.cleaned_data['amount'],
+                      currency       = form.cleaned_data['currency']).save()
+          
         messages.error(request, 'La transacción ha sido agregada con éxito', extra_tags="alert-success")
       else:
         return render(request, 'admin/addTransaction.html', {'form':form, 'operation':operation})

@@ -427,12 +427,13 @@ class TransactionForm(forms.ModelForm):
     super(TransactionForm, self).__init__(*args, **kwargs)
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
-    choices = (('TD', 'Destino'), ('TO', 'Origen'), ('TC', 'Crypto'))
+    choices = (('TD', 'Destino'), ('TO', 'Origen'), ('TC', 'Cierre'))
     self.fields['operation_type'].choices = choices
   
   class Meta:
     model = Transaction
-    fields = ('operation_type', 'origin_account', 'target_account', 'to_exchanger',  'transfer_image')
+    fields = ('operation_type', 'origin_account', 'target_account',
+              'to_exchanger', 'currency', 'amount', 'date', 'transfer_image')
 
 class EditOperationForm(forms.ModelForm):
 

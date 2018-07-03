@@ -168,7 +168,7 @@
                       <td>{{ op.code }}</td>
                       <td>{{ op.id_client.get_full_name }}</td>
                       <td>{{ op.fiat_amount | currency }} {{ op.origin_currency.code }}</td>
-                      <td>{{ op.fiat_amount|mul:op.exchange_rate | currency }} {{op.target_currency.code}}</td>  
+                      <td>{{ op.fiat_amount|mul:op.exchange_rate | currency | safe}} {{op.target_currency.code}}</td>  
                       <td>{{ op.date }}</td>
                       <td>{{ op.date_ending }}</td>
                       <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>
@@ -218,7 +218,7 @@
                       <td>{{ op.code }}</td>
                       <td>{{ op.id_client.get_full_name }}</td>
                       <td>{{ op.fiat_amount | currency }} {{ op.origin_currency.code }}</td>
-                      <td>{{ op.fiat_amount|mul:op.exchange_rate | currency }} {{op.target_currency.code}}</td>  
+                      <td>{{ op.fiat_amount|mul:op.exchange_rate | currency | safe}} {{op.target_currency.code}}</td>  
                       <td>{{ op.date }}</td>
                       <td>{{ op.date_ending }}</td>
                       <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>

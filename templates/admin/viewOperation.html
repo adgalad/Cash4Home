@@ -221,6 +221,7 @@
                     <th class="column-title">Cuenta origen</th>
                     <th class="column-title">Cuenta destino</th>
                     <th class="column-title">Tipo de transacción</th>
+                    <th class="column-title">Monto</th>
                     <th class="column-title">Fecha</th>
                     <th class="column-title">Imagen</th>
                   </tr>
@@ -250,9 +251,10 @@
                         {% elif tx.operation_type == "TD" %}
                           Destino
                         {% elif tx.operation_type == "TC" %}
-                          Crypto
+                          Cierre
                         {% endif %}
                       </td>
+                      <td class=" ">{{tx.amount}} {{tx.currency}}</td>
                       <td class=" ">{{tx.date}}</td>
                       <td class=" ">
                         <a class="tx_image" name="Imagen de la transacción" href="{{tx.image_url}}">
@@ -321,7 +323,7 @@
               <div style="float:right;">
                 <a class="btn btn-primary" href="{% url 'dashboard' %}" ><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
                 {% if perms.admin.edit_operation and operation.is_active or request.user.is_superuser %}
-                  <a class="btn btn-primary" href="{% url 'operationEditDashboard' operation.code %}" ><i class="fa fa-edit"></i>&nbsp Editar</a>
+                  <a class="btn btn-primary" href="{% url 'operationEditDashboard' operation.code %}" ><i class="fa fa-edit"></i>&nbsp Asociar aliado</a>
                 {% endif %}
                 {% if perms.admin.edit_operation %}
                   <a class="btn btn-primary" href="{% url 'operationHistory' operation.code %}"><i class="fa fa-book"></i>&nbsp Historial</a>

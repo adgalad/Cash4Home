@@ -265,7 +265,7 @@ class ExchangerAccepts(models.Model):
 
 class Operation(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True)
-    fiat_amount = models.DecimalField(max_digits=30, decimal_places=15)
+    fiat_amount = models.FloatField()
     crypto_rate = models.FloatField(blank=True, null=True)
     crypto_used = models.ForeignKey(Currency, related_name='crypto_used', blank=True, null=True)
     status_choices = (('Cancelada', 'Cancelada'), ('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), 
@@ -323,7 +323,7 @@ class OperationGoesTo(models.Model):
 
 class Transaction(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True, default=pkgenTransaction)
-    date = models.DateTimeField(auto_now=True)
+    date = models.DateField()
     choices = (('TO', 'TO'), ('TD', 'TD'), ('TC', 'TC')) #TO-Transaccion origen, TD-Transaccion destino, TC-transaccion crypto
     operation_type = models.CharField(choices=choices, max_length=3, verbose_name="Tipo de transacción")
     transfer_image = models.ImageField(upload_to=get_image_path, verbose_name="Imagen del comprobante")
@@ -331,6 +331,8 @@ class Transaction(models.Model):
     origin_account = models.ForeignKey(Account, blank=True, null=True, related_name='origin_account', verbose_name="Cuenta origen")
     target_account = models.ForeignKey(Account, blank=True, null=True, related_name='target_account', verbose_name="Cuenta destino")
     to_exchanger   = models.ForeignKey('Exchanger', blank=True, null=True, verbose_name="Exchanger")
+    amount         = models.CharField(max_length=10, verbose_name="Monto")
+    currency       = models.ForeignKey(Currency, verbose_name="Moneda")
 
     @property
     def image_url(self):
