@@ -73,6 +73,9 @@ class SignUpForm(UserCreationForm):
 class ChangeEmailForm(forms.Form):
   email = forms.EmailField(label=_("Email"), max_length=254)
 
+  def clean_email(self):
+    return self.cleaned_data['email'].lower()
+
   def __init__(self, *args, **kwargs):
     super(ChangeEmailForm, self).__init__(*args, **kwargs)
     for i in self.fields:
@@ -82,6 +85,9 @@ class AuthenticationForm(forms.Form):
 
   email = forms.EmailField(required=True, label=_(u"Email"))
   password1 = forms.CharField(widget=forms.PasswordInput, required=True, label=_(u"Password"))
+
+  def clean_email(self):
+    return self.cleaned_data['email'].lower()
 
   def __init__(self, *args, **kwargs):
     super(AuthenticationForm, self).__init__(*args, **kwargs)
