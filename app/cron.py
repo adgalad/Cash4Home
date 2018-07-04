@@ -102,7 +102,7 @@ class UpdateBTCPrice():
         try:
             self.BTCPrice.ask()
             info = json.dumps(self.BTCPrice.getPriceInformation())
-            file = open(os.path.join('./media', "BTCPrice.json"), "w")
+            file = open(os.path.join('./staticfiles', "BTCPrice.json"), "w")
             file.write(info)
             file.close()
 

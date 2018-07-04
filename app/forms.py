@@ -207,13 +207,10 @@ class EditBankForm(forms.ModelForm):
   def __init__(self, *args, **kwargs):
 
     super(EditBankForm, self).__init__(*args, **kwargs)
-    print('hola')
     if 'instance' in kwargs:
-      print('chao')
       allies = User.objects.filter(groups__name='Aliado-1').filter(hasAccount__id_account__id_bank__swift=kwargs['instance'].swift, hasAccount__use_type='Origen')
       self.fields['allies'].queryset = allies
     else:
-      print('jamon')
       self.fields['allies'].queryset = User.objects.none()
     self.fields['allies'].label = 'Aliados'
     self.fields['allies'].required = False
@@ -274,6 +271,7 @@ class NewHolidayForm(forms.Form):
 class NewCountryForm(forms.Form):
 
   name = forms.CharField(label="Nombre", required=True, max_length=70, widget = forms.TextInput(attrs={'style': 'width:100%;'}))
+  iso_code = forms.CharField(label="Código Iso", required=True, max_length=6, widget = forms.TextInput(attrs={'style': 'width:100%;'}))
   status_choices = (('0', 'Inactivo',), ('1', 'Activo'))
   status = forms.ChoiceField(required = True,
                     widget=forms.RadioSelect(attrs={'style': 'width:100%; background-color:white'}), 
@@ -282,9 +280,13 @@ class NewCountryForm(forms.Form):
 
   def __init__(self, *args, **kwargs):
       super(NewCountryForm, self).__init__(*args, **kwargs)
-
       self.fields['name'].widget.attrs.update({'class' : 'form-control'})
+      self.fields['iso_code'].widget.attrs.update({'class' : 'form-control'})
       self.fields['status'].widget.attrs.update({'class' : 'flat'})
+
+  class Meta:
+    model = Country
+    fields = "__all__"
 
 
 class PermissionsModelMultipleChoiceField(forms.ModelChoiceField):

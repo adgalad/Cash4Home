@@ -23,6 +23,7 @@ from app.forms import *
 from app.models import *
 import requests
 import datetime
+import threading
 from C4H.settings import (MEDIA_ROOT, STATIC_ROOT, EMAIL_HOST_USER,
                           DEFAULT_DOMAIN, DEFAULT_FROM_EMAIL, 
                           OPERATION_TIMEOUT, EMAIL_VALIDATION_EXPIRATION)
@@ -53,6 +54,21 @@ def handler500(request):
 ########## FIN ERROR HANDLING ##########
 
 
+class EmailThread(threading.Thread):
+    def __init__(self, subject, message, html_message, recipient_list):
+        self.subject = subject
+        self.message = message
+        self.recipient_list = recipient_list
+        self.html_message = html_message
+        threading.Thread.__init__(self)
+
+    def run (self):
+        send_mail(subject=self.subject,
+                  message=self.message,
+                  html_message=self.html_message,
+                  from_email=DEFAULT_FROM_EMAIL,
+                  recipient_list=self.recipient_list)
+
 def activateEmail(request, token):
   
   try:
@@ -82,6 +98,7 @@ def activateEmail(request, token):
     user.is_active = True
     user.save()
     messages.error(request,'Su correo electrónico ha sido validado exitosamente.', extra_tags="alert-success")
+    
   return redirect(reverse('login'))
 
 def home(request):
@@ -116,7 +133,7 @@ def dashboard(request):
     totalOpen = actualOperations.count()
     totalEnded = endedOperations.count()
 
-    file = open(os.path.join(MEDIA_ROOT, "BTCPrice.json"), "r")
+    file = open(os.path.join(STATIC_ROOT, "BTCPrice.json"), "r")
     prices = json.loads(file.read())
     file.close()
     return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations, 'endedO': endedOperations, 'totalOpen': totalOpen, 'totalEnded': totalEnded})
@@ -355,11 +372,10 @@ def createOperation(request):
                         'url': DEFAULT_DOMAIN,
                     }
                 )
-            send_mail(subject        = "Verificación de correo electrónico",
-                      message        = plain_message,
-                      html_message   = html_message,
-                      from_email     = DEFAULT_FROM_EMAIL,
-                      recipient_list = [request.user.email])
+            EmailThread(subject        = "Verificación de correo electrónico",
+                        message        = plain_message,
+                        html_message   = html_message,
+                        recipient_list = [request.user.email]).start()
 
             return redirect('verifyOperation', _operation_id=operation.code)
           else:
@@ -640,7 +656,10 @@ def sendEmailValidation(user):
               'url': DEFAULT_DOMAIN,
           }
       )
-  send_mail(subject="Verificación de correo electrónico", message=plain_message, html_message=html_message, from_email=DEFAULT_FROM_EMAIL, recipient_list=[user.email])
+  EmailThread(subject="Verificación de correo electrónico",
+              message=plain_message,
+              html_message=html_message,
+              recipient_list=[user.email]).start()
 
 def resendEmailVerification(request):
   if request.method == 'POST':
@@ -1109,7 +1128,10 @@ def sendEmailUserVerification(user):
               'url': DEFAULT_DOMAIN,
           }
       )
-  send_mail(subject="Tu cuenta ha sido verificada", message=plain_message, html_message=html_message, from_email=DEFAULT_FROM_EMAIL, recipient_list=[user.email])
+  EmailThread(subject="Tu cuenta ha sido verificada",
+              message=plain_message,
+              html_message=html_message,
+              recipient_list=[user.email]).start()
 
 
 def verifyUser(request, _user_id):
@@ -1209,6 +1231,7 @@ def addCountry(request):
         if (form.is_valid()):
             name = form.cleaned_data['name']
             status = form.cleaned_data['status']
+            iso_code = form.cleaned_data['iso_code']
 
             if (Country.objects.filter(name=name).exists()):
                 msg = "Ya existe un país con ese nombre. Ingrese otro"
@@ -1218,6 +1241,7 @@ def addCountry(request):
             new_country = Country()
             new_country.name = name
             new_country.status = int(status)
+            new_country.iso_code = iso_code
             new_country.save()
 
             msg = "El país fue agregado con éxito"
@@ -1247,6 +1271,7 @@ def editCountry(request, _country_id):
         if (form.is_valid()):
             name = form.cleaned_data['name']
             status = form.cleaned_data['status']
+            iso_code = form.cleaned_data['iso_code']
             if (name != actualCountry.name):
                 if (Country.objects.filter(name=name).exists()):
                     msg = "Ya existe un país con ese nombre. Ingrese otro"
@@ -1258,12 +1283,13 @@ def editCountry(request, _country_id):
 
             actualCountry.name = name
             actualCountry.status = int(status)
+            actualCountry.iso_code = iso_code
             actualCountry.save()
 
             msg = "El país fue editado con éxito"
             messages.error(request, msg, extra_tags="alert-success")
     else:
-        form = NewCountryForm(initial={'name': actualCountry.name})
+        form = NewCountryForm(initial={'name': actualCountry.name, 'iso_code': actualCountry.iso_code})
 
     return render(request, 'admin/editCountry.html', {'form': form})
 
@@ -1322,7 +1348,10 @@ def sendEmailOperationFinished(operation):
               'url': DEFAULT_DOMAIN,
           }
       )
-  send_mail(subject="Operación finalizada", message=plain_message, html_message=html_message, from_email=DEFAULT_FROM_EMAIL, recipient_list=[operation.id_client.email])
+  EmailThread(subject="Operación finalizada",
+              message=plain_message,
+              html_message=html_message,
+              recipient_list=[operation.id_client.email]).start()
 
 
 def operationDetailDashboard(request, _operation_id):

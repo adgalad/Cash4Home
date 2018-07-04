@@ -19,7 +19,8 @@ class GlobalSettings(models.Model):
         if not settings:
             settings = GlobalSettings(OPERATION_TIMEOUT = 90,
                                       EMAIL_VALIDATION_EXPIRATION = 60*3
-                                    ).save()
+                                    )
+            settings.save()
             return settings
         else:
             return settings[0]
@@ -60,6 +61,8 @@ class MyUserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('verified', True)
+        extra_fields.setdefault('canBuyDollar', True)
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
