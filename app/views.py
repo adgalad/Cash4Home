@@ -1456,8 +1456,8 @@ def operationEditDashboard(request, _operation_id):
   except Exception as e: 
     raise Http404
 
-  if not operation.is_active:
-    raise PermissionDenied
+  # if not operation.is_active:
+  #   raise PermissionDenied
 
   alliesFrom = User.objects.filter(groups__name='Aliado-1', hasAccount__id_account__id_currency=operation.origin_currency).distinct()
   alliesTo = User.objects.filter(groups__name='Aliado-1', hasAccount__id_account__id_currency=operation.target_currency).distinct()

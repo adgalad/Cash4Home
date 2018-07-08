@@ -10,8 +10,8 @@ import datetime
 import random
 
 class GlobalSettings(models.Model):
-    OPERATION_TIMEOUT = models.IntegerField(verbose_name='Expiración de la operación')
-    EMAIL_VALIDATION_EXPIRATION = models.IntegerField(verbose_name='Expiración del email de validación')
+    OPERATION_TIMEOUT = models.IntegerField(default=90, verbose_name='Expiración de la operación')
+    EMAIL_VALIDATION_EXPIRATION = models.IntegerField(default=60*3, verbose_name='Expiración del email de validación')
 
 
     def get():
@@ -310,6 +310,9 @@ class Operation(models.Model):
             self.save()
             return True
         return False
+    
+    def __str__(self):
+        return self.code
 
     class Meta:
         default_permissions = ()

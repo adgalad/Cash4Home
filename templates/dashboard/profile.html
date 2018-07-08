@@ -8,14 +8,14 @@
           {% for message in messages %}
             <section class="table-view {{message.tags}}">
               <div class="row">
-              <div class="container" style="text-align: center; vertical-align: middle; padding-left: 15px;margin-top:2%; padding-bottom: 2%">
-                  {% if 'safe' in message.tags %}
-                    {{ message | safe }}
-                  {% else %}
-                    {{ message }}
-                  {% endif %}
+                <div class="container" style="text-align: center; vertical-align: middle; padding-left: 15px;margin-top:2%; padding-bottom: 2%">
+                    {% if 'safe' in message.tags %}
+                      {{ message | safe }}
+                    {% else %}
+                      {{ message }}
+                    {% endif %}
+                </div>
               </div>
-              <div class="row">
             </section>   
           {% endfor %} 
         </div>
