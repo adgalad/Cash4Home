@@ -119,6 +119,8 @@ def dashboard(request):
     return redirect(reverse('pendingOperations'))
 
   else:
+
+
     if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
       actualOperations = Operation.objects.filter(is_active=True).order_by('date')
       endedOperations = Operation.objects.filter(is_active=False).order_by('date')
@@ -126,6 +128,27 @@ def dashboard(request):
     else:
       actualOperations = Operation.objects.filter(Q(is_active=True) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
       endedOperations = Operation.objects.exclude(status="Cancelada").filter(Q(is_active=False) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
+
+    hasFilter = False
+    if request.method == 'POST':
+      dateForm = FilterDashboardByDateForm(request.POST)
+      print(dateForm.is_valid())
+      if dateForm.is_valid():
+        date = dateForm.cleaned_data['date']
+        # endedDate = dateForm.cleaned_data['endedDate']
+        if date:
+          actualOperations = actualOperations.filter(date__month=date.month, date__year=date.year, date__day__gte=date.day)
+          endedOperations = endedOperations.filter(date__month=date.month, date__year=date.year, date__day__gte=date.day)
+          hasFilter = True
+        if not date:
+          today = timezone.now()
+          actualOperations = actualOperations.filter(date__month=today.month, date__year=today.year)
+          endedOperations = endedOperations.filter(date__month=today.month, date__year=today.year)
+    else:
+      dateForm = FilterDashboardByDateForm()
+      today = timezone.now()
+      actualOperations = actualOperations.filter(date__month=today.month, date__year=today.year)
+      endedOperations = endedOperations.filter(date__month=today.month, date__year=today.year)
 
     for i in actualOperations:
       i.isCanceled()
@@ -136,7 +159,16 @@ def dashboard(request):
     file = open(os.path.join(STATIC_ROOT, "BTCPrice.json"), "r")
     prices = json.loads(file.read())
     file.close()
-    return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations, 'endedO': endedOperations, 'totalOpen': totalOpen, 'totalEnded': totalEnded})
+    return render(request, 'dashboard/dashboard_operator.html', 
+                  { 'prices': prices,
+                    'actualO': actualOperations,
+                    'endedO': endedOperations,
+                    'totalOpen': totalOpen,
+                    'totalEnded': totalEnded,
+                    'dateForm': dateForm,
+                    'hasFilter': hasFilter,
+                  }
+                )
 
 
 def company(request):
@@ -315,7 +347,7 @@ def createOperation(request):
                                   status          = 'Falta verificacion',
                                   exchanger       = None,
                                   date            = timezone.now(),
-                                  date_ending     = timezone.now()+datetime.timedelta(seconds=GlobalSettings.get().OPERATION_TIMEOUT*60), # 90 minutos
+                                  expiration     = timezone.now()+datetime.timedelta(seconds=GlobalSettings.get().OPERATION_TIMEOUT*60), # 90 minutos
                                   id_client       = request.user,
                                   id_account      = fromAccount.id_account,
                                   exchange_rate   = rate,
@@ -389,7 +421,7 @@ def createOperation(request):
 
   else:
     form1 = FromAccountForm().setQueryset(queryset1)
-    form1.fields['currency'].queryset = Currency.objects.filter(currency_type='FIAT', pk__in=currencies)
+    form1.fields['currency'].queryset = Currency.objects.filter(currency_type='FIAT', pk__in=currencies).order_by('code')
     data = {
       'form-TOTAL_FORMS': '5',
       'form-INITIAL_FORMS': '5',
@@ -481,7 +513,7 @@ def verifyOperation(request, _operation_id):
     else:
       messages.error(request, 'Por favor suba una imagen.', extra_tags="alert-warning")
   start = time.mktime(operation.date.timetuple())
-  end = time.mktime(operation.date_ending.timetuple())
+  end = time.mktime(operation.expiration.timetuple())
   return render(request, 'dashboard/verifyOperation.html', { "operation": operation, 'start':start, 'end':end })  
 
 
@@ -743,7 +775,7 @@ def addCurrencies(request):
 @permission_required('admin.edit_currency', login_url='/login/')
 def adminCurrencies(request):
     if (request.method == 'GET'):
-        allCurrencies = Currency.objects.all()
+        allCurrencies = Currency.objects.all().order_by('code')
 
         return render(request, 'admin/adminCurrency.html', {'currencies': allCurrencies})
 
@@ -1304,10 +1336,7 @@ def canChangeStatus(operation, newStatus):
   if operation.status == 'Verificado' and newStatus == 'Fondos por ubicar':
     operation.status = newStatus
     return True
-  if operation.status == 'Fondos por ubicar' and newStatus == 'Fondos ubicados':
-    operation.status = newStatus
-    return True
-  if operation.status == 'Fondos ubicados' and newStatus == 'Fondos transferidos' and operation.transactions.filter(operation_type='TD').count() > 0:
+  if operation.status == 'Fondos por ubicar' and newStatus == 'Fondos transferidos' and operation.transactions.filter(operation_type='TD').count() > 0:
     operation.status = newStatus
     operation.is_active = False
     return True
@@ -1409,8 +1438,8 @@ def operationAddTransaction(request, _operation_id):
     except Exception as e: 
       raise Http404
     
-    if not operation.is_active:
-      messages.error(request, "Esta operación fue cancelada o ya finalizó.", extra_tags="alert-warning")
+    if not operation.is_active and operation.status == "Cancelada":
+      messages.error(request, "Esta operación fue cancelada.", extra_tags="alert-warning")
       return redirect('operationDetailDashboard', _operation_id=_operation_id)
     
     if request.method == "POST":
@@ -1427,7 +1456,15 @@ def operationAddTransaction(request, _operation_id):
                       target_account = form.cleaned_data['target_account'],
                       date           = form.cleaned_data['date'],
                       amount         = form.cleaned_data['amount'],
-                      currency       = form.cleaned_data['currency']).save()  
+                      currency       = form.cleaned_data['currency']).save() 
+
+          # Sacamos todas las transacciones destino y sumamos sus montos
+          allTransactions = Transaction.objects.filter(id_operation=operation, operation_type='TD') 
+          totalAmount = sum([tx.amount for tx in allTransactions])
+          if totalAmount >= operation.fiat_amount * operation.exchange_rate:
+            if operation.status == 'Fondos por ubicar' and canChangeStatus(operation, 'Fondos transferidos'):
+              operation.save()
+              sendEmailOperationFinished(operation)
         
         elif type == 'TC':
           Transaction(id_operation   = operation,
@@ -1698,7 +1735,7 @@ def editExchanger(request, _ex_id, _currency_id):
     return render(request, 'admin/editExchanger.html', {'form': form})
 
 def addRepurchaseGeneral(request):
-    allCurrencies = Currency.objects.all()
+    allCurrencies = Currency.objects.all().order_by('code')
     currenciesC = []
     for c in allCurrencies.iterator():
         tmp = Operation.objects.filter(origin_currency=c).exists()

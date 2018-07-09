@@ -61,7 +61,7 @@
             </a>
             <div class="text-center">
               <br>
-              <a class="btn btn-primary" href="{% url 'operationDetailDashboard' operation.code %}"><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
+              <a class="btn btn-primary" href="{% url 'operationDetailDashboard' operation.code %}" onclick="return !goToPreviousPage()"><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
               <a class="btn btn-primary submit" href="#" onclick="checkFields()">Enviar</a>
             </div>
           </form>

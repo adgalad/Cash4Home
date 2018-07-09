@@ -208,7 +208,7 @@ class Migration(migrations.Migration):
                 ('crypto_rate', models.FloatField(blank=True, null=True)),
                 ('status', models.CharField(choices=[('Cancelada', 'Cancelada'), ('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'), ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos')], max_length=20)),
                 ('date', models.DateTimeField()),
-                ('date_ending', models.DateTimeField()),
+                ('expiration', models.DateTimeField()),
                 ('exchange_rate', models.FloatField()),
                 ('is_active', models.BooleanField(default=True)),
                 ('account_allie_origin', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='account_allie_origin', to='app.Account', verbose_name='Cuenta aliado origen')),

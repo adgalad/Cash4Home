@@ -235,7 +235,7 @@
                         {% if tx.operation_type == "TC" %}
                           N/A
                         {% else %}
-                          {{ tx.target_account }}
+                          {{ tx.origin_account }}
                         {% endif %}
                       </td>
                       <td class=" ">
@@ -254,7 +254,7 @@
                           Cierre
                         {% endif %}
                       </td>
-                      <td class=" ">{{tx.amount}} {{tx.currency}}</td>
+                      <td class=" ">{{tx.amount | currency}} {{tx.currency}}</td>
                       <td class=" ">{{tx.date}}</td>
                       <td class=" ">
                         <a class="tx_image" name="Imagen de la transacción" href="{{tx.image_url}}">
@@ -269,7 +269,13 @@
               {% if perms.admin.add_transaction and operation.is_active or request.user.is_superuser %}
                 <div class="row">
                   <div style="text-align: right;" class="col-md-12 col-sm-12 col-xs-12">
-                    <a  class="btn btn-primary" href="{% url 'operationAddTransaction' operation.code %}" >
+                    <a class="btn btn-primary" 
+                      {% if operation.status == "Falta verificacion" or operation.status == "Por verificar" %}
+                        disabled 
+                        onclick="return false" 
+                      {% else %}
+                        href="{% url 'operationAddTransaction' operation.code %}"
+                      {% endif %} >
                       <i class="fa fa-edit"></i>&nbsp Agregar transacción
                     </a>
                   </div>
@@ -321,7 +327,7 @@
               <hr>
               <br><br>
               <div style="float:right;">
-                <a class="btn btn-primary" href="{% url 'dashboard' %}" ><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
+                <a class="btn btn-primary" href="{% url 'dashboard' %}" onclick="return !goToPreviousPage()"><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
                 {% if perms.admin.edit_operation and operation.is_active or request.user.is_superuser %}
                   <a class="btn btn-primary" href="{% url 'operationEditDashboard' operation.code %}" ><i class="fa fa-edit"></i>&nbsp Asociar aliado</a>
                 {% endif %}

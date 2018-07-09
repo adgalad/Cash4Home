@@ -48,7 +48,7 @@
               {% endfor %}
               <div class="text-center">
                 <br>
-                <a class="btn btn-primary" href="{% url 'operationDetailDashboard' operation.code %}">
+                <a class="btn btn-primary" href="{% url 'operationDetailDashboard' operation.code %}" onclick="return !goToPreviousPage()">
                   <i class="fa fa-chevron-left"></i>&nbsp Volver
                 </a>
                 <button class="btn btn-primary submit" type="submit">Enviar</button>

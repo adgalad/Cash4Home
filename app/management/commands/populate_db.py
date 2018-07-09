@@ -7,7 +7,7 @@ class Command(BaseCommand):
     args = ''
     help = 'Populate Database with the seed at /app/management/commands/populate_db.py'
 
-    def _populate(self):
+    def _permissions(self):
         Permission.objects.all().delete()
         ContentType.objects.all().delete()
         Group.objects.all().delete()
@@ -148,7 +148,7 @@ class Command(BaseCommand):
         Country(name="España",    iso_code="ES").save()
 
     def _currencies(self):
-        Currency(name="Bolivar",         code="VEF", currency_type="FIAT").save()
+        
         Currency(name="Peso argentino",  code="ARS", currency_type="FIAT").save()
         Currency(name="Peso colombiano", code="COP", currency_type="FIAT").save()
         Currency(name="Peso mexicano",   code="MXN", currency_type="FIAT").save()
@@ -157,8 +157,10 @@ class Command(BaseCommand):
         Currency(name="Dolar canadiense", code="CAD", currency_type="FIAT").save()
         Currency(name="Euro",            code="EUR", currency_type="FIAT").save()
         Currency(name="Peso chileno",    code="CLP", currency_type="FIAT").save()
+        Currency(name="Guaraní",         code="PYG", currency_type="FIAT").save()
         Currency(name="Peso uruguayo",   code="UYU", currency_type="FIAT").save()
-        Currency(name="Guaraní",         code="UYU", currency_type="FIAT").save()
+        Currency(name="Bolívar",         code="VEF", currency_type="FIAT").save()
+        
 
         Currency(name="Bitcoin",  code="BTC",  currency_type="Crypto").save()
         Currency(name="Ethereum", code="ETH",  currency_type="Crypto").save()
@@ -172,14 +174,14 @@ class Command(BaseCommand):
         Bank(swift="MER123", country=venezuela, name="Banco Mercantil").save()
         Bank(swift="BAN123", country=venezuela, name="Banesco Banco Universal").save()
 
-        Bank(swift="WELL123", country=usa, name="Welss Fargo").save()
+        Bank(swift="WELL123", country=usa, name="Wells Fargo").save()
         Bank(swift="BOA123",  country=usa, name="Bank of America").save()
         Bank(swift="CHAS123", country=usa, name="Chanse Bank").save()
 
 
 
     def handle(self, *args, **options):
-        self._populate()
+        self._permissions()
         self._countries()
         self._banks()
         self._currencies()

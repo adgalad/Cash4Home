@@ -28,6 +28,10 @@
         z-index: 1;
     }
 
+    a.dot {
+      color: grey;
+      border-bottom: 1px dotted black;
+    }
 
     /* Change color of dropdown links on hover */
     .dropdown-content a:hover {background-color: #ddd}
@@ -156,45 +160,48 @@
                     <th>Cant. recibida</th>
                     <th>Cant. enviada</th>
                     <th>Fecha de creación</th>
-                    <th>Fecha de vencimiento</th>
+                    {# <th>Fecha de vencimiento</th> #}
                     <th>Aliados</th>
                     <th>Estado</th>
-                    <th></th>
+                    <th>Detalles</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for op in actualO %}
                     <tr>
                       <td>{{ op.code }}</td>
-                      <td>{{ op.id_client.get_full_name }}</td>
+                      <td><a href="{% url 'viewUser' op.id_client.id %}" class="dot">{{ op.id_client.get_full_name }}</a></td>
                       <td>{{ op.fiat_amount | currency }} {{ op.origin_currency.code }}</td>
                       <td>{{ op.fiat_amount|mul:op.exchange_rate | currency | safe}} {{op.target_currency.code}}</td>  
                       <td>{{ op.date }}</td>
-                      <td>{{ op.date_ending }}</td>
+                      {# <td>{{ op.expiration }}</td> #}
                       <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>
                       <td>{{ op.status }}</td>
                       <td>
                         <a href="{% url 'operationDetailDashboard' op.code %}">
                           <i class="fa fa-search"></i>
                         </a>
-                        <a href="{% url 'operationEditDashboard' op.code %}">
-                          <i class="fa fa-edit"></i>
-                        </a>
                       </td>
                     </tr>
                   {% endfor %}
                 </tbody>
               </table>
+              {% comment %} <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                  <div class="col-md-2 col-sm-2 col-xs-2"> 
+                    {{ dateForm.pendingDate }}
+                  </div>
+                  <div class="col-md-2 col-sm-2 col-xs-2"> 
+                    <button class="btn btn-primary" type="submit">Filtrar</button>
+                  </div>
+                </div>
+              </form> {% endcomment %}
             </div>
-          </div>
-
-          <div class="x_panel">
+            <br>
             <div class="x_title">
               <h2>Lista de operaciones finalizadas</h2>
-              <ul class="nav navbar-right panel_toolbox">
-                <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
-                </li>
-              </ul>
+              
               <div class="clearfix"></div>
             </div>
             <div class="x_content">
@@ -206,28 +213,68 @@
                     <th>Cant. recibida</th>
                     <th>Cant. enviada</th>
                     <th>Fecha de creación</th>
-                    <th>Fecha de finalización</th>
+                    {# <th>Fecha de vencimiento</th> #}
                     <th>Aliados</th>
                     <th>Estado</th>
-                    <th></th>
+                    <th>Detalles</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for op in endedO %}
                     <tr>
                       <td>{{ op.code }}</td>
-                      <td>{{ op.id_client.get_full_name }}</td>
+                      <td><a href="{% url 'viewUser' op.id_client.id %}" class="dot">{{ op.id_client.get_full_name }}</a></td>
                       <td>{{ op.fiat_amount | currency }} {{ op.origin_currency.code }}</td>
                       <td>{{ op.fiat_amount|mul:op.exchange_rate | currency | safe}} {{op.target_currency.code}}</td>  
                       <td>{{ op.date }}</td>
-                      <td>{{ op.date_ending }}</td>
-                      <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>
+                      {# <td>{{ op.expiration }}</td> #}
+                      <td>
+                        {% if op.id_allie_origin %}
+                          <a href="{% url 'viewUser' op.id_allie_origin.id %}" class="dot"> {{ op.id_allie_origin.get_full_name }},</a>
+                        {% endif %}
+                        {% if op.id_allie_target %}
+                          <a href="{% url 'viewUser' op.id_allie_target.id %}" class="dot"> {{ op.id_allie_target.get_full_name }}</a>
+                        {% endif %}
+                      </td>
                       <td>{{ op.status }}</td>
-                      <td><a href="{% url 'operationDetailDashboard' op.code %}"><i class="fa fa-search"></i></a></td>
+                      <td>
+                        <a href="{% url 'operationDetailDashboard' op.code %}">
+                          <i class="fa fa-search"></i>
+                        </a>
+                      </td>
                     </tr>
                   {% endfor %}
                 </tbody>
               </table>
+              <hr>
+              <div class="row"> 
+                <div class="col-md-4 col-sm-6 col-xs-8"> 
+                  <form method="post">
+                    {% csrf_token %}
+                    <div class="col-md-3 col-sm-4 col-xs-3"> 
+                      <label>{{ dateForm.date.label }}</label>
+                    </div>
+                    <div class="col-md-7 col-sm-6 col-xs-6"> 
+                      {{ dateForm.date }} 
+                    </div>
+                    <div class="col-md-2 col-sm-2 col-xs-3"> 
+                      <button class="btn btn-primary" type="submit">
+                        <i class="fa fa-search"></i>&nbsp; Filtrar
+                      </button>
+                    </div>
+                  </form>
+                </div>
+                {% if hasFilter %}
+                <div class="col-md-2 col-sm-4 col-xs-4"> 
+                  <form method="post">
+                      {% csrf_token %}
+                      <button class="btn btn-danger" type="submit">
+                        <i class="fa fa-times"></i>&nbsp; Quitar Filtro
+                      </button>
+                  </form>
+                </div>
+                {% endif %}
+              </div>
             </div>
           </div>
         {% endif %}
@@ -240,19 +287,7 @@
   {{ block.super }}
   <!-- Chart.js -->
   <script src="/static/vendors/Chart.js/dist/Chart.min.js"></script>
-  <script type="text/javascript">
-    function modal (url) {
-      $('#popup').load(url, function () {
-        $(this).modal('show')
-        // $('#closeModal').onclick(function(){ return false })
-      })
-      return false
-    }
-    {% if request.GET.operation %}
-      $('#{{request.GET.operation}}').click()
-    {% endif %}
-
-  </script>
+  
   <script src="/static/vendors/datatables.net/js/jquery.dataTables.min.js"></script>
   <script src="/static/vendors/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
   <script src="/static/vendors/datatables.net-buttons/js/dataTables.buttons.min.js"></script>

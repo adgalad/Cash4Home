@@ -1648,6 +1648,24 @@ function init_daterangepicker_right () {
   })
 }
 
+/* Para extraer el hostname, path y protocolo de un URL */
+function getLocation(href) {
+    var l = document.createElement("a");
+    l.href = href;
+    return l;
+};
+
+function goToPreviousPage(){
+  if (document.referrer !== ""){
+    var url = getLocation(document.referrer);
+    if (url.hostname === window.location.hostname){
+      return window.location.href = document.referrer;
+    }
+  }
+  return false;
+}
+
+
 function init_daterangepicker_single_call () {
   if (typeof ($.fn.daterangepicker) === 'undefined') {
     return

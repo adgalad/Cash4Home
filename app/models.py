@@ -213,8 +213,12 @@ class Account(models.Model):
     aba = models.CharField(max_length=10, null=True, blank=True)
 
     def __str__(self):
+        return str(self.id_bank) + " " + str(self.number[-4:])
+
+    @property
+    def full(self):
         return str(self.id_bank) + " " + str(self.number)
-    
+
     class Meta:
         default_permissions = ()
 
@@ -277,7 +281,7 @@ class Operation(models.Model):
     status = models.CharField(choices=status_choices, max_length=20)
     exchanger = models.ForeignKey(Exchanger, blank=True, null=True)
     date = models.DateTimeField()
-    date_ending = models.DateTimeField()
+    expiration = models.DateTimeField()
     id_client = models.ForeignKey(User, related_name="user_client")
     id_account = models.ForeignKey(Account, related_name='account_client_origin') # Origin account from the client
     exchange_rate = models.FloatField()
@@ -291,7 +295,7 @@ class Operation(models.Model):
 
     def save(self, *args, **kwargs):
         if (self.pk and self.is_active):
-            self.is_active = (not self.status == 'Falta verificacion') or (timezone.now() < self.date_ending)
+            self.is_active = (not self.status == 'Falta verificacion') or (timezone.now() < self.expiration)
         super(Operation, self).save(*args, **kwargs)
 
 
@@ -304,7 +308,7 @@ class Operation(models.Model):
     def isCanceled(self):
         if self.status == 'Cancelada' or not self.is_active:
             return True
-        elif timezone.now() > self.date_ending and self.status == 'Falta verificacion':
+        elif timezone.now() > self.expiration and self.status == 'Falta verificacion':
             self.status = 'Cancelada'
             self.is_active = False
             self.save()
@@ -337,7 +341,7 @@ class Transaction(models.Model):
     origin_account = models.ForeignKey(Account, blank=True, null=True, related_name='origin_account', verbose_name="Cuenta origen")
     target_account = models.ForeignKey(Account, blank=True, null=True, related_name='target_account', verbose_name="Cuenta destino")
     to_exchanger   = models.ForeignKey('Exchanger', blank=True, null=True, verbose_name="Exchanger")
-    amount         = models.CharField(max_length=10, verbose_name="Monto")
+    amount         = models.FloatField(verbose_name="Monto")
     currency       = models.ForeignKey(Currency, verbose_name="Moneda")
 
     @property

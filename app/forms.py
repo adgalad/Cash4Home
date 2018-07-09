@@ -99,7 +99,7 @@ class BankAccountForm(forms.Form):
   bank = GroupedModelChoiceField(label=_('Banco*'), group_by_field='country', required=True, queryset=Bank.objects.all())
   number = forms.CharField(required=True, label=_(u"Número de cuenta*"))
   router = forms.CharField(required=False, label=_(u"Número ABA (Routing Number)"))
-  id_currency = forms.ModelChoiceField(label=_('Moneda*'), required=True, queryset=Currency.objects.filter(currency_type='FIAT'))
+  id_currency = forms.ModelChoiceField(label=_('Moneda*'), required=True, queryset=Currency.objects.filter(currency_type='FIAT').order_by('code'))
 
   def __init__(self, *args, **kwargs):
     super(BankAccountForm, self).__init__(*args, **kwargs)
@@ -117,7 +117,7 @@ class BankAccountDestForm(BankAccountForm):
 
 class FromAccountForm(forms.Form):
   account = forms.ModelChoiceField(queryset=None,label="Cuenta origen", required=True)
-  currency = forms.ModelChoiceField(label=_('Moneda'), required=True, queryset=Currency.objects.filter(currency_type='FIAT'))
+  currency = forms.ModelChoiceField(label=_('Moneda'), required=True, queryset=Currency.objects.filter(currency_type='FIAT').order_by('code'))
 
   def __init__(self, *args, **kwargs):
     super(FromAccountForm, self).__init__(*args, **kwargs)
@@ -179,10 +179,10 @@ class EditCurrencyForm(forms.Form):
 class NewExchangeRateForm(forms.Form):
 
   rate = forms.FloatField(required=True, label="Tasa" , min_value=0)
-  origin_currency = forms.ModelChoiceField(required=True, label="Moneda origen",
-                          widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}), queryset=Currency.objects.all())
-  target_currency = forms.ModelChoiceField(required=True, label="Moneda destino",
-                                  widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}), queryset=Currency.objects.all())
+  origin_currency = GroupedModelChoiceField(required=True, label="Moneda origen", group_by_field='currency_type',
+                          widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}), queryset=Currency.objects.all().order_by('code'))
+  target_currency = GroupedModelChoiceField(required=True, label="Moneda destino", group_by_field='currency_type',
+                                  widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}), queryset=Currency.objects.all().order_by('code'))
 
   def __init__(self,*args,**kwargs):
 
@@ -246,8 +246,10 @@ class NewAccountForm(forms.ModelForm):
     number = forms.CharField(max_length=270, required=True, label="Número de cuenta*", widget = forms.TextInput(attrs={'style': 'width:100%;'}))  
     id_bank = GroupedModelChoiceField(label='Banco*', group_by_field='country', queryset=Bank.objects.all())
     aba = forms.CharField(max_length=10, required=False, label="ABA (Solo para bancos de USA)", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
-    id_currency = forms.ModelChoiceField(required=True, label="Moneda*", queryset=Currency.objects.all(),
-                                    widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}))
+    id_currency = GroupedModelChoiceField(required=True, label="Moneda*", group_by_field='currency_type',
+                                    queryset=Currency.objects.all().order_by('code'),
+                                    widget = forms.Select(attrs={'style': 'width:100%; background-color:white'})
+                                  )
 
     def __init__(self,*args,**kwargs):
 
@@ -364,7 +366,7 @@ class NewThirdAccountAssociatedForm(forms.Form):
 
 class NewExchangerForm(forms.Form):
     name = forms.CharField(required=True, label="Nombre", max_length=140)
-    currency = forms.ModelMultipleChoiceField(required=True, label="Monedas que acepta", queryset=Currency.objects.all())
+    currency = forms.ModelMultipleChoiceField(required=True, label="Monedas que acepta", queryset=Currency.objects.all().order_by('code'))
 
     def __init__(self, *args, **kwargs):
 
@@ -398,7 +400,7 @@ class ChangeOperationStatusForm(forms.Form):
                     ('Fondos transferidos', 'Fondos transferidos'))
   status = forms.ChoiceField(required=True, choices=status_choices, label="Status de la operación")
   crypto_used = GroupedModelChoiceField(required=False, label="Criptomoneda utilizada", 
-                                          queryset=ExchangerAccepts.objects.filter(currency__in=Currency.objects.filter(currency_type='Crypto')),
+                                          queryset=ExchangerAccepts.objects.filter(currency__in=Currency.objects.filter(currency_type='Crypto').order_by('code')),
                                                group_by_field='exchanger')
   rate = forms.FloatField(required=False, label="Tasa de cambio" , min_value=0)
 
@@ -430,12 +432,15 @@ class GroupForm(forms.ModelForm):
 
 
 class TransactionForm(forms.ModelForm):
-
+  currency = GroupedModelChoiceField(required=True, label="Moneda", group_by_field='currency_type',
+                                    queryset=Currency.objects.all().order_by('currency_type', 'code'),
+                                    widget = forms.Select(attrs={'style': 'width:100%; background-color:white'})
+                                  )
   def __init__(self, *args, **kwargs):
     super(TransactionForm, self).__init__(*args, **kwargs)
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
-    choices = (('TD', 'Destino'), ('TO', 'Origen'), ('TC', 'Cierre'))
+    choices = (('TD', 'Destino'), ('TC', 'Cierre'))
     self.fields['operation_type'].choices = choices
   
   class Meta:
@@ -449,7 +454,6 @@ class EditOperationForm(forms.ModelForm):
     super(EditOperationForm, self).__init__(*args, **kwargs)
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
-
 
   class Meta:
     model = Operation
@@ -479,7 +483,7 @@ class NewRepurchaseForm(forms.Form):
 
     date = forms.DateField(label = "Fecha", required = True, widget = DateInput(), input_formats = ['%d/%m/%Y'])
     rate = forms.FloatField(required=True, label="Tasa de cambio" , min_value=0)
-    currency = GroupedModelChoiceField(queryset=ExchangerAccepts.objects.filter(currency__in=Currency.objects.filter(currency_type='Crypto')),
+    currency = GroupedModelChoiceField(queryset=ExchangerAccepts.objects.filter(currency__in=Currency.objects.filter(currency_type='Crypto').order_by('code')),
                                                group_by_field='exchanger', required=True, label="Criptomoneda comprada")
     def __init__(self, *args, **kwargs):
       super(NewRepurchaseForm, self).__init__(*args, **kwargs)
@@ -498,3 +502,17 @@ class SelectCurrencyForm(forms.Form):
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
         
       self.fields['currency'].choices = currenciesC
+
+
+class FilterDashboardByDateForm(forms.Form):
+    DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
+
+    date = forms.DateField(label = "Filtrar por fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
+    # endedDate = forms.DateField(label = "Filtrar por fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
+
+    def __init__(self, *args, **kwargs):
+      super(FilterDashboardByDateForm, self).__init__(*args, **kwargs)
+      for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+
