@@ -174,7 +174,7 @@
                       <tbody>
                       {% for f, op in form|zip:actualO %}
                         <tr>
-                          <td class="a-center ">{{ f.selected }}</td>
+                          <td class="a-center ">{{ f.selected }} <input type="text" name="{{f.operation.html_name}}" id="{{f.operation.auto_id}}" value="{{f.operation.value}}" style="display:none"></td>
                           <td>{{ op.code }}</td>
                           <td>{{ op.id_client.get_full_name }}</td>
                           <td>{{ op.fiat_amount | currency }} {{ op.origin_currency.code }}</td>
