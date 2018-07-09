@@ -119,6 +119,12 @@ class ComissionAdmin(admin.ModelAdmin):
 class CountryAdmin(admin.ModelAdmin):
     pass
 
+class ExchangerAdmin(admin.ModelAdmin):
+    pass
+
+class ExchangerAcceptsAdmin(admin.ModelAdmin):
+    pass
+
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Holiday, HolidayAdmin)
@@ -134,3 +140,5 @@ admin.site.register(Repurchase, RepurchaseAdmin)
 admin.site.register(RepurchaseCameFrom, RepurchaseCameFromAdmin)
 admin.site.register(Comission, ComissionAdmin)
 admin.site.register(Country, CountryAdmin)
+admin.site.register(Exchanger, ExchangerAdmin)
+admin.site.register(ExchangerAccepts, ExchangerAcceptsAdmin)

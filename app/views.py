@@ -30,6 +30,8 @@ from C4H.settings import (MEDIA_ROOT, STATIC_ROOT, EMAIL_HOST_USER,
 from app.encryptation import encrypt, decrypt
 import random
 from django.db.models import Q
+from decimal import *
+from django.core.serializers.json import DjangoJSONEncoder
 
 ########## ERROR HANDLING ##########
 
@@ -136,7 +138,39 @@ def dashboard(request):
     file = open(os.path.join(STATIC_ROOT, "BTCPrice.json"), "r")
     prices = json.loads(file.read())
     file.close()
-    return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations, 'endedO': endedOperations, 'totalOpen': totalOpen, 'totalEnded': totalEnded})
+
+    initialForm = [{'operation': op.code, 'selected': False} for op in actualOperations.iterator()]
+
+    if (request.method == 'POST'):
+      POST = request.POST.copy()
+
+      auxCount = len(initialForm)
+      POST['form-TOTAL_FORMS' ] = auxCount
+      POST['form-INITIAL_FORMS'] = auxCount
+      POST['form-MAX_NUM_FORMS'] = auxCount
+
+      formChoice = StateChangeBulkForm(request.POST)
+      OperationFormSet = formset_factory(OperationBulkForm, extra=0)
+      formset = OperationFormSet(POST, initial=initialForm)
+
+      if (formChoice.is_valid() and formset.is_valid()):
+        new_status = formChoice.cleaned_data['action']
+
+        for form in formset:
+          print(form)
+          if (form.cleaned_data['selected']):
+
+            actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+            actual_op.status = new_status
+            actual_op.save()
+
+    else:
+      OperationFormSet = formset_factory(OperationBulkForm, extra=0)
+      formset = OperationFormSet(initial=initialForm)
+      formChoice = StateChangeBulkForm()
+
+    return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations, 'endedO': endedOperations, 
+                                                                    'totalOpen': totalOpen, 'totalEnded': totalEnded, 'form': formset, 'formChoice': formChoice})
 
 
 def company(request):
@@ -404,7 +438,7 @@ def createOperation(request):
   return render(request, 'dashboard/createOperation.html', {
                 'form1': form1,
                 'form2': form2,
-                'rate': str(json.dumps(rates)),
+                'rate': str(json.dumps(rates, cls=DjangoJSONEncoder)),
                 'toAccs': str(json.dumps(toAccs)),
                 'fromAccs': str(json.dumps(fromAccs)),
                 "fee": str(fee)})
@@ -1751,6 +1785,7 @@ def addRepurchase(request, _currency_id):
                                       origin_currency=origin_currency,
                                       target_currency=currency,
                                       exchanger=exchanger)
+          totalRepurchase = 0
           for form in formset:
               if (form.cleaned_data['selected']):
                 atLeastOne = True
@@ -1762,6 +1797,7 @@ def addRepurchase(request, _currency_id):
                   new_repurchase.save()
                   firstSelected = False
 
+                totalRepurchase += operation.fiat_amount*Decimal(rate)
                 new_cameFrom = RepurchaseCameFrom(id_repurchase=new_repurchase,id_operation=operation)
                 new_cameFrom.save()
 
@@ -1769,6 +1805,13 @@ def addRepurchase(request, _currency_id):
               msg = "Debes seleccionar al menos una operación"
               messages.error(request, msg, extra_tags="alert-warning")
               return render(request, 'admin/addRepurchase.html', {'formOp': formset, 'formRep': formRep})
+
+          new_repurchase.amount = totalRepurchase
+          new_repurchase.save()
+
+          accepts = ExchangerAccepts.objects.get(exchanger=exchanger, currency=currency)
+          accepts.amount_acc = accepts.amount_acc + totalRepurchase
+          accepts.save()
 
           msg = "La recompra fue agregada con éxito"
           messages.error(request, msg, extra_tags="alert-success")

@@ -2269,6 +2269,17 @@ span.section {
     border-radius: 0;
     width: 100%
 }
+
+.form-control2 {
+    border-radius: 0;
+    display: inline;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #555;
+    background-color: #fff;
+}
+
 .form-horizontal .control-label {
     padding-top: 8px
 }

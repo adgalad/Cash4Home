@@ -181,7 +181,7 @@ class Currency(models.Model):
 
 class ExchangeRate(models.Model):
     # The primary key is the django id
-    rate = models.FloatField()
+    rate = models.DecimalField(max_digits=30, decimal_places=15)
     date = models.DateTimeField(auto_now_add=True)
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_pair')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_pair')
@@ -268,8 +268,8 @@ class ExchangerAccepts(models.Model):
 
 class Operation(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True)
-    fiat_amount = models.FloatField()
-    crypto_rate = models.FloatField(blank=True, null=True)
+    fiat_amount = models.DecimalField(max_digits=30, decimal_places=15)
+    crypto_rate = models.DecimalField(blank=True, null=True, max_digits=30, decimal_places=15)
     crypto_used = models.ForeignKey(Currency, related_name='crypto_used', blank=True, null=True)
     status_choices = (('Cancelada', 'Cancelada'), ('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), 
                       ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
@@ -280,7 +280,7 @@ class Operation(models.Model):
     date_ending = models.DateTimeField()
     id_client = models.ForeignKey(User, related_name="user_client")
     id_account = models.ForeignKey(Account, related_name='account_client_origin') # Origin account from the client
-    exchange_rate = models.FloatField()
+    exchange_rate = models.DecimalField(max_digits=30, decimal_places=15)
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_used')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_used')
     is_active = models.BooleanField(default=True)
@@ -318,7 +318,7 @@ class OperationGoesTo(models.Model):
     # The primary key is the django id
     operation_code = models.ForeignKey(Operation, related_name='goesTo')
     number_account = models.ForeignKey(Account)
-    amount = models.FloatField(blank=True, null=True)
+    amount = models.DecimalField(blank=True, null=True, max_digits=30, decimal_places=15)
 
     class Meta:
         unique_together = ('operation_code', 'number_account')
@@ -350,11 +350,12 @@ class Transaction(models.Model):
 class Repurchase(models.Model):
     # The primary key is the django id
     date = models.DateTimeField()
-    rate = models.FloatField()
+    rate = models.DecimalField(max_digits=30, decimal_places=15)
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_purchase')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_purchase')
     exchanger = models.ForeignKey(Exchanger)
-    profit = models.FloatField(default=0)
+    amount = models.DecimalField(max_digits=30, decimal_places=15, default=0)
+    profit = models.DecimalField(default=0, max_digits=30, decimal_places=15)
 
     class Meta:
         default_permissions = ()

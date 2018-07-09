@@ -47,6 +47,7 @@
                     <th>Moneda destino</th>
                     <th>Tasa de cambio</th>
                     <th>Exchanger</th>
+                    <th>Total Recomprado</th>
                     <th>Acción</th>
                   </tr>
                 </thead>
@@ -58,6 +59,7 @@
                       <td>{{ r.target_currency.code }}</td>  
                       <td>{{ r.rate }} {{ r.target_currency.code }}</td>  
                       <td>{{ r.exchanger.name }}</td>
+                      <td>{{ r.amount }}{{ r.target_currency.code }}</td>
                       <td>
                         <a href="{% url 'viewRepurchase' r.id %}">
                           <i class="fa fa-search"></i>Ver

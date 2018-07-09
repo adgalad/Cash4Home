@@ -131,8 +131,8 @@ class FromAccountForm(forms.Form):
     return self
 
 class ToAccountForm(forms.Form):
-  account = forms.ModelChoiceField(queryset=None, label="Cuenta destino", required=False )
-  amount = forms.FloatField(required=False, label="Monto")
+  account = forms.ModelChoiceField(queryset=None, label="Cuenta destino", required=False)
+  amount = forms.DecimalField(required=False, label="Monto")
 
   def __init__(self, *args, **kwargs):
     if 'data' in kwargs and 'prefix' in kwargs and kwargs['prefix'] + '-amount' in kwargs['data']:
@@ -178,7 +178,7 @@ class EditCurrencyForm(forms.Form):
 
 class NewExchangeRateForm(forms.Form):
 
-  rate = forms.FloatField(required=True, label="Tasa" , min_value=0)
+  rate = forms.DecimalField(required=True, label="Tasa" , min_value=0)
   origin_currency = forms.ModelChoiceField(required=True, label="Moneda origen",
                           widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}), queryset=Currency.objects.all())
   target_currency = forms.ModelChoiceField(required=True, label="Moneda destino",
@@ -398,9 +398,9 @@ class ChangeOperationStatusForm(forms.Form):
                     ('Fondos transferidos', 'Fondos transferidos'))
   status = forms.ChoiceField(required=True, choices=status_choices, label="Status de la operación")
   crypto_used = GroupedModelChoiceField(required=False, label="Criptomoneda utilizada", 
-                                          queryset=ExchangerAccepts.objects.filter(currency__in=Currency.objects.filter(currency_type='Crypto')),
+                                          queryset=ExchangerAccepts.objects.filter(currency__currency_type='Crypto'),
                                                group_by_field='exchanger')
-  rate = forms.FloatField(required=False, label="Tasa de cambio" , min_value=0)
+  rate = forms.DecimalField(required=False, label="Tasa de cambio" , min_value=0)
 
   def __init__(self, *args, **kwargs):
     super(ChangeOperationStatusForm, self).__init__(*args, **kwargs)
@@ -460,7 +460,7 @@ class EditOperationForm(forms.ModelForm):
 class NewRepurchaseOpForm(forms.Form):
   selected = forms.BooleanField(label="Seleccionar", required=False)
   operation = forms.CharField(label="Código de la Operación", required=False)
-  amount = forms.FloatField(required=False, label="Monto")
+  amount = forms.DecimalField(required=False, label="Monto", min_value=0)
   DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
 
   date = forms.DateField(label = "Fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
@@ -478,8 +478,8 @@ class NewRepurchaseForm(forms.Form):
     DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
 
     date = forms.DateField(label = "Fecha", required = True, widget = DateInput(), input_formats = ['%d/%m/%Y'])
-    rate = forms.FloatField(required=True, label="Tasa de cambio" , min_value=0)
-    currency = GroupedModelChoiceField(queryset=ExchangerAccepts.objects.filter(currency__in=Currency.objects.filter(currency_type='Crypto')),
+    rate = forms.DecimalField(required=True, label="Tasa de cambio" , min_value=0)
+    currency = GroupedModelChoiceField(queryset=ExchangerAccepts.objects.filter(currency__currency_type='Crypto'),
                                                group_by_field='exchanger', required=True, label="Criptomoneda comprada")
     def __init__(self, *args, **kwargs):
       super(NewRepurchaseForm, self).__init__(*args, **kwargs)
@@ -498,3 +498,34 @@ class SelectCurrencyForm(forms.Form):
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
         
       self.fields['currency'].choices = currenciesC
+
+def namedWidget(input_name, widget=forms.CharField):
+    if isinstance(widget, type):
+        widget = widget()
+
+    render = widget.render
+
+    widget.render = lambda name, value, attrs={'class' : 'flat'}: \
+        render(input_name, value, attrs)
+
+    return widget
+
+class OperationBulkForm(forms.Form):
+    selected = forms.BooleanField(label="Seleccionar", required=False)#, widget=namedWidget('table_records', forms.CheckboxInput))
+    operation = forms.CharField(required=False)
+
+    def __init__(self, *args, **kwargs):
+      super(OperationBulkForm, self).__init__(*args, **kwargs)
+      for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+      self.fields['operation'].widget.attrs.update({'readonly': 'readonly'})
+      self.fields['selected'].widget.attrs.update({'class' : 'flat'})
+
+class StateChangeBulkForm(forms.Form):
+    choices = (('Verificado', 'Verificado'), ('Fondos ubicados', 'Fondos ubicados'))
+    action = forms.ChoiceField(choices=choices, required=False)
+
+    def __init__(self, *args, **kwargs):
+      super(StateChangeBulkForm, self).__init__(*args, **kwargs)
+      for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control2'})
