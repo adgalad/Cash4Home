@@ -312,6 +312,7 @@ function SmartWizard (target, options) {
         $('#id_currency').parent().addClass('bad')
         return
       }
+      loadStep2()
       
     } else if (this.curStepIdx == 1) {
       for (var i = 0; i <= currentInput; ++i) {
@@ -480,6 +481,8 @@ var nOptions = 5
 function addAccountInput () {
   if (currentInput < 4) {
     ++currentInput
+    $('#id_form-' + currentInput + '-amount').val(0)
+    $('#id_form-' + currentInput + '-account').val("")
     $('#id_form-' + currentInput + '-amount').parent().show()
     $('#id_form-' + currentInput + '-account').parent().show()
   }
@@ -615,21 +618,29 @@ changeCurrency = function () {
   summary()
 }
 
-for (var i = 0; i < nOptions; ++i) {
-  $('#id_currency').change(changeCurrency)
-  $('#id_account').change(summary)
+loadStep2 = function(){
+  for (var i = 0; i < nOptions; ++i) {
 
-  $('#id_form-' + i + '-account').change(selectAccount)
+    $('#id_form-' + i + '-account').change(selectAccount).val("")
 
-  var field = $('#id_form-' + i + '-amount')
-  field.attr('type', 'text')
-  field.keyup(summary).change(summary).blur(toCurrencyf).val(0.0)
-  if (i > 0) {
-    field.parent().hide()
-    $('#id_form-' + i + '-account').parent().hide()
+    var field = $('#id_form-' + i + '-amount')
+    field.attr('type', 'text')
+    
+    field.keyup(summary).change(summary).blur(toCurrencyf).val(0.0)
+    if (i > 0) {
+      field.parent().hide()
+      $('#id_form-' + i + '-account').val('').parent().hide()
+    }
+
+    optionsBackup[i] = $('#id_form-' + i + '-account').children()    
   }
-
-  optionsBackup[i] = $('#id_form-' + i + '-account').children()
-
-  summary()
 }
+
+$('#id_currency').change(changeCurrency)
+$('#id_account').change(summary)
+
+loadStep2()
+summary()
+
+
+
