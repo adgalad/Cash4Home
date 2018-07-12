@@ -27,7 +27,7 @@ import threading
 from C4H.settings import (MEDIA_ROOT, STATIC_ROOT, EMAIL_HOST_USER,
                           DEFAULT_DOMAIN, DEFAULT_FROM_EMAIL, 
                           OPERATION_TIMEOUT, EMAIL_VALIDATION_EXPIRATION)
-from app.encryptation import encrypt, decrypt
+#from app.encryptation import encrypt, decrypt
 import random
 from django.db.models import Q
 from decimal import *
@@ -74,7 +74,8 @@ class EmailThread(threading.Thread):
 def activateEmail(request, token):
   
   try:
-    decrypted = decrypt(token)
+    #decrypted = decrypt(token)
+    pass
   except: 
     raise PermissionDenied
 
@@ -157,12 +158,11 @@ def dashboard(request):
         new_status = formChoice.cleaned_data['action']
 
         for form in formset:
-          print(form)
           if (form.cleaned_data['selected']):
-
             actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
             actual_op.status = new_status
             actual_op.save()
+
 
     else:
       OperationFormSet = formset_factory(OperationBulkForm, extra=0)
@@ -668,7 +668,7 @@ def sendEmailValidation(user):
     'operation': 'activateUserByEmail',
     'expiration': (timezone.now()+datetime.timedelta(seconds=GlobalSettings.get().EMAIL_VALIDATION_EXPIRATION*60)).strftime('%s')
   }
-  token = encrypt(str.encode(json.dumps(token)))
+  #token = encrypt(str.encode(json.dumps(token)))
 
   link = DEFAULT_DOMAIN+"activateEmail/" + token
   plain_message = 'Para validar tu correo electronico, porfavor ingresa al siguiente correo: ' + link
