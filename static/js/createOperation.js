@@ -284,7 +284,6 @@ function SmartWizard (target, options) {
       }
     }
         // Finish Button
-    console.log($this.curStepIdx, $this.curStepIdx == 2)
     if ($this.curStepIdx == 2 && (!$this.steps.hasClass('disabled') || $this.options.enableFinishButton)) {
       $($this.buttons.finish).removeClass('buttonDisabled')
       if ($this.options.hideButtonsOnDisabled) {
@@ -512,13 +511,12 @@ currencyf = function(value){
   } else {
     v = parseFloat(value)  
   }
-  console.log(value, v)
   if (isNaN(v)) return 0
   return v.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
 }
 
 fcurrency = function(value){
-  if (value instanceof String){
+  if (typeof(value) == 'string'){
     v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
   } else {
     v = parseFloat(value)  
@@ -530,7 +528,6 @@ fcurrency = function(value){
 toCurrencyf = function(field){
   for (var i = 0; i < nOptions; ++i) {
     f = $('#id_form-' + i + '-amount')
-    // console.log(f, f.val(), currencyf(f.val()))
     f.val(currencyf(f.val()))
   }
 }
