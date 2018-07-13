@@ -2474,6 +2474,7 @@ function init_DataTables () {
   })
 
   $('table[id="datatable-responsive"]').DataTable()
+  $('table[id="datatable-pending"]').DataTable()
   
 
   $('#datatable-scroller').DataTable({

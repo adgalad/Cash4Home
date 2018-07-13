@@ -162,8 +162,7 @@ def dashboard(request):
             actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
             actual_op.status = new_status
             actual_op.save()
-
-
+        messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
     else:
       OperationFormSet = formset_factory(OperationBulkForm, extra=0)
       formset = OperationFormSet(initial=initialForm)
@@ -555,10 +554,9 @@ def createAccount(request):
       acc = Account.objects.filter(number=number, id_bank=bank)
       currency = form.cleaned_data.get('id_currency')
       router = form.cleaned_data.get('router')
-      print(router == "", bank.country)
       if bank.country.name == "Estados Unidos":
         if router == "" or len(router) != 9:
-          messages.error(request,'El número ABA que ingresó es incorrecto. Introduzca un valor valido.', extra_tags="alert-error")
+          messages.error(request,'El número ABA que ingresó es incorrecto. Introduzca un valor válido.', extra_tags="alert-error")
           return render(request, 'dashboard/createAccount.html', {"form": form, 'own':own})
       else:
         router = ""
@@ -734,7 +732,7 @@ def signup(request):
       client_group = Group.objects.get(name='Cliente') 
       client_group.user_set.add(user)
       login_auth(request, user)
-      sendEmailValidation(user)
+      #sendEmailValidation(user)
       form = AuthenticationForm()
       msg = 'Te hemos enviado un correo de confirmación.'
       messages.error(request, msg, extra_tags="safe alert-warning")

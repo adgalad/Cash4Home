@@ -518,6 +518,11 @@ body .container.body .right_col {
 .dark {
     color: #34495E
 }
+
+.yellow {
+    color: #FFCC00;
+}
+
 .border-blue {
     border-color: #3498DB !important
 }

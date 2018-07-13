@@ -155,6 +155,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def canVerify(self):
         return not (self.verified or self.id_front or self.selfie_image or self.id_back)
 
+    class Meta:
+        verbose_name = 'Usuario'
+        verbose_name_plural = 'Usuarios'
+
 
 class Holiday(models.Model):
     #The primary key is the django id
@@ -227,7 +231,7 @@ class AccountBelongsTo(models.Model):
     owner = models.CharField(max_length=64, null=True)
     alias = models.CharField(max_length=32, null=True)
     email = models.EmailField(null=True)
-    id_number = models.IntegerField(verbose_name='ID number', null=True)
+    id_number = models.CharField(blank=True, verbose_name='ID number', default=0, max_length=70, null=True)
     active = models.BooleanField(default=True)
 
     class Meta:
