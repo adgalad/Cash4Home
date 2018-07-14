@@ -57,6 +57,38 @@
 
   <div class="right_col" role="main">
     <div class="row">
+      <div id="stateModal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-lg openModal" id="modal" style="max-width: 40%; min-width: 300px">
+
+          <div class="modal-content" style="padding: 4%; background-color: white !important;">
+            <div class="table-responsive-sm" style="z-index:19999 !important;">
+              
+              <h3>Detalles de los fondos ubicados</h3><hr>
+              <table>
+                <thead>
+                  <th>{{formChoice.crypto_used.label_tag}}</th>
+                  <th>{{formChoice.rate.label_tag}}</th>  
+                </thead>
+                <tbody>
+                  <td>
+                    {{formChoice.crypto_used}}
+                  </td>
+                  <td>
+                    {{formChoice.rate}}    
+                  </td>
+                </tbody>
+              </table>
+              
+              
+              <br><br><hr>
+              <div align="center" style="padding-bottom: 4%">
+                <a id="closeModal" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-times"></i>&nbsp Cancelar </a>
+                <button class="btn btn-primary submit" type="submit">Enviar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="col-md-12 col-sm-12 col-xs-12">
         {% for message in messages %}
             <section class="table-view {{message.tags}}">
@@ -160,7 +192,8 @@
                           <th class="column-title"></th>
                           <th class="bulk-actions" colspan="10">
                             <a class="antoo" style="font-weight:500;">( <span class="action-cnt"> </span> ) Cambiar estado a {{ formChoice.action }}
-                              <button class="btn btn-primary submit" type="submit">Aplicar</button></a>
+                              <button class="btn btn-primary submit" style="display: none;" type="submit">Aplicar</button>
+                              <button class="btn btn-primary submit"  type="button" data-toggle="modal" data-target="#stateModal">Aplicar</button></a>
                           </th>
                         </tr>
                       </thead>
@@ -281,6 +314,19 @@
   <script type="text/javascript">
     $( document ).ready(function() {
         $("input[name=table_records]").addClass("flat");
+    });
+  </script>
+  <script type="text/javascript">
+    $("#id_status").change(function(){
+      if ($("#id_status").val()=='Fondos ubicados'){
+        $("#aditionalFields").show();
+        document.getElementById("id_crypto_used").required = true;
+        document.getElementById("id_rate").required = true;
+      } else {
+        $("#aditionalFields").hide();
+        document.getElementById("id_crypto_used").required = false;
+        document.getElementById("id_rate").required = false;
+      }
     });
   </script>
 {% endblock javascripts %}

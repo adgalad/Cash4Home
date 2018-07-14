@@ -156,12 +156,13 @@ def dashboard(request):
 
       if (formChoice.is_valid() and formset.is_valid()):
         new_status = formChoice.cleaned_data['action']
-
+        print(formChoice.cleaned_data['action'], formChoice.cleaned_data['crypto_used'], formChoice.cleaned_data['rate'])
         for form in formset:
           if (form.cleaned_data['selected']):
-            actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
-            actual_op.status = new_status
-            actual_op.save()
+            pass
+            #actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+            #actual_op.status = new_status
+            #actual_op.save()
         messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
     else:
       OperationFormSet = formset_factory(OperationBulkForm, extra=0)

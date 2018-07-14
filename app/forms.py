@@ -511,7 +511,7 @@ def namedWidget(input_name, widget=forms.CharField):
     return widget
 
 class OperationBulkForm(forms.Form):
-    selected = forms.BooleanField(label="Seleccionar", required=False)#, widget=namedWidget('table_records', forms.CheckboxInput))
+    selected = forms.BooleanField(label="Seleccionar", required=False)
     operation = forms.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
@@ -524,6 +524,10 @@ class OperationBulkForm(forms.Form):
 class StateChangeBulkForm(forms.Form):
     choices = (('Verificado', 'Verificado'), ('Fondos ubicados', 'Fondos ubicados'))
     action = forms.ChoiceField(choices=choices, required=False)
+    crypto_used = GroupedModelChoiceField(required=False, label="Criptomoneda utilizada", 
+                                            queryset=ExchangerAccepts.objects.filter(currency__currency_type='Crypto').order_by('exchanger'),
+                                                 group_by_field='exchanger')
+    rate = forms.DecimalField(required=False, label="Tasa de cambio" , min_value=0)
 
     def __init__(self, *args, **kwargs):
       super(StateChangeBulkForm, self).__init__(*args, **kwargs)

@@ -330,7 +330,7 @@ class OperationGoesTo(models.Model):
 
 class Transaction(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True, default=pkgenTransaction)
-    date = models.DateField()
+    date = models.DateField(verbose_name="Fecha")
     choices = (('TO', 'TO'), ('TD', 'TD'), ('TC', 'TC')) #TO-Transaccion origen, TD-Transaccion destino, TC-transaccion crypto
     operation_type = models.CharField(choices=choices, max_length=3, verbose_name="Tipo de transacción")
     transfer_image = models.ImageField(upload_to=get_image_path, verbose_name="Imagen del comprobante")
