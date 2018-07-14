@@ -603,10 +603,12 @@ selectAccount = function () {
 }
 
 changeCurrency = function () {
+
   for (var i = 0; i < nOptions; ++i) {
     input = $('#id_form-' + i + '-account')
     input.html('')
-    for (var j in optionsBackup) {
+    len = optionsBackup[i].length
+    for (var j =0 ; j < len ; j++) {
       input.append(optionsBackup[i][j])
     }
   }
@@ -632,15 +634,15 @@ loadStep2 = function(){
       $('#id_form-' + i + '-account').val('').parent().hide()
     }
 
-    optionsBackup[i] = $('#id_form-' + i + '-account').children()    
+    
   }
 }
-
+for (var i = 0; i < nOptions; ++i) {
+  optionsBackup[i] = $('#id_form-' + i + '-account').children()    
+}
 $('#id_currency').change(changeCurrency)
 $('#id_account').change(summary)
 
 loadStep2()
 summary()
-
-
 

@@ -1,6 +1,11 @@
+import json
+import time
+import datetime
+import threading
+import random
+
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
-import json
 from django.http import JsonResponse, Http404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.exceptions import PermissionDenied
@@ -14,22 +19,19 @@ from django.template import loader
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.forms import formset_factory
+from django.db.models import Q
 from io import BytesIO
 from django.utils import timezone
 from django.urls import reverse
-import json
-import time
+
 from app.forms import *
 from app.models import *
-import requests
-import datetime
-import threading
 from C4H.settings import (MEDIA_ROOT, STATIC_ROOT, EMAIL_HOST_USER,
                           DEFAULT_DOMAIN, DEFAULT_FROM_EMAIL, 
                           OPERATION_TIMEOUT, EMAIL_VALIDATION_EXPIRATION)
 from app.encryptation import encrypt, decrypt
-import random
-from django.db.models import Q
+
+
 
 ########## ERROR HANDLING ##########
 
@@ -70,22 +72,18 @@ class EmailThread(threading.Thread):
                   recipient_list=self.recipient_list)
 
 def activateEmail(request, token):
-  
+
   try:
     decrypted = decrypt(token)
-  except: 
+  except:
     raise PermissionDenied
 
 
   info = json.loads(decrypted)
   if not ('operation' in info and info['operation'] == 'activateUserByEmail'):
     raise PermissionDenied
-  print(info)
   expiration = int(info['expiration'])
   now = int(timezone.now().strftime('%s'))
-  print('expiration: ', expiration)
-  print('now: ', now)
-  print('comp: ', expiration < now)
   if expiration < now:
     messages.error(request,'Este link expiró. Vuelva a intentarlo enviando un nuevo correo de activación.', extra_tags="alert-warning")
     return redirect(reverse('resendEmailVerification'))
@@ -132,7 +130,6 @@ def dashboard(request):
     hasFilter = False
     if request.method == 'POST':
       dateForm = FilterDashboardByDateForm(request.POST)
-      print(dateForm.is_valid())
       if dateForm.is_valid():
         date = dateForm.cleaned_data['date']
         # endedDate = dateForm.cleaned_data['endedDate']
@@ -159,8 +156,8 @@ def dashboard(request):
     file = open(os.path.join(STATIC_ROOT, "BTCPrice.json"), "r")
     prices = json.loads(file.read())
     file.close()
-    return render(request, 'dashboard/dashboard_operator.html', 
-                  { 'prices': prices,
+    return render(request, 'dashboard/dashboard_operator.html', { 
+                    'prices': prices,
                     'actualO': actualOperations,
                     'endedO': endedOperations,
                     'totalOpen': totalOpen,
@@ -289,7 +286,6 @@ def createOperation(request):
       for i in form2:
         acc = i.cleaned_data["account"]
         amount = i.cleaned_data["amount"]
-        print(acc and amount > 0, acc, amount)
         if acc and amount > 0:
           toAccounts.append((acc, amount))
           total += amount
@@ -309,9 +305,7 @@ def createOperation(request):
 
         if allies.count() == 0:
           for cst in fromAccount.id_account.id_bank.canSendTo.all():
-            print(cst)
             allies = cst.target_bank.allies.all()
-            print(allies)
             if allies.count() > 0:
               break
         cst = fromAccount.id_account.id_bank.canSendTo.all().values_list('target_bank', flat=True)
@@ -319,25 +313,18 @@ def createOperation(request):
         if allies.count() != 0:
 
           ally = allies[random.randint(0, allies.count()-1)]
-          print('++>', ally)
           try:
 
             belongsTo = ally.hasAccount.filter(use_type='Origen', id_account__id_bank__in=cst)[0]
             account = belongsTo.id_account
-            print('>>', belongsTo, account)
           except:
             for ally in allies:
-              print('-->', ally)
               try:
                 a = ally.hasAccount.filter()
                 b = ally.hasAccount.filter(use_type='Origen')
-                print(cst)
-                print(a, b, ally.hasAccount.filter(use_type='Origen', id_account__id_bank__in=cst), ally.hasAccount.filter(use_type='Origen', id_account__id_bank__pk__in=cst))
                 belongsTo = ally.hasAccount.filter(use_type='Origen', id_account__id_bank__pk__in=cst)[0]
                 account = belongsTo.id_account
-                print('**>', belongsTo, account)
               except Exception as e:
-                print(e)
                 account = None
 
           if account is not None:
@@ -420,7 +407,8 @@ def createOperation(request):
         messages.error(request, 'No se pudo crear la operación. Revise los datos ingresados.', extra_tags="alert-error")
 
   else:
-    form1 = FromAccountForm().setQueryset(queryset1)
+    accountIDs = queryset1.values_list("id_account", flat=True)
+    form1 = FromAccountForm().setQueryset(Account.objects.filter(pk__in=accountIDs))
     form1.fields['currency'].queryset = Currency.objects.filter(currency_type='FIAT', pk__in=currencies).order_by('code')
     data = {
       'form-TOTAL_FORMS': '5',
@@ -474,8 +462,6 @@ def cancelOperation(request, _operation_id):
   if (admin and not operation.status in ['Cancelada', 'Fondos transferidos']) or operation.status == 'Falta verificacion':
     operation.status = 'Cancelada'
     operation.is_active = False
-    print(operation.code)
-    print(operation.is_active)
     operation.save()
     return render(request, 'dashboard/cancelOperation.html', {'operation':operation}) 
   else:
@@ -553,7 +539,6 @@ def createAccount(request):
       acc = Account.objects.filter(number=number, id_bank=bank)
       currency = form.cleaned_data.get('id_currency')
       router = form.cleaned_data.get('router')
-      print(router == "", bank.country)
       if bank.country.name == "Estados Unidos":
         if router == "" or len(router) != 9:
           messages.error(request,'El número ABA que ingresó es incorrecto. Introduzca un valor valido.', extra_tags="alert-error")
@@ -630,25 +615,26 @@ def logout(request):
 def login(request):
   if request.user.is_authenticated(): return redirect(reverse('dashboard'))
   if request.method == 'POST':
-    print('Hola')
     form = AuthenticationForm(request.POST)
+
     if form.is_valid():
-      print('chao')
       email = form.cleaned_data.get('email')
       raw_password = form.cleaned_data.get('password1')
       user = authenticate(username=email, password=raw_password)
+    
       if user is not None:
-        print('Jamon')
         # if user.is_active:
         login_auth(request, user)
-        print(request.POST.get('next',reverse('dashboard')))
         return redirect(request.POST.get('next',reverse('dashboard')))
+    
       else:
         try: user = User.objects.get(email= email)
         except: user = None
+    
         if not (user is None or user.is_active):
           msg = 'Debe verificar su correo electronico antes de poder ingresar. <a href="' + reverse('resendEmailVerification') + '">Reenviar correo</a>'
           messages.error(request, msg, extra_tags="safe alert-warning")
+    
         else:
           messages.error(request,'El correo electrónico o la contraseña son inválidos.', extra_tags="alert-error")
     else:
@@ -960,7 +946,6 @@ def editBank(request, _bank_id):
         form = EditBankForm(request.POST, instance=actualBank)
 
         if (form.is_valid()):
-            print(form.cleaned_data['allies'])
             actualBank.allies.clear()
             for i in form.cleaned_data['allies']:
               actualBank.allies.add(i)
@@ -1089,7 +1074,6 @@ def addUser(request):
 
 @permission_required('admin.edit_user', login_url='/login/')
 def adminUser(request):
-    print(request.user.has_perm('admin.edit_user'))
     if (request.method == 'GET'):
         all_clients = User.objects.filter(groups__name__in=['Cliente'])
         all_users = User.objects.exclude(groups__name__in=['Cliente'])
@@ -1443,7 +1427,6 @@ def operationAddTransaction(request, _operation_id):
       return redirect('operationDetailDashboard', _operation_id=_operation_id)
     
     if request.method == "POST":
-      print(request.FILES)
       form = TransactionForm(request.POST, request.FILES)
       if form.is_valid():
         type = form.cleaned_data['operation_type']
@@ -1538,9 +1521,7 @@ def operationEditDashboard(request, _operation_id):
         operation.account_allie_origin = origin_account
         operation.id_allie_target = target_id
         operation.account_allie_target = target_account
-        print(operation.is_active)
         operation.save()
-        print(operation.is_active)
         messages.error(request, 'La operación se actualizó exitosamente', extra_tags="alert-success")
       else:
         return render(request, 'admin/editOperation.html', 

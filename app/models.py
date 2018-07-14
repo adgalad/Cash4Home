@@ -1,7 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser
-from django.contrib.auth.models import BaseUserManager
-from django.contrib.auth.models import PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils.translation import ugettext_lazy as _
 from django.core.validators import RegexValidator
 import os
@@ -73,7 +71,7 @@ def get_image_path(instance, filename):
     return os.path.join('photos', str(instance), filename)
 
 class User(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(unique=True, null=True)
+    email = models.EmailField(unique=True)
     is_staff = models.BooleanField(
         _('staff status'),
         default=False,
@@ -107,7 +105,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     user_type = models.CharField(choices=user_choices, max_length=9, blank=True)
     referred_by = models.ForeignKey('self', null=True, blank=True)
     canBuyDollar = models.BooleanField(default=False)
-    country = models.ForeignKey(Country, null=True, blank=True)
+    country = models.ForeignKey(Country)
 
     coordinatesUsers = models.ManyToManyField('self', verbose_name='Aliados que coordina', blank=True)
 
@@ -210,7 +208,7 @@ class Account(models.Model):
     
     id_bank = models.ForeignKey(Bank)
     id_currency = models.ForeignKey(Currency)
-    aba = models.CharField(max_length=10, null=True, blank=True)
+    aba = models.CharField(max_length=10, null=True)
 
     def __str__(self):
         return str(self.id_bank) + " " + str(self.number[-4:])
@@ -228,10 +226,10 @@ class AccountBelongsTo(models.Model):
     id_client = models.ForeignKey(User, related_name='hasAccount')
     choices = (('Origen', 'Origen'), ('Destino', 'Destino'))
     use_type = models.CharField(choices=choices, max_length=8, blank=True)
-    owner = models.CharField(max_length=64, null=True)
+    owner = models.CharField(max_length=64)
     alias = models.CharField(max_length=32, null=True)
-    email = models.EmailField(null=True)
-    id_number = models.IntegerField(verbose_name='ID number', null=True)
+    email = models.EmailField()
+    id_number = models.IntegerField(verbose_name='ID number')
     active = models.BooleanField(default=True)
 
     class Meta:
@@ -337,10 +335,10 @@ class Transaction(models.Model):
     choices = (('TO', 'TO'), ('TD', 'TD'), ('TC', 'TC')) #TO-Transaccion origen, TD-Transaccion destino, TC-transaccion crypto
     operation_type = models.CharField(choices=choices, max_length=3, verbose_name="Tipo de transacción")
     transfer_image = models.ImageField(upload_to=get_image_path, verbose_name="Imagen del comprobante")
-    id_operation   = models.ForeignKey(Operation, blank=True, null=True, related_name='transactions', verbose_name="Operación asociada")
-    origin_account = models.ForeignKey(Account, blank=True, null=True, related_name='origin_account', verbose_name="Cuenta origen")
-    target_account = models.ForeignKey(Account, blank=True, null=True, related_name='target_account', verbose_name="Cuenta destino")
-    to_exchanger   = models.ForeignKey('Exchanger', blank=True, null=True, verbose_name="Exchanger")
+    id_operation   = models.ForeignKey(Operation, related_name='transactions', verbose_name="Operación asociada")
+    origin_account = models.ForeignKey(Account, null=True, related_name='origin_account', verbose_name="Cuenta origen")
+    target_account = models.ForeignKey(Account, null=True, related_name='target_account', verbose_name="Cuenta destino")
+    to_exchanger   = models.ForeignKey('Exchanger', null=True, verbose_name="Exchanger")
     amount         = models.FloatField(verbose_name="Monto")
     currency       = models.ForeignKey(Currency, verbose_name="Moneda")
 

@@ -147,7 +147,7 @@ TIME_FORMAT = 'H:i'
 #BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 #STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
-STATIC_ROOT = 'staticfiles' 
+STATIC_ROOT = 'staticfiles'
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
@@ -155,7 +155,7 @@ STATICFILES_DIRS = (
 )
 
 # Directorio de templates y de statics.
-STATICFILES_DIRS= [os.path.join(BASE_DIR,'static')]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
@@ -163,9 +163,8 @@ MEDIA_URL = '/media/'
 
 
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'smarticket.suport@gmail.com' 
+EMAIL_HOST_USER = 'smarticket.suport@gmail.com'
 EMAIL_HOST_PASSWORD = 'asd123asd'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'Cash4Home. Equipo de soporte'
-

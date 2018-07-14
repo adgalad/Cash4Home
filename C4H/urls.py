@@ -13,11 +13,12 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url,handler404, handler500, handler403
+from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from app import views
 from django.conf.urls.static import static
+
+from app import views
 from C4H.settings import MEDIA_URL, MEDIA_ROOT
 
 urlpatterns = [
@@ -25,24 +26,27 @@ urlpatterns = [
     url(r'^signup/$', views.signup, name='signup'),
     url(r'^login/$', views.login, name='login'),
     url(r'^logout/$', views.logout, name='logout'),
-    
+
     # Reset Password
     url(r'^password_reset/$', views.password_reset, name='password_reset'),
     url(r'^password_reset/done/$', auth_views.password_reset_done, name='password_reset_done'),
-    url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', auth_views.password_reset_confirm, name='password_reset_confirm'),
+    url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+        auth_views.password_reset_confirm,
+        name='password_reset_confirm'
+       ),
     url(r'^reset/done/$', auth_views.password_reset_complete, name='password_reset_complete'),
 
     #User
     url(r'^dashboard$', views.dashboard, name='dashboard'),
     url(r'^user/profile$', views.profile, name='profile'),
     url(r'^user/verification$', views.userVerification, name='userVerification'),
-   
+
     url(r'^emailVerification$', views.resendEmailVerification, name="resendEmailVerification"),
     url(r'^activateEmail/(?P<token>.+)$', views.activateEmail, name="activateEmail"),
-   
+
     url(r'^accounts$', views.accounts, name='accounts'),
     url(r'^account/new$', views.createAccount, name='createAccount'),
-    
+
     url(r'^operation/new$', views.createOperation, name='createOperation'),
     url(r'^operation/verify/(?P<_operation_id>.+)$', views.verifyOperation, name='verifyOperation'),
     url(r'^operation/pending$', views.pendingOperations, name='pendingOperations'),
@@ -86,19 +90,27 @@ urlpatterns = [
     url(r'^add/country/$', views.addCountry, name="addCountry"),
     url(r'^all/country/$', views.adminCountry, name="adminCountry"),
     url(r'^edit/country/(?P<_country_id>[\w\ ]+)', views.editCountry, name="editCountry"),
-    
 
     url(r'^add/group$', views.addGroup, name="addGroup"),
     url(r'^all/group/$', views.adminGroup, name="adminGroup"),
     url(r'^edit/group/(?P<_group_id>\w+)', views.editGroup, name="editGroup"),
 
-    url(r'^add/account/user/(?P<_user_id>\w+)/(?P<_flag>\w+)$', views.addUserAccount, name="addUserAccount"),
+    url(r'^add/account/user/(?P<_user_id>\w+)/(?P<_flag>\w+)$',
+        views.addUserAccount,
+        name="addUserAccount"
+       ),
     url(r'^all/account/user/(?P<_user_id>\w+)$', views.viewUserAccounts, name="viewUserAccounts"),
-    url(r'^deactivate/account/user/(?P<_user_id>\w+)/(?P<_account_id>\w+)', views.deactivateUserAccount, name="deactivateUserAccount"),
+    url(r'^deactivate/account/user/(?P<_user_id>\w+)/(?P<_account_id>\w+)',
+        views.deactivateUserAccount,
+        name="deactivateUserAccount"
+       ),
 
     url(r'^add/exchanger/$', views.addExchanger, name="addExchanger"),
     url(r'^all/exchanger/$', views.adminExchanger, name="adminExchanger"),
-    url(r'^edit/exchanger/(?P<_ex_id>[\w\ ]+)/(?P<_currency_id>\w+)', views.editExchanger, name="editExchanger"),
+    url(r'^edit/exchanger/(?P<_ex_id>[\w\ ]+)/(?P<_currency_id>\w+)',
+        views.editExchanger,
+        name="editExchanger"
+       ),
 
     url(r'^add/repurchase/$', views.addRepurchaseGeneral, name="addRepurchaseGeneral"),
     url(r'^add/repurchase/(?P<_currency_id>\w+)$', views.addRepurchase, name="addRepurchase"),
@@ -108,10 +120,22 @@ urlpatterns = [
     url(r'^admin/settings$', views.globalSettings, name="globalSettings"),
 
     #Dashboards
-    url(r'^dashboard/operational/(?P<_operation_id>.+)/details$', views.operationDetailDashboard, name="operationDetailDashboard"),
-    url(r'^dashboard/operational/(?P<_operation_id>.+)/edit$', views.operationEditDashboard, name="operationEditDashboard"),
-    url(r'^dashboard/operational/(?P<_operation_id>.+)/transaction$', views.operationAddTransaction, name="operationAddTransaction"),
-    url(r'^dashboard/operational/(?P<_operation_id>.+)/history$', views.operationHistory, name="operationHistory"),
+    url(r'^dashboard/operational/(?P<_operation_id>.+)/details$',
+        views.operationDetailDashboard,
+        name="operationDetailDashboard"
+       ),
+    url(r'^dashboard/operational/(?P<_operation_id>.+)/edit$',
+        views.operationEditDashboard,
+        name="operationEditDashboard"
+       ),
+    url(r'^dashboard/operational/(?P<_operation_id>.+)/transaction$',
+        views.operationAddTransaction,
+        name="operationAddTransaction"
+       ),
+    url(r'^dashboard/operational/(?P<_operation_id>.+)/history$',
+        views.operationHistory,
+        name="operationHistory"
+       ),
 ] + static(MEDIA_URL, document_root=MEDIA_ROOT)
 
 handler404 = views.handler404

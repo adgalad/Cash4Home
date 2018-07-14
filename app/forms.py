@@ -335,7 +335,7 @@ class NewUserForm(forms.ModelForm):
 
   class Meta:
     model = User
-    fields = ('first_name', 'last_name', 'email', 'id_number', 'country', 'address', 'mobile_phone', 'referred_by', 'coordinatesUsers', 'canBuyDollar', 'is_superuser', 'groups' )
+    fields = ('first_name', 'last_name', 'email', 'id_number', 'country', 'address', 'mobile_phone', 'referred_by', 'coordinatesUsers', 'canBuyDollar', 'is_active', 'groups' )
 
 class NewOwnAccountAssociatedForm(forms.Form):
 
