@@ -268,16 +268,40 @@ def dashboard(request):
 
 
       messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
+      # The user can see all operation or is admin
       if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
         actualOperations = Operation.objects.filter(is_active=True).order_by('date')
         endedOperations = Operation.objects.filter(is_active=False).order_by('date')
-            
+      
+      # The user can coordinate other users operations
+      elif request.user.has_perm('coordinate_operation'):
+        ids = request.user.coordinatesUsers.all().values_list('id', flat=True) + [request.user.id]
+        actualOperations = Operation.objects.filter(
+                              Q(is_active=True) & 
+                              (Q(id_allie_origin__id__in=ids) | Q(id_allie_target__id__in=ids))
+                           ).order_by('date')
+        endedOperations = Operation.objects.exclude(status="Cancelada"
+                            ).filter( 
+                              Q(is_active=False) &
+                              (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
+                            ).order_by('date')
+      
+      # The user can only see it's operations
       else:
-        actualOperations = Operation.objects.filter(Q(is_active=True) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
-        endedOperations = Operation.objects.exclude(status="Cancelada").filter(Q(is_active=False) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
-
-      for i in actualOperations:
-        i.isCanceled()
+        actualOperations = Operation.objects.filter(
+                              Q(is_active=True) &
+                              (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
+                            ).order_by('date')
+        endedOperations = Operation.objects.exclude(status="Cancelada"
+                            ).filter(
+                              Q(is_active=False) &
+                              (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
+                            ).order_by('date')
+      
+      dateForm = FilterDashboardByDateForm()
+      today = timezone.now()
+      actualOperations = actualOperations.filter(date__month=today.month, date__year=today.year)
+      endedOperations = endedOperations.filter(date__month=today.month, date__year=today.year)
       
       totalOpen = actualOperations.count()
       totalEnded = endedOperations.count()
