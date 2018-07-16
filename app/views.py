@@ -153,7 +153,6 @@ def dashboard(request):
                           ).order_by('date')
 
     hasFilter = False
-    print(">>>>>>>>>>>>> ", request.POST)
     if request.method == 'POST' and 'filter' in request.POST:
 
       dateForm = FilterDashboardByDateForm(request.POST)
@@ -205,8 +204,12 @@ def dashboard(request):
 
       if (formChoice.is_valid() and formset.is_valid()):
         new_status = formChoice.cleaned_data['action']
-        print(formChoice.cleaned_data['action'], formChoice.cleaned_data['crypto_used'], formChoice.cleaned_data['rate'])
         firstCurrency = None
+        totalAmount = Decimal(0)
+
+        if (new_status == 'Fondos ubicados'):
+          crypto_used = formChoice.cleaned_data['crypto_used']
+          rate = formChoice.cleaned_data['rate']
 
         # Recorro la primera vez para asegurar que todas las monedas sean iguales
         for form in formset:
@@ -217,16 +220,8 @@ def dashboard(request):
                 elif ((firstCurrency != actual_op.target_currency.code) and new_status=='Fondos ubicados'):
                   messages.error(request, "Para realizar este cambio de estado debe seleccionar operaciones con la misma moneda destino", extra_tags="alert-warning")
                   formChoice = StateChangeBulkForm()
-                  return render(request, 'dashboard/dashboard_operator.html', {
-                                    'prices': prices,
-                                    'actualO': actualOperations,
-                                    'endedO': endedOperations,
-                                    'totalOpen': totalOpen,
-                                    'totalEnded': totalEnded,
-                                    'dateForm': dateForm,
-                                    'hasFilter': hasFilter,
-                                    'form': formset,
-                                    'formChoice': formChoice})
+                  return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations, 'endedO': endedOperations, 
+                                                                        'totalOpen': totalOpen, 'totalEnded': totalEnded, 'form': formset, 'formChoice': formChoice})
         for form in formset:
           if (form.cleaned_data['selected']):
             actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
@@ -238,27 +233,23 @@ def dashboard(request):
               actual_op.status = new_status
 
               if (new_status == 'Fondos ubicados'):
-                crypto_used = formChoice.cleaned_data['crypto_used']
-                rate = formChoice.cleaned_data['rate']
-
                 actual_op.crypto_rate = rate
                 actual_op.exchanger = crypto_used.exchanger
                 actual_op.crypto_used = crypto_used.currency
+
+                totalAmount += actual_op.fiat_amount*actual_op.exchange_rate
 
               actual_op.save()
             else:
               msg = "No se puede cambiar el status a %s" % status
               messages.error(request, msg, extra_tags="alert-warning")  
-              return render(request, 'dashboard/dashboard_operator.html', {
-                                  'prices': prices,
-                                  'actualO': actualOperations,
-                                  'endedO': endedOperations,
-                                  'totalOpen': totalOpen,
-                                  'totalEnded': totalEnded,
-                                  'dateForm': dateForm,
-                                  'hasFilter': hasFilter,
-                                  'form': formset,
-                                  'formChoice': formChoice})
+              return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations, 'endedO': endedOperations, 
+                                                                    'totalOpen': totalOpen, 'totalEnded': totalEnded, 'form': formset, 'formChoice': formChoice})
+
+        if (new_status == 'Fondos ubicados'):
+          crypto_used.amount_acc -= totalAmount/rate
+          crypto_used.save()
+
 
       messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
       if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):

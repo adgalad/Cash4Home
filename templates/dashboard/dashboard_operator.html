@@ -156,7 +156,7 @@
                             <table>
                               <thead>
                                 <th>{{formChoice.crypto_used.label_tag}}</th>
-                                <th>{{formChoice.rate.label_tag}}</th>  
+                                <th>{{formChoice.rate.label_tag}} (Crypto-Moneda Destino)</th>  
                               </thead>
                               <tbody>
                                 <td>
@@ -265,6 +265,19 @@
                   </tbody>
                 </table>
                 <hr>
+                {% if hasFilter %}
+                <div class="row"> 
+                  <div class="col-md-2 col-sm-4 col-xs-4"> 
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="text" name="filter" id="filter" style="display:none">
+                        <button class="btn btn-danger" type="submit">
+                          <i class="fa fa-times"></i>&nbsp; Quitar Filtro
+                        </button>
+                    </form>
+                  </div>
+                </div>
+                {% endif %}
                 <div class="row"> 
                   <div class="col-md-4 col-sm-6 col-xs-8"> 
                     <form method="post">
@@ -283,17 +296,7 @@
                       </div>
                     </form>
                   </div>
-                  {% if hasFilter %}
-                  <div class="col-md-2 col-sm-4 col-xs-4"> 
-                    <form method="post">
-                        {% csrf_token %}
-                        <input type="text" name="filter" id="filter" style="display:none">
-                        <button class="btn btn-danger" type="submit">
-                          <i class="fa fa-times"></i>&nbsp; Quitar Filtro
-                        </button>
-                    </form>
-                  </div>
-                  {% endif %}
+
                 </div>
               </div>
             </div>    
