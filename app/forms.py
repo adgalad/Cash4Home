@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.models import Permission, Group
-
+from django.utils import timezone
 
 class GlobalSettingsForm(forms.ModelForm):
   
@@ -436,13 +436,15 @@ class TransactionForm(forms.ModelForm):
                                     queryset=Currency.objects.all().order_by('currency_type', 'code'),
                                     widget = forms.Select(attrs={'style': 'width:100%; background-color:white'})
                                   )
+  DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
+  date = forms.DateField(label = "Fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
   def __init__(self, *args, **kwargs):
     super(TransactionForm, self).__init__(*args, **kwargs)
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
     choices = (('TD', 'Destino'), ('TC', 'Cierre'))
     self.fields['operation_type'].choices = choices
-  
+
   class Meta:
     model = Transaction
     fields = ('operation_type', 'origin_account', 'target_account',

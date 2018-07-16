@@ -340,9 +340,9 @@ class Transaction(models.Model):
     operation_type = models.CharField(choices=choices, max_length=3, verbose_name="Tipo de transacción")
     transfer_image = models.ImageField(upload_to=get_image_path, verbose_name="Imagen del comprobante")
     id_operation   = models.ForeignKey(Operation, related_name='transactions', verbose_name="Operación asociada")
-    origin_account = models.ForeignKey(Account, null=True, related_name='origin_account', verbose_name="Cuenta origen")
-    target_account = models.ForeignKey(Account, null=True, related_name='target_account', verbose_name="Cuenta destino")
-    to_exchanger   = models.ForeignKey('Exchanger', null=True, verbose_name="Exchanger")
+    origin_account = models.ForeignKey(Account, null=True, blank=True, related_name='origin_account', verbose_name="Cuenta origen")
+    target_account = models.ForeignKey(Account, null=True, blank=True, related_name='target_account', verbose_name="Cuenta destino")
+    to_exchanger   = models.ForeignKey('Exchanger', null=True, blank=True, verbose_name="Exchanger")
     amount         = models.FloatField(verbose_name="Monto")
     currency       = models.ForeignKey(Currency, verbose_name="Moneda")
 
