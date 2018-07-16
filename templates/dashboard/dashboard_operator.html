@@ -189,7 +189,6 @@
                           <th class="column-title">Cant. recibida</th>
                           <th class="column-title">Cant. enviada</th>
                           <th class="column-title">Fecha Creación</th>
-                          <th class="column-title">Fecha Vencimiento</th>
                           <th class="column-title">Aliados</th>
                           <th class="column-title">Estado</th>
                           <th class="column-title"></th>
@@ -209,7 +208,6 @@
                           <td>{{ op.fiat_amount | currency }} {{ op.origin_currency.code }}</td>
                           <td>{{ op.fiat_amount|mul:op.exchange_rate | currency | safe}} {{op.target_currency.code}}</td>  
                           <td><p>{{ op.date }}</p></td>
-                          <td><p>{{ op.date_ending }}</p></td>
                           <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>
                           <td>{{ op.status }}</td>
                           <td>
@@ -242,7 +240,6 @@
                       <th>Cant. recibida</th>
                       <th>Cant. enviada</th>
                       <th>Fecha Creación</th>
-                      <th>Fecha Finalización</th>
                       <th>Aliados</th>
                       <th>Estado</th>
                       <th></th>
@@ -256,7 +253,6 @@
                         <td>{{ op.fiat_amount | currency }} {{ op.origin_currency.code }}</td>
                         <td>{{ op.fiat_amount|mul:op.exchange_rate | currency | safe}} {{op.target_currency.code}}</td>  
                         <td>{{ op.date }}</td>
-                        <td>{{ op.date_ending }}</td>
                         <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>
                         <td>{{ op.status }}</td>
                         <td><a href="{% url 'operationDetailDashboard' op.code %}"><i class="fa fa-search"></i></a></td>
