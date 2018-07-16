@@ -1836,16 +1836,15 @@ def addExchanger(request):
         if (form.is_valid()):
             name = form.cleaned_data['name']
 
-            if (Exchanger.objects.filter(name=name).exists()):
-                msg = "El nombre ingresado ya existe en el sistema"
-                messages.error(request, msg, extra_tags="alert-warning")
-                return render(request, 'admin/addExchanger.html', {'form': form})
-
-            new_exchanger = Exchanger(name=name, is_active=True)
-            new_exchanger.save()
+            if not(Exchanger.objects.filter(name=name).exists()):
+              new_exchanger = Exchanger(name=name, is_active=True)
+              new_exchanger.save()
+            else: 
+              new_exchanger = Exchanger.objects.get(name=name)
 
             currency = form.cleaned_data['currency']
             for c in currency:
+              if not(ExchangerAccepts.objects.filter(exchanger=new_exchanger, currency=c).exists()):
                 accepts = ExchangerAccepts(exchanger=new_exchanger,
                                            currency=c,
                                            amount_acc=0)
@@ -1888,7 +1887,7 @@ def editExchanger(request, _ex_id, _currency_id):
 
     else:
         form = EditExchangerForm(initial={'name': actual_exchanger.name, 'currency': currency.name,
-                                    'is_active': actual_exchanger.is_active})
+                                    'is_active': actual_exchanger.is_active, 'amount': ex_accepts.amount_acc})
 
     return render(request, 'admin/editExchanger.html', {'form': form})
 
