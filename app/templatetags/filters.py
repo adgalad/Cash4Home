@@ -33,3 +33,7 @@ def has_group(user, group_name):
         return group in user.groups.all()
     except:
         return False
+
+@register.filter(name='zip')
+def zip_lists(a, b):
+  return zip(a, b)

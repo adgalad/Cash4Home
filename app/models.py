@@ -153,6 +153,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def canVerify(self):
         return not (self.verified or self.id_front or self.selfie_image or self.id_back)
 
+    class Meta:
+        verbose_name = 'Usuario'
+        verbose_name_plural = 'Usuarios'
+
 
 class Holiday(models.Model):
     #The primary key is the django id
@@ -179,7 +183,7 @@ class Currency(models.Model):
 
 class ExchangeRate(models.Model):
     # The primary key is the django id
-    rate = models.FloatField()
+    rate = models.DecimalField(max_digits=30, decimal_places=15)
     date = models.DateTimeField(auto_now_add=True)
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_pair')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_pair')
@@ -228,8 +232,8 @@ class AccountBelongsTo(models.Model):
     use_type = models.CharField(choices=choices, max_length=8, blank=True)
     owner = models.CharField(max_length=64)
     alias = models.CharField(max_length=32, null=True)
-    email = models.EmailField()
-    id_number = models.IntegerField(verbose_name='ID number')
+    email = models.EmailField(null=True)
+    id_number = models.CharField(blank=True, verbose_name='ID number', default=0, max_length=70, null=True)
     active = models.BooleanField(default=True)
 
     class Meta:
@@ -270,8 +274,8 @@ class ExchangerAccepts(models.Model):
 
 class Operation(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True)
-    fiat_amount = models.FloatField()
-    crypto_rate = models.FloatField(blank=True, null=True)
+    fiat_amount = models.DecimalField(max_digits=30, decimal_places=15)
+    crypto_rate = models.DecimalField(blank=True, null=True, max_digits=30, decimal_places=15)
     crypto_used = models.ForeignKey(Currency, related_name='crypto_used', blank=True, null=True)
     status_choices = (('Cancelada', 'Cancelada'), ('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), 
                       ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
@@ -282,7 +286,7 @@ class Operation(models.Model):
     expiration = models.DateTimeField()
     id_client = models.ForeignKey(User, related_name="user_client")
     id_account = models.ForeignKey(Account, related_name='account_client_origin') # Origin account from the client
-    exchange_rate = models.FloatField()
+    exchange_rate = models.DecimalField(max_digits=30, decimal_places=15)
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_used')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_used')
     is_active = models.BooleanField(default=True)
@@ -323,7 +327,7 @@ class OperationGoesTo(models.Model):
     # The primary key is the django id
     operation_code = models.ForeignKey(Operation, related_name='goesTo')
     number_account = models.ForeignKey(Account)
-    amount = models.FloatField(blank=True, null=True)
+    amount = models.DecimalField(blank=True, null=True, max_digits=30, decimal_places=15)
 
     class Meta:
         unique_together = ('operation_code', 'number_account')
@@ -331,7 +335,7 @@ class OperationGoesTo(models.Model):
 
 class Transaction(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True, default=pkgenTransaction)
-    date = models.DateField()
+    date = models.DateField(verbose_name="Fecha")
     choices = (('TO', 'TO'), ('TD', 'TD'), ('TC', 'TC')) #TO-Transaccion origen, TD-Transaccion destino, TC-transaccion crypto
     operation_type = models.CharField(choices=choices, max_length=3, verbose_name="Tipo de transacción")
     transfer_image = models.ImageField(upload_to=get_image_path, verbose_name="Imagen del comprobante")
@@ -355,11 +359,12 @@ class Transaction(models.Model):
 class Repurchase(models.Model):
     # The primary key is the django id
     date = models.DateTimeField()
-    rate = models.FloatField()
+    rate = models.DecimalField(max_digits=30, decimal_places=15)
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_purchase')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_purchase')
     exchanger = models.ForeignKey(Exchanger)
-    profit = models.FloatField(default=0)
+    amount = models.DecimalField(max_digits=30, decimal_places=15, default=0)
+    profit = models.DecimalField(default=0, max_digits=30, decimal_places=15)
 
     class Meta:
         default_permissions = ()

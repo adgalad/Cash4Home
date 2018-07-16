@@ -22,7 +22,7 @@
       <div class="animate form login_form">
         <section class="login_content">
           {% for message in messages %}
-          <div class="alert {{ message.tags }}">
+          <div class="alert {{ message.tags }}" style="width: 100%;">
             {{ message | safe  }}
           </div>
           {% endfor %}

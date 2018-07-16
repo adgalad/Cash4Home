@@ -59,34 +59,7 @@
       </ul>
     </div>
     <div class="menu_section">
-      {% if perms.admin.view_operation or
-            perms.admin.edit_operation or
-            perms.admin.add_operation or
-            perms.admin.view_rate or
-            perms.admin.edit_rate or
-            perms.admin.add_rate or
-            perms.admin.view_currency or
-            perms.admin.edit_currency or
-            perms.admin.add_currency or
-            perms.admin.view_account or
-            perms.admin.edit_account or
-            perms.admin.add_account or
-            perms.admin.view_bank or
-            perms.admin.edit_bank or
-            perms.admin.add_bank or
-            perms.admin.view_holiday or
-            perms.admin.edit_holiday or
-            perms.admin.add_holiday or
-            perms.admin.view_user or
-            perms.admin.edit_user or
-            perms.admin.add_user or
-            perms.admin.view_country or
-            perms.admin.edit_country or
-            perms.admin.add_country or
-            perms.admin.view_group or
-            perms.admin.edit_group or
-            perms.admin.add_group
-      %}
+      {% if perms.admin.view_operation or perms.admin.edit_operation or perms.admin.add_operation or perms.admin.view_rate or perms.admin.edit_rate or perms.admin.add_rate or perms.admin.view_currency or perms.admin.edit_currency or perms.admin.add_currency or perms.admin.view_account or perms.admin.edit_account or perms.admin.add_account or perms.admin.view_bank or perms.admin.edit_bank or perms.admin.add_bank or perms.admin.view_holiday or perms.admin.edit_holiday or perms.admin.add_holiday or perms.admin.view_user or perms.admin.edit_user or perms.admin.add_user or perms.admin.view_country or perms.admin.edit_country or perms.admin.add_country or perms.admin.view_group or perms.admin.edit_group or perms.admin.add_group %}
       <h3>Administración</h3>
       
       <ul class="nav side-menu">
@@ -139,12 +112,7 @@
         </li>
         {% endif %}
         
-        {% if perms.admin.view_exchanger or
-              perms.admin.edit_exchanger or 
-              perms.admin.add_exchanger or
-              perms.admin.view_repurchase or
-              perms.admin.edit_repurchase or
-              perms.admin.add_repurchase %}
+        {% if perms.admin.view_exchanger or perms.admin.edit_exchanger or perms.admin.add_exchanger or perms.admin.view_repurchase or perms.admin.edit_repurchase or perms.admin.add_repurchase %}
         <li><a><i class="fa fa-exchange"></i> Exchangers <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
               {% if perms.admin.add_exchanger%}

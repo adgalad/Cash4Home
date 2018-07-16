@@ -248,18 +248,20 @@ $('.bulk_action input#check-all').on('ifUnchecked', function () {
 
 function countChecked () {
   if (checkState === 'all') {
-    $(".bulk_action input[name='table_records']").iCheck('check')
+    $(".bulk_action input:checkbox").iCheck('check')
   }
   if (checkState === 'none') {
-    $(".bulk_action input[name='table_records']").iCheck('uncheck')
+    $(".bulk_action input:checkbox").iCheck('uncheck')
   }
 
-  var checkCount = $(".bulk_action input[name='table_records']:checked").length
+  var checkCount = $(".bulk_action input:checkbox:checked").length 
+
+  console.log(checkCount);
 
   if (checkCount) {
     $('.column-title').hide()
     $('.bulk-actions').show()
-    $('.action-cnt').html(checkCount + ' Records Selected')
+    $('.action-cnt').html(checkCount + ' Registros seleccionados')
   } else {
     $('.column-title').show()
     $('.bulk-actions').hide()
@@ -2492,6 +2494,7 @@ function init_DataTables () {
   })
 
   $('table[id="datatable-responsive"]').DataTable()
+  $('table[id="datatable-pending"]').DataTable()
   
 
   $('#datatable-scroller').DataTable({

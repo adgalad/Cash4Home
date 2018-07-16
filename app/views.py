@@ -29,8 +29,12 @@ from app.models import *
 from C4H.settings import (MEDIA_ROOT, STATIC_ROOT, EMAIL_HOST_USER,
                           DEFAULT_DOMAIN, DEFAULT_FROM_EMAIL, 
                           OPERATION_TIMEOUT, EMAIL_VALIDATION_EXPIRATION)
-from app.encryptation import encrypt, decrypt
 
+from app.encryptation import encrypt, decrypt
+import random
+from django.db.models import Q
+from decimal import *
+from django.core.serializers.json import DjangoJSONEncoder
 
 
 ########## ERROR HANDLING ##########
@@ -149,7 +153,9 @@ def dashboard(request):
                           ).order_by('date')
 
     hasFilter = False
-    if request.method == 'POST':
+    print(">>>>>>>>>>>>> ", request.POST)
+    if request.method == 'POST' and 'filter' in request.POST:
+
       dateForm = FilterDashboardByDateForm(request.POST)
       if dateForm.is_valid():
         date = dateForm.cleaned_data['date']
@@ -172,6 +178,7 @@ def dashboard(request):
       actualOperations = actualOperations.filter(date__month=today.month, date__year=today.year)
       endedOperations = endedOperations.filter(date__month=today.month, date__year=today.year)
 
+
     for i in actualOperations:
       i.isCanceled()
     
@@ -181,16 +188,116 @@ def dashboard(request):
     file = open(os.path.join(STATIC_ROOT, "BTCPrice.json"), "r")
     prices = json.loads(file.read())
     file.close()
-    return render(request, 'dashboard/dashboard_operator.html', { 
-                    'prices': prices,
-                    'actualO': actualOperations,
-                    'endedO': endedOperations,
-                    'totalOpen': totalOpen,
-                    'totalEnded': totalEnded,
-                    'dateForm': dateForm,
-                    'hasFilter': hasFilter,
-                  }
-                )
+
+    initialForm = [{'operation': op.code, 'selected': False} for op in actualOperations.iterator()]
+
+    if request.method == 'POST' and not 'filter' in request.POST:
+      POST = request.POST.copy()
+
+      auxCount = len(initialForm)
+      POST['form-TOTAL_FORMS' ] = auxCount
+      POST['form-INITIAL_FORMS'] = auxCount
+      POST['form-MAX_NUM_FORMS'] = auxCount
+
+      formChoice = StateChangeBulkForm(request.POST)
+      OperationFormSet = formset_factory(OperationBulkForm, extra=0)
+      formset = OperationFormSet(POST)
+
+      if (formChoice.is_valid() and formset.is_valid()):
+        new_status = formChoice.cleaned_data['action']
+        print(formChoice.cleaned_data['action'], formChoice.cleaned_data['crypto_used'], formChoice.cleaned_data['rate'])
+        firstCurrency = None
+
+        # Recorro la primera vez para asegurar que todas las monedas sean iguales
+        for form in formset:
+            if (form.cleaned_data['selected']):
+                actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+                if not(firstCurrency):
+                  firstCurrency = actual_op.target_currency.code
+                elif ((firstCurrency != actual_op.target_currency.code) and new_status=='Fondos ubicados'):
+                  messages.error(request, "Para realizar este cambio de estado debe seleccionar operaciones con la misma moneda destino", extra_tags="alert-warning")
+                  formChoice = StateChangeBulkForm()
+                  return render(request, 'dashboard/dashboard_operator.html', {
+                                    'prices': prices,
+                                    'actualO': actualOperations,
+                                    'endedO': endedOperations,
+                                    'totalOpen': totalOpen,
+                                    'totalEnded': totalEnded,
+                                    'dateForm': dateForm,
+                                    'hasFilter': hasFilter,
+                                    'form': formset,
+                                    'formChoice': formChoice})
+        for form in formset:
+          if (form.cleaned_data['selected']):
+            actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+
+            if actual_op.status != 'Cancelada' and (canChangeStatusAdmin(actual_op, new_status, request.user.is_superuser) or canChangeStatus(actual_op, new_status)):
+              OperationStateChange(operation=actual_op, 
+                                   user=request.user,
+                                   original_status=actual_op.status).save()
+              actual_op.status = new_status
+
+              if (new_status == 'Fondos ubicados'):
+                crypto_used = formChoice.cleaned_data['crypto_used']
+                rate = formChoice.cleaned_data['rate']
+
+                actual_op.crypto_rate = rate
+                actual_op.exchanger = crypto_used.exchanger
+                actual_op.crypto_used = crypto_used.currency
+
+              actual_op.save()
+            else:
+              msg = "No se puede cambiar el status a %s" % status
+              messages.error(request, msg, extra_tags="alert-warning")  
+              return render(request, 'dashboard/dashboard_operator.html', {
+                                  'prices': prices,
+                                  'actualO': actualOperations,
+                                  'endedO': endedOperations,
+                                  'totalOpen': totalOpen,
+                                  'totalEnded': totalEnded,
+                                  'dateForm': dateForm,
+                                  'hasFilter': hasFilter,
+                                  'form': formset,
+                                  'formChoice': formChoice})
+
+      messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
+      if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
+        actualOperations = Operation.objects.filter(is_active=True).order_by('date')
+        endedOperations = Operation.objects.filter(is_active=False).order_by('date')
+            
+      else:
+        actualOperations = Operation.objects.filter(Q(is_active=True) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
+        endedOperations = Operation.objects.exclude(status="Cancelada").filter(Q(is_active=False) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
+
+      for i in actualOperations:
+        i.isCanceled()
+      
+      totalOpen = actualOperations.count()
+      totalEnded = endedOperations.count()
+
+      initialForm = [{'operation': op.code, 'selected': False} for op in actualOperations.iterator()]
+
+      formChoice = StateChangeBulkForm()
+      OperationFormSet = formset_factory(OperationBulkForm, extra=0)
+      formset = OperationFormSet(initial=initialForm)
+
+
+    else:
+      OperationFormSet = formset_factory(OperationBulkForm, extra=0)
+      formset = OperationFormSet(initial=initialForm)
+      formChoice = StateChangeBulkForm()
+
+    return render(request, 'dashboard/dashboard_operator.html', {
+                      'prices': prices,
+                      'actualO': actualOperations,
+                      'endedO': endedOperations,
+                      'totalOpen': totalOpen,
+                      'totalEnded': totalEnded,
+                      'dateForm': dateForm,
+                      'hasFilter': hasFilter,
+                      'form': formset,
+                      'formChoice': formChoice})
+
 
 
 def company(request):
@@ -280,13 +387,13 @@ def createOperation(request):
     rates[str(i)] = i.rate
 
   for i in queryset1:
-    fromAccs[i.id_account.id] = { 
+    fromAccs[i.id] = { 
       'currency':str(i.id_account.id_currency),
       'name': str(i)
     }
 
   for i in queryset2:
-    toAccs[i.id_account.id] = {
+    toAccs[i.id] = {
       'currency':str(i.id_account.id_currency),
       'name': str(i)
     }
@@ -294,12 +401,15 @@ def createOperation(request):
 
   if request.method == 'POST':
     POST = request.POST.copy()
-    form1 = FromAccountForm(request.POST)
+    form1 = FromAccountForm(request.POST).setQueryset(queryset1)
+    form1.fields['currency'].queryset = Currency.objects.filter(currency_type='FIAT', pk__in=currencies).order_by('code')
 
     POST['form-TOTAL_FORMS' ] = 5
     POST['form-INITIAL_FORMS'] = 5
     POST['form-MAX_NUM_FORMS'] = 5
     form2 = ToAccountFormSet(POST)
+    for i in form2:
+      i.setQueryset(queryset2)
 
     if form1.is_valid() and form2.is_valid():
       fromAccount = form1.cleaned_data["account"]
@@ -444,8 +554,7 @@ def createOperation(request):
         messages.error(request, 'No se pudo crear la operación. Revise los datos ingresados.', extra_tags="alert-error")
 
   else:
-    accountIDs = queryset1.values_list("id_account", flat=True)
-    form1 = FromAccountForm().setQueryset(Account.objects.filter(pk__in=accountIDs))
+    form1 = FromAccountForm().setQueryset(queryset1)
     form1.fields['currency'].queryset = Currency.objects.filter(currency_type='FIAT', pk__in=currencies).order_by('code')
     data = {
       'form-TOTAL_FORMS': '5',
@@ -461,7 +570,7 @@ def createOperation(request):
   return render(request, 'dashboard/createOperation.html', {
                 'form1': form1,
                 'form2': form2,
-                'rate': str(json.dumps(rates)),
+                'rate': str(json.dumps(rates, cls=DjangoJSONEncoder)),
                 'toAccs': str(json.dumps(toAccs)),
                 'fromAccs': str(json.dumps(fromAccs)),
                 "fee": str(fee)})
@@ -578,7 +687,7 @@ def createAccount(request):
       router = form.cleaned_data.get('router')
       if bank.country.name == "Estados Unidos":
         if router == "" or len(router) != 9:
-          messages.error(request,'El número ABA que ingresó es incorrecto. Introduzca un valor valido.', extra_tags="alert-error")
+          messages.error(request,'El número ABA que ingresó es incorrecto. Introduzca un valor válido.', extra_tags="alert-error")
           return render(request, 'dashboard/createAccount.html', {"form": form, 'own':own})
       else:
         router = ""
@@ -689,7 +798,7 @@ def sendEmailValidation(user):
     'operation': 'activateUserByEmail',
     'expiration': (timezone.now()+datetime.timedelta(seconds=GlobalSettings.get().EMAIL_VALIDATION_EXPIRATION*60)).strftime('%s')
   }
-  token = encrypt(str.encode(json.dumps(token)))
+  #token = encrypt(str.encode(json.dumps(token)))
 
   link = DEFAULT_DOMAIN+"activateEmail/" + token
   plain_message = 'Para validar tu correo electronico, porfavor ingresa al siguiente correo: ' + link
@@ -755,7 +864,7 @@ def signup(request):
       client_group = Group.objects.get(name='Cliente') 
       client_group.user_set.add(user)
       login_auth(request, user)
-      sendEmailValidation(user)
+      #sendEmailValidation(user)
       form = AuthenticationForm()
       msg = 'Te hemos enviado un correo de confirmación.'
       messages.error(request, msg, extra_tags="safe alert-warning")
@@ -1809,6 +1918,7 @@ def addRepurchase(request, _currency_id):
                                       origin_currency=origin_currency,
                                       target_currency=currency,
                                       exchanger=exchanger)
+          totalRepurchase = 0
           for form in formset:
               if (form.cleaned_data['selected']):
                 atLeastOne = True
@@ -1820,6 +1930,7 @@ def addRepurchase(request, _currency_id):
                   new_repurchase.save()
                   firstSelected = False
 
+                totalRepurchase += operation.fiat_amount*Decimal(rate)
                 new_cameFrom = RepurchaseCameFrom(id_repurchase=new_repurchase,id_operation=operation)
                 new_cameFrom.save()
 
@@ -1827,6 +1938,13 @@ def addRepurchase(request, _currency_id):
               msg = "Debes seleccionar al menos una operación"
               messages.error(request, msg, extra_tags="alert-warning")
               return render(request, 'admin/addRepurchase.html', {'formOp': formset, 'formRep': formRep})
+
+          new_repurchase.amount = totalRepurchase
+          new_repurchase.save()
+
+          accepts = ExchangerAccepts.objects.get(exchanger=exchanger, currency=currency)
+          accepts.amount_acc = accepts.amount_acc + totalRepurchase
+          accepts.save()
 
           msg = "La recompra fue agregada con éxito"
           messages.error(request, msg, extra_tags="alert-success")
