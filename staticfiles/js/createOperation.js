@@ -284,7 +284,6 @@ function SmartWizard (target, options) {
       }
     }
         // Finish Button
-    console.log($this.curStepIdx, $this.curStepIdx == 2)
     if ($this.curStepIdx == 2 && (!$this.steps.hasClass('disabled') || $this.options.enableFinishButton)) {
       $($this.buttons.finish).removeClass('buttonDisabled')
       if ($this.options.hideButtonsOnDisabled) {
@@ -313,6 +312,7 @@ function SmartWizard (target, options) {
         $('#id_currency').parent().addClass('bad')
         return
       }
+      loadStep2()
       
     } else if (this.curStepIdx == 1) {
       for (var i = 0; i <= currentInput; ++i) {
@@ -481,6 +481,8 @@ var nOptions = 5
 function addAccountInput () {
   if (currentInput < 4) {
     ++currentInput
+    $('#id_form-' + currentInput + '-amount').val(0)
+    $('#id_form-' + currentInput + '-account').val("")
     $('#id_form-' + currentInput + '-amount').parent().show()
     $('#id_form-' + currentInput + '-account').parent().show()
   }
@@ -507,14 +509,21 @@ function deleteAccountInput () {
   }
 }
 currencyf = function(value){
-  v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
-  console.log(value, v)
+  if (typeof(value) == 'string'){
+    v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
+  } else {
+    v = parseFloat(value)  
+  }
   if (isNaN(v)) return 0
   return v.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
 }
 
 fcurrency = function(value){
-  v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
+  if (typeof(value) == 'string'){
+    v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
+  } else {
+    v = parseFloat(value)  
+  }
   if (isNaN(v)) return 0
   return v
 }
@@ -522,7 +531,6 @@ fcurrency = function(value){
 toCurrencyf = function(field){
   for (var i = 0; i < nOptions; ++i) {
     f = $('#id_form-' + i + '-amount')
-    console.log(f, f.val(), currencyf(f.val()))
     f.val(currencyf(f.val()))
   }
 }
@@ -595,6 +603,7 @@ selectAccount = function () {
 }
 
 changeCurrency = function () {
+  
   for (var i = 0; i < nOptions; ++i) {
     input = $('#id_form-' + i + '-account')
     input.html('')
@@ -610,21 +619,29 @@ changeCurrency = function () {
   summary()
 }
 
-for (var i = 0; i < nOptions; ++i) {
-  $('#id_currency').change(changeCurrency)
-  $('#id_account').change(summary)
+loadStep2 = function(){
+  for (var i = 0; i < nOptions; ++i) {
 
-  $('#id_form-' + i + '-account').change(selectAccount)
+    $('#id_form-' + i + '-account').change(selectAccount).val("")
 
-  var field = $('#id_form-' + i + '-amount')
-  field.attr('type', 'text')
-  field.keyup(summary).change(summary).blur(toCurrencyf).val(0.0)
-  if (i > 0) {
-    field.parent().hide()
-    $('#id_form-' + i + '-account').parent().hide()
+    var field = $('#id_form-' + i + '-amount')
+    field.attr('type', 'text')
+    
+    field.keyup(summary).change(summary).blur(toCurrencyf).val(0.0)
+    if (i > 0) {
+      field.parent().hide()
+      $('#id_form-' + i + '-account').val('').parent().hide()
+    }
+
+    
   }
-
-  optionsBackup[i] = $('#id_form-' + i + '-account').children()
-
-  summary()
 }
+optionsBackup[i] = $('#id_form-' + i + '-account').children()    
+$('#id_currency').change(changeCurrency)
+$('#id_account').change(summary)
+
+loadStep2()
+summary()
+
+
+

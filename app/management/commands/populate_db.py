@@ -23,6 +23,7 @@ class Command(BaseCommand):
         currency    = ContentType(app_label='admin', model='Monedas')
         group       = ContentType(app_label='admin', model='Grupos')
         exchanger   = ContentType(app_label='admin', model='Exchanger')
+        repurchase  = ContentType(app_label='admin', model='Recompra')
         settings    = ContentType(app_label='admin', model='Configuración')
         
         btc_price = ContentType(app_label='dashboard', model='PrecioBTC')
@@ -41,69 +42,99 @@ class Command(BaseCommand):
         currency.save()
         group.save()
         exchanger.save()
+        repurchase.save()
         settings.save()
 
         btc_price.save()
         dashboard_operation.save()
         
         add_user  = Permission(name='Crear',  codename='add_user',  content_type=user)
+        view_user = Permission(name='Ver', codename='view_user', content_type=user)
         edit_user = Permission(name='Editar', codename='edit_user', content_type=user)
         add_user.save()       
+        view_user.save()
         edit_user.save()
         
 
         add_bank  = Permission(name='Crear',  codename='add_bank',  content_type=bank)
+        view_bank = Permission(name='Ver', codename='view_bank', content_type=bank)
         edit_bank = Permission(name='Editar', codename='edit_bank', content_type=bank)
         add_bank.save()       
+        view_bank.save()
         edit_bank.save()       
         
 
         add_account  = Permission(name='Crear',  codename='add_account',  content_type=account)
+        view_account = Permission(name='Ver', codename='view_account', content_type=account)
         edit_account = Permission(name='Editar', codename='edit_account', content_type=account)
         add_account.save()       
+        view_account.save()
         edit_account.save()
         
 
         add_country  = Permission(name='Crear',  codename='add_country',  content_type=country)
+        view_country = Permission(name='Ver', codename='view_country', content_type=country)
         edit_country = Permission(name='Editar', codename='edit_country', content_type=country)
         add_country.save()       
+        view_country.save()
         edit_country.save()
         
 
         add_holiday  = Permission(name='Crear',  codename='add_holiday',  content_type=holiday)
+        view_holiday = Permission(name='Ver', codename='view_holiday', content_type=holiday)
         edit_holiday = Permission(name='Editar', codename='edit_holiday', content_type=holiday)
         add_holiday.save()       
+        view_holiday.save()
         edit_holiday.save()
         
 
         add_operation    = Permission(name='Crear',    codename='add_operation',    content_type=operation)
+        view_operation   = Permission(name='Ver',      codename='view_operation',   content_type=operation)
         edit_operation   = Permission(name='Editar',   codename='edit_operation',   content_type=operation)
         cancel_operation = Permission(name='Cancelar', codename='cancel_operation', content_type=operation)
+        coordinate_operation = Permission(name='Coordinar otras operaciones', codename='coordinate_operation', content_type=operation)
         add_operation.save()       
+        view_operation.save()
         edit_operation.save()
         cancel_operation.save()
+        coordinate_operation.save()
         
         add_transaction = Permission(name='Crear', codename='add_transaction', content_type=transaction)
+        view_transaction = Permission(name='Ver', codename='view_transaction', content_type=transaction)
         add_transaction.save()
+        view_transaction.save()
 
         add_rate  = Permission(name='Crear',  codename='add_rate',  content_type=rate)
+        view_rate = Permission(name='Ver',    codename='view_rate', content_type=rate)
         edit_rate = Permission(name='Editar', codename='edit_rate', content_type=rate)
         add_rate.save()       
+        view_rate.save()
         edit_rate.save()
         
 
         add_group  = Permission(name='Crear',  codename='add_group',  content_type=group)
+        view_group = Permission(name='Ver',    codename='view_group', content_type=group)
         edit_group = Permission(name='Editar', codename='edit_group', content_type=group)
         add_group.save()       
+        view_group.save()
         edit_group.save()
 
         edit_settings = Permission(name='Editar', codename='edit_settings', content_type=group)
         edit_settings.save()
 
         add_exchanger  = Permission(name='Crear',  codename='add_exchanger',  content_type=exchanger)
+        view_exchanger = Permission(name='Ver',    codename='view_exchanger', content_type=exchanger)
         edit_exchanger = Permission(name='Editar', codename='edit_exchanger', content_type=exchanger)
         add_exchanger.save()       
+        view_exchanger.save()
         edit_exchanger.save()
+
+        add_repurchase  = Permission(name='Crear',  codename='add_repurchase',  content_type=repurchase)
+        view_repurchase = Permission(name='Ver',    codename='view_repurchase', content_type=repurchase)
+        edit_repurchase = Permission(name='Editar', codename='edit_repurchase', content_type=repurchase)
+        add_repurchase.save()       
+        view_repurchase.save()
+        edit_repurchase.save()
 
         btc_price_p         = Permission(name='Ver precio BTC', codename='btc_price', content_type=btc_price)
         operations_operator = Permission(name='Ver dashboard de operaciones', codename='operations_operator', content_type=dashboard_operation)

@@ -118,24 +118,49 @@ def dashboard(request):
 
   else:
 
-
+    # The user can see all operation or is admin
     if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
       actualOperations = Operation.objects.filter(is_active=True).order_by('date')
       endedOperations = Operation.objects.filter(is_active=False).order_by('date')
-        
+    
+    # The user can coordinate other users operations
+    elif request.user.has_perm('coordinate_operation'):
+      ids = request.user.coordinatesUsers.all().values_list('id', flat=True) + [request.user.id]
+      actualOperations = Operation.objects.filter(
+                            Q(is_active=True) & 
+                            (Q(id_allie_origin__id__in=ids) | Q(id_allie_target__id__in=ids))
+                         ).order_by('date')
+      endedOperations = Operation.objects.exclude(status="Cancelada"
+                          ).filter( 
+                            Q(is_active=False) &
+                            (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
+                          ).order_by('date')
+    
+    # The user can only see it's operations
     else:
-      actualOperations = Operation.objects.filter(Q(is_active=True) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
-      endedOperations = Operation.objects.exclude(status="Cancelada").filter(Q(is_active=False) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
+      actualOperations = Operation.objects.filter(
+                            Q(is_active=True) &
+                            (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
+                          ).order_by('date')
+      endedOperations = Operation.objects.exclude(status="Cancelada"
+                          ).filter(
+                            Q(is_active=False) &
+                            (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
+                          ).order_by('date')
 
     hasFilter = False
     if request.method == 'POST':
       dateForm = FilterDashboardByDateForm(request.POST)
       if dateForm.is_valid():
         date = dateForm.cleaned_data['date']
-        # endedDate = dateForm.cleaned_data['endedDate']
+
         if date:
-          actualOperations = actualOperations.filter(date__month=date.month, date__year=date.year, date__day__gte=date.day)
-          endedOperations = endedOperations.filter(date__month=date.month, date__year=date.year, date__day__gte=date.day)
+          actualOperations = actualOperations.filter(date__month=date.month,
+                                                     date__year=date.year,
+                                                     date__day__gte=date.day)
+          endedOperations = endedOperations.filter(date__month=date.month,
+                                                   date__year=date.year,
+                                                   date__day__gte=date.day)
           hasFilter = True
         if not date:
           today = timezone.now()
@@ -269,14 +294,12 @@ def createOperation(request):
 
   if request.method == 'POST':
     POST = request.POST.copy()
-    form1 = FromAccountForm(request.POST).setQueryset(queryset1)
+    form1 = FromAccountForm(request.POST)
 
     POST['form-TOTAL_FORMS' ] = 5
     POST['form-INITIAL_FORMS'] = 5
     POST['form-MAX_NUM_FORMS'] = 5
     form2 = ToAccountFormSet(POST)
-    for i in form2:
-      i.setQueryset(queryset2)
 
     if form1.is_valid() and form2.is_valid():
       fromAccount = form1.cleaned_data["account"]
@@ -294,6 +317,7 @@ def createOperation(request):
         else:
           ok = False
           break
+
       fromCurrency = fromAccount.id_account.id_currency
       toCurrency = form1.cleaned_data['currency']
       strInRrat = (str(fromCurrency) + "/" + str(toCurrency)) in rates
@@ -344,7 +368,10 @@ def createOperation(request):
                                   account_allie_origin = account,
                                 )
 
-            operation._save(fromAccount.id_account.id_bank.country.iso_code, toAccounts[0][0].id_account.id_bank.country.iso_code, timezone.now())
+            operation._save( fromAccount.id_account.id_bank.country.iso_code,
+                             toAccounts[0][0].id_account.id_bank.country.iso_code,
+                             timezone.now()
+                            )
 
             # Verificar que en alguno de los paises hay un feriado
             holiday = False
@@ -357,7 +384,9 @@ def createOperation(request):
                 holiday = True
             
             if holiday:
-              messages.error(request, 'Debido a que hoy es un día feriado en alguno de los paises involucrados en la operación, el proceso de la misma puede presentar demoras.', extra_tags="alert-warning")
+              messages.error(request, 'Debido a que hoy es un día feriado en alguno de '
+                                      'los paises involucrados en la operación, el proceso '
+                                      'de la misma puede presentar demoras.', extra_tags="alert-warning")
               
             plain_message = 'Se ha creado una operación para el envio de %s %s desde su cuenta %s'%(fromCurrency, total, fromAccount.id_account) 
             
@@ -367,8 +396,13 @@ def createOperation(request):
                 <h4><b> %s %s </b><h4>
               </div>
               <br>
-              Una vez que haya transferido los fondos desde su cuenta de banco <b>%s</b>, deberá subir una imagen del comprobante de la transferencia con la cual nuestro equipo podra verificar la operación.<br><br>
-              Cuando los fondos hayan caido en las cuentas a las que envió dinero, se le avisara por correo electrónico que la operación fue completada.<br><br>
+              Una vez que haya transferido los fondos desde su cuenta de banco <b>%s</b>,
+              deberá subir una imagen del comprobante de la transferencia con la cual nuestro
+              equipo podra verificar la operación.
+              <br><br> 
+              Cuando los fondos hayan caido en las cuentasa las que envió dinero,
+              se le avisara por correo electrónico que la operación fue completada.
+              <br><br>
 
               <div align="center">
                 <a href="%s">
@@ -398,7 +432,10 @@ def createOperation(request):
 
             return redirect('verifyOperation', _operation_id=operation.code)
           else:
-            messages.error(request, 'No se pudo crear la operación, ya que no hay aliados disponibles en este momento. Por favor, intente mas tarde.', extra_tags="alert-error")  
+            messages.error(request, 'No se pudo crear la operación, ya que no hay '
+                                    'aliados disponibles en este momento. Por favor, intente mas tarde.',
+                                     extra_tags="alert-error"
+                          )  
         else:
           messages.error(request, 'No se pudo crear la operación, ya que no hay aliados disponibles en este momento. Por favor, intente mas tarde.', extra_tags="alert-error")  
       elif not strInRrat:
@@ -758,7 +795,7 @@ def addCurrencies(request):
 
     return render(request, 'admin/addCurrency.html', {'form': form})
 
-@permission_required('admin.edit_currency', login_url='/login/')
+@permission_required('admin.view_currency', login_url='/login/')
 def adminCurrencies(request):
     if (request.method == 'GET'):
         allCurrencies = Currency.objects.all().order_by('code')
@@ -832,7 +869,7 @@ def addExchangeRate(request):
 
     return render(request, 'admin/addExchangeRate.html', {'form': form})
 
-@permission_required('admin.edit_rate', login_url='/login/')
+@permission_required('admin.view_rate', login_url='/login/')
 def adminExchangeRate(request):
     if (request.method == 'GET'):
         allRates = ExchangeRate.objects.all()
@@ -918,7 +955,7 @@ def addBank(request):
     return render(request, 'admin/addBank.html', {'form': form})
 
 
-@permission_required('admin.edit_bank', login_url='/login/')
+@permission_required('admin.view_bank', login_url='/login/')
 def adminBank(request):
     if (request.method == 'GET'):
         tmp_banks = Bank.objects.all()
@@ -1004,7 +1041,7 @@ def addAccount(request):
 
     return render(request, 'admin/addAccount.html', {'form': form})
 
-@permission_required('admin.edit_account', login_url='/login/')
+@permission_required('admin.view_account', login_url='/login/')
 def adminAccount(request):
     if (request.method == 'GET'):
         all_accounts = Account.objects.all()
@@ -1072,7 +1109,7 @@ def addUser(request):
 
     return render(request, 'admin/addUser.html', {'form': form})
 
-@permission_required('admin.edit_user', login_url='/login/')
+@permission_required('admin.view_user', login_url='/login/')
 def adminUser(request):
     if (request.method == 'GET'):
         all_clients = User.objects.filter(groups__name__in=['Cliente'])
@@ -1197,7 +1234,7 @@ def addHoliday(request):
 
     return render(request, 'admin/addHoliday.html', {'form': form})
 
-@permission_required('admin.edit_holiday', login_url='/login/')
+@permission_required('admin.view_holiday', login_url='/login/')
 def adminHoliday(request):
     if (request.method == 'GET'):
         holidays = Holiday.objects.all()
@@ -1267,7 +1304,7 @@ def addCountry(request):
 
     return render(request, 'admin/addCountry.html', {'form': form})
 
-@permission_required('admin.edit_country', login_url='/login/')
+@permission_required('admin.view_country', login_url='/login/')
 def adminCountry(request):
     if (request.method == 'GET'):
         all_countries = Country.objects.all()
@@ -1681,7 +1718,7 @@ def addExchanger(request):
 
     return render(request, 'admin/addExchanger.html', {'form': form})
 
-@permission_required('admin.edit_exchanger', login_url='/login/')
+@permission_required('admin.view_exchanger', login_url='/login/')
 def adminExchanger(request):
     if (request.method=='GET'):
         exchangers = ExchangerAccepts.objects.all()
@@ -1715,6 +1752,8 @@ def editExchanger(request, _ex_id, _currency_id):
 
     return render(request, 'admin/editExchanger.html', {'form': form})
 
+
+@permission_required('admin.add_repurchase', login_url='/login/')
 def addRepurchaseGeneral(request):
     allCurrencies = Currency.objects.all().order_by('code')
     currenciesC = []
@@ -1734,6 +1773,7 @@ def addRepurchaseGeneral(request):
         form = SelectCurrencyForm(currenciesC=currenciesC)
     return render(request, 'admin/addRepurchaseGeneral.html', {'form': form})
 
+@permission_required('admin.add_repurchase', login_url='/login/')
 def addRepurchase(request, _currency_id):
     try:
       origin_currency = Currency.objects.get(code=_currency_id)
@@ -1798,12 +1838,14 @@ def addRepurchase(request, _currency_id):
 
     return render(request, 'admin/addRepurchase.html', {'formOp': formset, 'formRep': formRep})
 
+@permission_required('admin.view_repurchase', login_url='/login/')
 def adminRepurchase(request):
     if (request.method == 'GET'):
       all_repurchases = Repurchase.objects.all()
 
       return render(request, 'admin/adminRepurchase.html', {'repurchases': all_repurchases})
 
+@permission_required('admin.view_repurchase', login_url='/login/')
 def viewRepurchase(request, _repurchase_id):
     try:
         actual_repurchase = Repurchase.objects.get(id=_repurchase_id)
@@ -1827,7 +1869,7 @@ def addGroup(request):
       messages.error(request, 'El grupo fue agregado con éxito', extra_tags="alert-success")
   return render(request, 'admin/addGroup.html', {'form': form})
 
-@permission_required('admin.edit_group', login_url='/login/')
+@permission_required('admin.view_group', login_url='/login/')
 def adminGroup(request):
     if (request.method == 'GET'):
         all_groups = Group.objects.all()
