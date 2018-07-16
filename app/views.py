@@ -121,56 +121,109 @@ def dashboard(request):
       messages.error(request, message, extra_tags="safe alert alert-warning alert-dismissible fade in")
     return redirect(reverse('pendingOperations'))
 
-  else:
-    if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
-      actualOperations = Operation.objects.filter(is_active=True).order_by('date')
-      endedOperations = Operation.objects.filter(is_active=False).order_by('date')
+  if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
+    actualOperations = Operation.objects.filter(is_active=True).order_by('date')
+    endedOperations = Operation.objects.filter(is_active=False).order_by('date')
         
-    else:
-      actualOperations = Operation.objects.filter(Q(is_active=True) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
-      endedOperations = Operation.objects.exclude(status="Cancelada").filter(Q(is_active=False) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
+  else:
+    actualOperations = Operation.objects.filter(Q(is_active=True) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
+    endedOperations = Operation.objects.exclude(status="Cancelada").filter(Q(is_active=False) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
 
-    for i in actualOperations:
-      i.isCanceled()
-    
-    totalOpen = actualOperations.count()
-    totalEnded = endedOperations.count()
+  for i in actualOperations:
+    i.isCanceled()
+  
+  totalOpen = actualOperations.count()
+  totalEnded = endedOperations.count()
 
-    file = open(os.path.join(STATIC_ROOT, "BTCPrice.json"), "r")
-    prices = json.loads(file.read())
-    file.close()
+  file = open(os.path.join(STATIC_ROOT, "BTCPrice.json"), "r")
+  prices = json.loads(file.read())
+  file.close()
 
-    initialForm = [{'operation': op.code, 'selected': False} for op in actualOperations.iterator()]
+  initialForm = [{'operation': op.code, 'selected': False} for op in actualOperations.iterator()]
 
-    if (request.method == 'POST'):
-      POST = request.POST.copy()
+  if (request.method == 'POST'):
+    POST = request.POST.copy()
 
-      auxCount = len(initialForm)
-      POST['form-TOTAL_FORMS' ] = auxCount
-      POST['form-INITIAL_FORMS'] = auxCount
-      POST['form-MAX_NUM_FORMS'] = auxCount
+    auxCount = len(initialForm)
+    POST['form-TOTAL_FORMS' ] = auxCount
+    POST['form-INITIAL_FORMS'] = auxCount
+    POST['form-MAX_NUM_FORMS'] = auxCount
 
-      formChoice = StateChangeBulkForm(request.POST)
-      OperationFormSet = formset_factory(OperationBulkForm, extra=0)
-      formset = OperationFormSet(POST, initial=initialForm)
+    formChoice = StateChangeBulkForm(request.POST)
+    OperationFormSet = formset_factory(OperationBulkForm, extra=0)
+    formset = OperationFormSet(POST)
 
-      if (formChoice.is_valid() and formset.is_valid()):
-        new_status = formChoice.cleaned_data['action']
-        print(formChoice.cleaned_data['action'], formChoice.cleaned_data['crypto_used'], formChoice.cleaned_data['rate'])
-        for form in formset:
+    if (formChoice.is_valid() and formset.is_valid()):
+      new_status = formChoice.cleaned_data['action']
+      print(formChoice.cleaned_data['action'], formChoice.cleaned_data['crypto_used'], formChoice.cleaned_data['rate'])
+      firstCurrency = None
+
+      # Recorro la primera vez para asegurar que todas las monedas sean iguales
+      for form in formset:
           if (form.cleaned_data['selected']):
-            pass
-            #actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
-            #actual_op.status = new_status
-            #actual_op.save()
-        messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
-    else:
+              actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+              if not(firstCurrency):
+                firstCurrency = actual_op.target_currency.code
+              elif ((firstCurrency != actual_op.target_currency.code) and new_status=='Fondos ubicados'):
+                messages.error(request, "Para realizar este cambio de estado debe seleccionar operaciones con la misma moneda destino", extra_tags="alert-warning")
+                formChoice = StateChangeBulkForm()
+                return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations, 'endedO': endedOperations, 
+                                                                      'totalOpen': totalOpen, 'totalEnded': totalEnded, 'form': formset, 'formChoice': formChoice})
+      for form in formset:
+        if (form.cleaned_data['selected']):
+          actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+
+          if actual_op.status != 'Cancelada' and (canChangeStatusAdmin(actual_op, new_status, request.user.is_superuser) or canChangeStatus(actual_op, new_status)):
+            OperationStateChange(operation=actual_op, 
+                                 user=request.user,
+                                 original_status=actual_op.status).save()
+            actual_op.status = new_status
+
+            if (new_status == 'Fondos ubicados'):
+              crypto_used = formChoice.cleaned_data['crypto_used']
+              rate = formChoice.cleaned_data['rate']
+
+              actual_op.crypto_rate = rate
+              actual_op.exchanger = crypto_used.exchanger
+              actual_op.crypto_used = crypto_used.currency
+
+            actual_op.save()
+          else:
+            msg = "No se puede cambiar el status a %s" % status
+            messages.error(request, msg, extra_tags="alert-warning")  
+            return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations, 'endedO': endedOperations, 
+                                                                  'totalOpen': totalOpen, 'totalEnded': totalEnded, 'form': formset, 'formChoice': formChoice})
+
+
+      messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
+      if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
+        actualOperations = Operation.objects.filter(is_active=True).order_by('date')
+        endedOperations = Operation.objects.filter(is_active=False).order_by('date')
+            
+      else:
+        actualOperations = Operation.objects.filter(Q(is_active=True) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
+        endedOperations = Operation.objects.exclude(status="Cancelada").filter(Q(is_active=False) & (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))).order_by('date')
+
+      for i in actualOperations:
+        i.isCanceled()
+      
+      totalOpen = actualOperations.count()
+      totalEnded = endedOperations.count()
+
+      initialForm = [{'operation': op.code, 'selected': False} for op in actualOperations.iterator()]
+
+      formChoice = StateChangeBulkForm()
       OperationFormSet = formset_factory(OperationBulkForm, extra=0)
       formset = OperationFormSet(initial=initialForm)
-      formChoice = StateChangeBulkForm()
 
-    return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations, 'endedO': endedOperations, 
-                                                                    'totalOpen': totalOpen, 'totalEnded': totalEnded, 'form': formset, 'formChoice': formChoice})
+
+  if (request.method == 'GET'):
+    OperationFormSet = formset_factory(OperationBulkForm, extra=0)
+    formset = OperationFormSet(initial=initialForm)
+    formChoice = StateChangeBulkForm()
+
+  return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations, 'endedO': endedOperations, 
+                                                                  'totalOpen': totalOpen, 'totalEnded': totalEnded, 'form': formset, 'formChoice': formChoice})
 
 
 def company(request):

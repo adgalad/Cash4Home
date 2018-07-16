@@ -125,6 +125,14 @@ class ExchangerAdmin(admin.ModelAdmin):
 class ExchangerAcceptsAdmin(admin.ModelAdmin):
     pass
 
+class OperationStateChangeAdmin(admin.ModelAdmin):
+    pass
+
+class CanSendToAdmin(admin.ModelAdmin):
+    pass
+
+class BoxClosureAdmin(admin.ModelAdmin):
+    pass
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Holiday, HolidayAdmin)
@@ -142,3 +150,6 @@ admin.site.register(Comission, ComissionAdmin)
 admin.site.register(Country, CountryAdmin)
 admin.site.register(Exchanger, ExchangerAdmin)
 admin.site.register(ExchangerAccepts, ExchangerAcceptsAdmin)
+admin.site.register(OperationStateChange, OperationStateChangeAdmin)
+admin.site.register(CanSendTo, CanSendToAdmin)
+admin.site.register(BoxClosure, BoxClosureAdmin)
