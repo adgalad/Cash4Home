@@ -246,6 +246,15 @@ $('.bulk_action input#check-all').on('ifUnchecked', function () {
   countChecked()
 })
 
+$('.bulk_action_ended input#check-all-ended').on('ifChecked', function () {
+  checkState = 'all'
+  countCheckedEnded()
+})
+$('.bulk_action_ended input#check-all-ended').on('ifUnchecked', function () {
+  checkState = 'none'
+  countCheckedEnded()
+})
+
 function countChecked () {
   if (checkState === 'all') {
     $(".bulk_action input:checkbox").iCheck('check')
@@ -265,6 +274,28 @@ function countChecked () {
   } else {
     $('.column-title').show()
     $('.bulk-actions').hide()
+  }
+}
+
+function countCheckedEnded () {
+  if (checkState === 'all') {
+    $(".bulk_action_ended input:checkbox").iCheck('check')
+  }
+  if (checkState === 'none') {
+    $(".bulk_action_ended input:checkbox").iCheck('uncheck')
+  }
+
+  var checkCount = $(".bulk_action_ended input:checkbox:checked").length 
+
+  console.log(checkCount);
+
+  if (checkCount) {
+    $('.column-title-ended').hide()
+    $('.bulk-actions-ended').show()
+    $('.action-cnt').html(checkCount + ' Registros seleccionados')
+  } else {
+    $('.column-title-ended').show()
+    $('.bulk-actions-ended').hide()
   }
 }
 
@@ -2495,6 +2526,7 @@ function init_DataTables () {
 
   $('table[id="datatable-responsive"]').DataTable()
   $('table[id="datatable-pending"]').DataTable()
+  $('table[id="datatable-ended"]').DataTable()
   
 
   $('#datatable-scroller').DataTable({
