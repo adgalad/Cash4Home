@@ -153,21 +153,20 @@ def dashboard(request):
                           ).order_by('date')
 
     hasFilter = False
+    print(">>>>>>", request.POST)
     if request.method == 'POST' and 'filter' in request.POST:
-
       dateForm = FilterDashboardByDateForm(request.POST)
-      if dateForm.is_valid():
-        date = dateForm.cleaned_data['date']
-
-        if date:
-          actualOperations = actualOperations.filter(date__month=date.month,
-                                                     date__year=date.year,
-                                                     date__day__gte=date.day)
-          endedOperations = endedOperations.filter(date__month=date.month,
-                                                   date__year=date.year,
-                                                   date__day__gte=date.day)
+      if dateForm.is_valid() and 'dateMY_year' in request.POST and 'dateMY_month' in request.POST:
+        year = int(request.POST['dateMY_year'])
+        month = int(request.POST['dateMY_month'])
+        print(month, year)
+        if year and month:
+          actualOperations = actualOperations.filter(date__month=month,
+                                                     date__year=year)
+          endedOperations = endedOperations.filter(date__month=month,
+                                                   date__year=year)
           hasFilter = True
-        if not date:
+        else:
           today = timezone.now()
           actualOperations = actualOperations.filter(date__month=today.month, date__year=today.year)
           endedOperations = endedOperations.filter(date__month=today.month, date__year=today.year)

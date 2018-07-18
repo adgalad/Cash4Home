@@ -10,6 +10,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.models import Permission, Group
 from django.utils import timezone
 
+
+
 class GlobalSettingsForm(forms.ModelForm):
   
   def __init__(self, *args, **kwargs):
@@ -508,9 +510,8 @@ class SelectCurrencyForm(forms.Form):
 
 
 class FilterDashboardByDateForm(forms.Form):
-    DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
 
-    date = forms.DateField(label = "Filtrar por fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
+    dateMY = forms.CharField(label = "Filtrar por mes", required = False, widget = MonthYearWidget(attrs={"class": "select"}))
     # endedDate = forms.DateField(label = "Filtrar por fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
 
     def __init__(self, *args, **kwargs):
