@@ -38,6 +38,7 @@ urlpatterns = [
 
     #User
     url(r'^dashboard$', views.dashboard, name='dashboard'),
+    url(r'^dashboard/closure$', views.closureTransactionModal, name='closureTransactionModal'),
     url(r'^user/profile$', views.profile, name='profile'),
     url(r'^user/verification$', views.userVerification, name='userVerification'),
 

@@ -106,6 +106,23 @@ def activateEmail(request, token):
 def home(request):
   return render(request, 'index.html')
 
+def checkCurrency(formset, isTarget):
+  firstCurrency = None
+  # Recorro la primera vez para asegurar que todas las monedas sean iguales
+  for form in formset:
+    if (form.cleaned_data['selected']):
+      actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+      if not(firstCurrency):
+        firstCurrency = actual_op.target_currency.code if isTarget else actual_op.origin_currency.code
+      elif (firstCurrency != (actual_op.target_currency.code if isTarget else actual_op.origin_currency.code)):
+        return False
+  return True
+
+@login_required(login_url="/login/")
+def closureTransactionModal(request):
+  formClosure = ClosureTransactionForm()
+  return render(request, 'dashboard/closureTransactionModal.html', {'formClosure':formClosure}) 
+  
 @login_required(login_url="/login/")
 def dashboard(request):
   isAllie = request.user.groups.filter(name='Aliado-1').exists()
@@ -216,24 +233,13 @@ def dashboard(request):
             rate = formChoice.cleaned_data['rate']
 
           # Recorro la primera vez para asegurar que todas las monedas sean iguales
-          for form in formset:
-              if (form.cleaned_data['selected']):
-                  actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
-                  if not(firstCurrency):
-                    firstCurrency = actual_op.target_currency.code
-                  elif ((firstCurrency != actual_op.target_currency.code) and new_status=='Fondos ubicados'):
-                    messages.error(request, "Para realizar este cambio de estado debe seleccionar operaciones con la misma moneda destino", extra_tags="alert-warning")
-                    formChoice = StateChangeBulkForm()
-                    return render(request, 'dashboard/dashboard_operator.html', {
-                        'prices': prices,
-                        'actualO': actualOperations,
-                        'endedO': endedOperations,
-                        'totalOpen': totalOpen,
-                        'totalEnded': totalEnded,
-                        'dateForm': dateForm,
-                        'hasFilter': hasFilter,
-                        'form': formset,
-                        'formChoice': formChoice})
+          if not(checkCurrency(formset,True)):
+            messages.error(request, "Para realizar este cambio de estado debe seleccionar operaciones con la misma moneda destino", extra_tags="alert-warning")
+            formChoice = StateChangeBulkForm()
+            return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations, 'endedO': endedOperations,
+                                                                          'totalOpen': totalOpen, 'totalEnded': totalEnded, 'dateForm': dateForm,
+                                                                          'hasFilter': hasFilter, 'form': formset, 'formChoice': formChoice, 'isAllie': False})
+
           for form in formset:
             if (form.cleaned_data['selected']):
               actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
@@ -273,57 +279,91 @@ def dashboard(request):
           messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
 
       else:
-        POST_END = request.POST.copy()
-
-        auxCount = len(initialFormEnded)
-        POST_END['form-TOTAL_FORMS' ] = auxCount
-        POST_END['form-INITIAL_FORMS'] = auxCount
-        POST_END['form-MAX_NUM_FORMS'] = auxCount
-
-        formset_ended = OperationFormSet(POST_END)
+        
         formClosure = ClosureTransactionForm(request.POST, request.FILES)
 
-        if (formset.is_valid() and formset_ended.is_valid() and formClosure.is_valid()):
+        if (formClosure.is_valid()): #Check the modal
           date = formClosure.cleaned_data['date']
           transfer_image = request.FILES['transfer_image']
           type_account = formClosure.cleaned_data['type_account']
           exchanger_accepts = formClosure.cleaned_data['exchanger']
           exchanger = exchanger_accepts.exchanger
           currency = exchanger_accepts.currency
-          
-          for form in formset:
-            if (form.cleaned_data['selected']):
-              actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
-              origin_account = actual_op.account_allie_origin if type_account=='O' else actual_op.account_allie_target
-              new_transaction = Transaction(date=date,
-                                            operation_type="TC",
-                                            transfer_image=transfer_image,
-                                            id_operation=actual_op,
-                                            origin_account=origin_account,
-                                            to_exchanger=exchanger,
-                                            currency=currency,
-                                            amount=actual_op.fiat_amount
-                                            ).save()
 
-              exchanger_accepts.amount_acc += actual_op.fiat_amount
-              exchanger_accepts.save()
+          POST_END = request.POST.copy()
 
-          for form in formset_ended:
-            if (form.cleaned_data['selected']):
-              actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
-              origin_account = actual_op.account_allie_origin if type_account=='O' else actual_op.account_allie_target
-              new_transaction = Transaction(date=date,
-                                            operation_type="TC",
-                                            transfer_image=transfer_image,
-                                            id_operation=actual_op,
-                                            origin_account=origin_account,
-                                            to_exchanger=exchanger,
-                                            currency=currency,
-                                            amount=actual_op.fiat_amount
-                                            ).save()
+          auxCount = len(initialFormEnded)
+          POST_END['form-TOTAL_FORMS' ] = auxCount
+          POST_END['form-INITIAL_FORMS'] = auxCount
+          POST_END['form-MAX_NUM_FORMS'] = auxCount
 
-              exchanger_accepts.amount_acc += actual_op.fiat_amount
-              exchanger_accepts.save()
+          formset_ended = OperationFormSet(POST_END)
+         
+          if 'pending' in request.POST:
+         
+            if (formset.is_valid()):
+              if not(checkCurrency(formset, False)):
+                messages.error(request, "Para realizar esta transacción debe seleccionar operaciones con la misma moneda origen", extra_tags="alert-warning")
+                return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,'endedO': endedOperations, 
+                                                                              'totalOpen': totalOpen, 'totalEnded': totalEnded, 'dateForm': dateForm,
+                                                                              'hasFilter': hasFilter, 'form': formset, 'formEnded': formset_ended,
+                                                                              'formClosure': formClosure, 'isAllie': True})
+
+              for form in formset:
+                if (form.cleaned_data['selected']):
+                  actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+                  origin_account = actual_op.account_allie_origin if type_account=='O' else actual_op.account_allie_target
+                  existTransaction = actual_op.transactions.filter(operation_type='TC').exists()
+                  if not(existTransaction):
+                    new_transaction = Transaction(date=date,
+                                                  operation_type="TC",
+                                                  transfer_image=transfer_image,
+                                                  id_operation=actual_op,
+                                                  origin_account=origin_account,
+                                                  to_exchanger=exchanger,
+                                                  currency=currency,
+                                                  amount=actual_op.fiat_amount
+                                                  ).save()
+
+                  exchanger_accepts.amount_acc += actual_op.fiat_amount
+                  exchanger_accepts.save()
+                  actual_op.ally_pay_back = True
+                  actual_op.save()
+                  messages.error(request, "Las transacciones fueron creadas exitosamente", extra_tags="alert-success")
+
+          elif 'ended' in request.POST:
+            
+            if (formset_ended.is_valid()):
+              if not(checkCurrency(formset_ended, False)):
+                messages.error(request, "Para realizar esta transacción debe seleccionar operaciones con la misma moneda origen", extra_tags="alert-warning")
+                return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,'endedO': endedOperations, 
+                                                                              'totalOpen': totalOpen, 'totalEnded': totalEnded, 'dateForm': dateForm,
+                                                                              'hasFilter': hasFilter, 'form': formset, 'formEnded': formset_ended,
+                                                                              'formClosure': formClosure, 'isAllie': True})
+
+              for form in formset_ended:
+                if (form.cleaned_data['selected']):
+                  actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+                  origin_account = actual_op.account_allie_origin if type_account=='O' else actual_op.account_allie_target
+                  existTransaction = actual_op.transactions.filter(operation_type='TC').exists()
+                  if not(existTransaction):
+                    new_transaction = Transaction(date=date,
+                                                  operation_type="TC",
+                                                  transfer_image=transfer_image,
+                                                  id_operation=actual_op,
+                                                  origin_account=origin_account,
+                                                  to_exchanger=exchanger,
+                                                  currency=currency,
+                                                  amount=actual_op.fiat_amount
+                                                  ).save()
+
+                  exchanger_accepts.amount_acc += actual_op.fiat_amount
+                  exchanger_accepts.save()
+                  actual_op.ally_pay_back = True
+                  actual_op.save()
+                  messages.error(request, "Las transacciones fueron creadas exitosamente", extra_tags="alert-success")
+        else:
+          print("formClosure.errors")
         
       # The user can see all operation or is admin
       if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
@@ -376,38 +416,23 @@ def dashboard(request):
     else:
       OperationFormSet = formset_factory(OperationBulkForm, extra=0)
       formset = OperationFormSet(initial=initialForm)
-      formset_ended = OperationFormSet(initial=initialFormEnded)
+      if (isAllie):
+        formset_ended = OperationFormSet(initial=initialFormEnded)
       formChoice = StateChangeBulkForm()
-      formClosure = ClosureTransactionForm()
 
     if (isAllie):
-      return render(request, 'dashboard/dashboard_operator.html', {
-                      'prices': prices,
-                      'actualO': actualOperations,
-                      'endedO': endedOperations,
-                      'totalOpen': totalOpen,
-                      'totalEnded': totalEnded,
-                      'dateForm': dateForm,
-                      'hasFilter': hasFilter,
-                      'form': formset,
-                      'formChoice': formChoice,
-                      'formEnded': formset_ended,
-                      'formClosure': formClosure,
-                      'isAllie': True})
+      return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,
+                                                                    'endedO': endedOperations, 'totalOpen': totalOpen,
+                                                                    'totalEnded': totalEnded, 'dateForm': dateForm,
+                                                                    'hasFilter': hasFilter, 'form': formset,
+                                                                    'formChoice': formChoice, 'formEnded': formset_ended,
+                                                                     'isAllie': True})
 
-    return render(request, 'dashboard/dashboard_operator.html', {
-                      'prices': prices,
-                      'actualO': actualOperations,
-                      'endedO': endedOperations,
-                      'totalOpen': totalOpen,
-                      'totalEnded': totalEnded,
-                      'dateForm': dateForm,
-                      'hasFilter': hasFilter,
-                      'form': formset,
-                      'formChoice': formChoice,
-                      'isAllie': False})
-
-
+    return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,
+                                                                  'endedO': endedOperations,'totalOpen': totalOpen,
+                                                                  'totalEnded': totalEnded, 'dateForm': dateForm,
+                                                                  'hasFilter': hasFilter, 'form': formset,
+                                                                  'formChoice': formChoice, 'isAllie': False})
 
 def company(request):
   return render(request, 'company.html')

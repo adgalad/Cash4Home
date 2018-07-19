@@ -237,6 +237,16 @@ $('.bulk_action input').on('ifUnchecked', function () {
   $(this).parent().parent().parent().removeClass('selected')
   countChecked()
 })
+$('.bulk_action_ended input').on('ifChecked', function () {
+  checkState = ''
+  $(this).parent().parent().parent().addClass('selected')
+  countCheckedEnded()
+})
+$('.bulk_action_ended input').on('ifUnchecked', function () {
+  checkState = ''
+  $(this).parent().parent().parent().removeClass('selected')
+  countCheckedEnded()
+})
 $('.bulk_action input#check-all').on('ifChecked', function () {
   checkState = 'all'
   countChecked()
@@ -265,8 +275,6 @@ function countChecked () {
 
   var checkCount = $(".bulk_action input:checkbox:checked").length 
 
-  console.log(checkCount);
-
   if (checkCount) {
     $('.column-title').hide()
     $('.bulk-actions').show()
@@ -285,14 +293,14 @@ function countCheckedEnded () {
     $(".bulk_action_ended input:checkbox").iCheck('uncheck')
   }
 
-  var checkCount = $(".bulk_action_ended input:checkbox:checked").length 
+  var checkCountEnded = $(".bulk_action_ended input:checkbox:checked").length 
 
-  console.log(checkCount);
+  console.log(checkCountEnded);
 
-  if (checkCount) {
+  if (checkCountEnded) {
     $('.column-title-ended').hide()
     $('.bulk-actions-ended').show()
-    $('.action-cnt').html(checkCount + ' Registros seleccionados')
+    $('.action-cnt-ended').html(checkCountEnded + ' Registros seleccionados')
   } else {
     $('.column-title-ended').show()
     $('.bulk-actions-ended').hide()
