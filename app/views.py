@@ -2153,6 +2153,16 @@ def globalSettings(request):
   return render(request, 'admin/editSettings.html', {'form': form})
 
 
+def summaryByAlly(request):
+  if (request.method == 'POST'):
+    pass
+  else:
+    allies = User.objects.filter(groups__name='Aliado-1')
+    closure_table = {}
+    for ally in allies.iterate():
+      totalReceived = Operation.objects.filter(id_allie_origin=)
+
+
 # Me parece q crear permiso no sirve de mucho, ya que hay q tocar codigo o crear un mecanismo dinamico que asigne el permiso a una view.
 
 # def addPermission(request):
