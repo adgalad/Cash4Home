@@ -280,9 +280,14 @@ class Operation(models.Model):
     fiat_amount = models.DecimalField(max_digits=30, decimal_places=15)
     crypto_rate = models.DecimalField(blank=True, null=True, max_digits=30, decimal_places=15)
     crypto_used = models.ForeignKey(Currency, related_name='crypto_used', blank=True, null=True)
-    status_choices = (('Cancelada', 'Cancelada'), ('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), 
-                      ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
-                      ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'))
+    status_choices = (('Cancelada', 'Cancelada'),
+                      ('Falta verificacion', 'Falta verificacion'),
+                      ('Por verificar', 'Por verificar'), 
+                      ('Verificado', 'Verificado'),
+                      ('Fondos por ubicar', 'Fondos por ubicar'),
+                      ('Fondos ubicados', 'Fondos ubicados'),
+                      ('Fondos transferidos', 'Fondos transferidos'),
+                      ('En reclamo', 'En reclamo'))
     status = models.CharField(choices=status_choices, max_length=20)
     exchanger = models.ForeignKey(Exchanger, blank=True, null=True)
     date = models.DateTimeField()
@@ -408,8 +413,9 @@ class OperationStateChange(models.Model):
     date = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User)
     status_choices = (('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
-                      ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'))
+                      ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'), ('En reclamo', 'En reclamo'))
     original_status = models.CharField(choices=status_choices, max_length=20)
+    new_status = models.CharField(choices=status_choices, max_length=20)
     operation = models.ForeignKey(Operation, null=True, related_name='changeHistory')
     
     class Meta:

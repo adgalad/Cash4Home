@@ -103,6 +103,11 @@
         <br><br>
         <div align="center" style="padding-bottom: 4%">
           <a id="closeModal" class="btn btn-primary" data-dismiss="modal" href="{% url 'pendingOperations' %}"> Cerrar </a>
+          {% if operation.status == "Fondos transferidos" %}
+            <a id="claimOperation" class="btn btn-danger" href="{% url 'claimOperation' operation.code %}">
+              No recibí el dinero
+            </a>
+          {% endif %}
         </div>
 
       </div>

@@ -52,6 +52,7 @@ urlpatterns = [
     url(r'^operation/pending$', views.pendingOperations, name='pendingOperations'),
     url(r'^operation/(?P<_operation_id>.+)/details$', views.operationModal, name='operationModal'),
     url(r'^operation/(?P<_operation_id>.+)/cancel$', views.cancelOperation, name='cancelOperation'),
+    url(r'^operation/(?P<_operation_id>.+)/claim$', views.claimOperation, name='claimOperation'),
 
     url(r'^$', views.home, name='home'),
     url(r'^index$', views.home, name='home'),

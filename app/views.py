@@ -82,15 +82,18 @@ def activateEmail(request, token):
   except:
     raise PermissionDenied
 
-
   info = json.loads(decrypted)
+
   if not ('operation' in info and info['operation'] == 'activateUserByEmail'):
     raise PermissionDenied
+
   expiration = int(info['expiration'])
   now = int(timezone.now().strftime('%s'))
+  
   if expiration < now:
     messages.error(request,'Este link expiró. Vuelva a intentarlo enviando un nuevo correo de activación.', extra_tags="alert-warning")
     return redirect(reverse('resendEmailVerification'))
+    
   try:
     user = User.objects.get(id=info['id'], email=info['email'])
   except:
@@ -153,13 +156,11 @@ def dashboard(request):
                           ).order_by('date')
 
     hasFilter = False
-    print(">>>>>>", request.POST)
     if request.method == 'POST' and 'filter' in request.POST:
       dateForm = FilterDashboardByDateForm(request.POST)
       if dateForm.is_valid() and 'dateMY_year' in request.POST and 'dateMY_month' in request.POST:
         year = int(request.POST['dateMY_year'])
         month = int(request.POST['dateMY_month'])
-        print(month, year)
         if year and month:
           actualOperations = actualOperations.filter(date__month=month,
                                                      date__year=year)
@@ -182,6 +183,7 @@ def dashboard(request):
     
     totalOpen = actualOperations.count()
     totalEnded = endedOperations.count()
+    totalClaim = actualOperations.filter(status="En reclamo").count()
 
     file = open(os.path.join(STATIC_ROOT, "BTCPrice.json"), "r")
     prices = json.loads(file.read())
@@ -225,6 +227,7 @@ def dashboard(request):
                       'endedO': endedOperations,
                       'totalOpen': totalOpen,
                       'totalEnded': totalEnded,
+                      'totalClaim': totalClaim,
                       'dateForm': dateForm,
                       'hasFilter': hasFilter,
                       'form': formset,
@@ -236,7 +239,8 @@ def dashboard(request):
             if actual_op.status != 'Cancelada' and (canChangeStatusAdmin(actual_op, new_status, request.user.is_superuser) or canChangeStatus(actual_op, new_status)):
               OperationStateChange(operation=actual_op, 
                                    user=request.user,
-                                   original_status=actual_op.status).save()
+                                   original_status=actual_op.status,
+                                   new_status=new_status).save()
               actual_op.status = new_status
 
               if (new_status == 'Fondos ubicados'):
@@ -256,6 +260,7 @@ def dashboard(request):
                       'endedO': endedOperations,
                       'totalOpen': totalOpen,
                       'totalEnded': totalEnded,
+                      'totalClaim': totalClaim,
                       'dateForm': dateForm,
                       'hasFilter': hasFilter,
                       'form': formset,
@@ -304,6 +309,7 @@ def dashboard(request):
       
       totalOpen = actualOperations.count()
       totalEnded = endedOperations.count()
+      totalClaim = actualOperations.filter(status="En reclamo").count()
 
       initialForm = [{'operation': op.code, 'selected': False} for op in actualOperations.iterator()]
 
@@ -323,6 +329,7 @@ def dashboard(request):
                       'endedO': endedOperations,
                       'totalOpen': totalOpen,
                       'totalEnded': totalEnded,
+                      'totalClaim': totalClaim,
                       'dateForm': dateForm,
                       'hasFilter': hasFilter,
                       'form': formset,
@@ -492,13 +499,14 @@ def createOperation(request):
                 account = None
 
           if account is not None:
+            delta = datetime.timedelta(seconds=GlobalSettings.get().OPERATION_TIMEOUT*60)
 
             operation = Operation(fiat_amount     = total,
                                   crypto_rate     = None,
                                   status          = 'Falta verificacion',
                                   exchanger       = None,
                                   date            = timezone.now(),
-                                  expiration     = timezone.now()+datetime.timedelta(seconds=GlobalSettings.get().OPERATION_TIMEOUT*60), # 90 minutos
+                                  expiration      = timezone.now()+delta,
                                   id_client       = request.user,
                                   id_account      = fromAccount.id_account,
                                   exchange_rate   = rate,
@@ -1500,6 +1508,10 @@ def canChangeStatus(operation, newStatus):
     operation.status = newStatus
     operation.is_active = False
     return True
+  if operation.status == 'En reclamo' and newStatus == 'Fondos transferidos':
+    operation.status = newStatus
+    operation.is_active = False
+    return True
   else:
     return False
 
@@ -1542,6 +1554,23 @@ def sendEmailOperationFinished(operation):
               html_message=html_message,
               recipient_list=[operation.id_client.email]).start()
 
+def claimOperation(request, _operation_id):
+  try:
+    operation = Operation.objects.get(code=_operation_id)
+  except Exception as e: 
+    raise PermissionDenied
+  user = request.user
+
+  if operation.id_client != request.user or operation.status != "Fondos transferidos":
+    raise PermissionDenied
+
+  operation.status = 'En reclamo'
+  operation.is_active = True
+  operation.save()
+  return render(request, 'dashboard/claimConfirmation.html')
+
+
+
 
 def operationDetailDashboard(request, _operation_id):
     try:
@@ -1570,7 +1599,8 @@ def operationDetailDashboard(request, _operation_id):
           operation.save()
           OperationStateChange(operation=operation, 
                                user=request.user,
-                               original_status=original_status).save()
+                               original_status=original_status,
+                               new_status=status).save()
           if status == "Fondos transferidos":
             sendEmailOperationFinished(operation)
           elif status == "Fondos ubicados":

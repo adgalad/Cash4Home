@@ -63,13 +63,15 @@
                         <td>{{ o.id_account }} </td>
                         <td>{{ o.id_account.id_currency}} {{ o.fiat_amount | floatformat:-2 }}</td>
                         <td>{{ o.date }}</td>
-                        {% if o.status == "Falta verificacion" %}
+                        {% if o.status == "Falta verificacion" %} 
                           <td style="color: red;">
                             <i class="fa fa-warning"></i>
                             <a href='{% url "verifyOperation" o.code %}' style="color: red; text-decoration: underline;"> 
                               Falta verificar
                             </a>
                           </td> 
+                        {% elif o.status == "En reclamo" %}
+                          <td style="color: red">{{ o.status }}</td>  
                         {% elif o.status == "Fondos transferidos" %}
                           <td style="color: green">{{ o.status }}</td>  
                         {% else %}
@@ -113,17 +115,23 @@
                         <td>{{ o.id_account }} </td>
                         <td>{{ o.id_account.id_currency}} {{ o.fiat_amount | floatformat:-2 }}</td>
                         <td>{{ o.date }}</td>
-                        {% if o.status == "Falta verificacion" %}
+                        {% if o.status == "Falta verificacion" %} 
                           <td style="color: red;">
                             <i class="fa fa-warning"></i>
                             <a href='{% url "verifyOperation" o.code %}' style="color: red; text-decoration: underline;"> 
                               Falta verificar
                             </a>
                           </td> 
+                          
+                        {% elif o.status == "En reclamo" %}
+                          <td style="color: red">{{ o.status }}</td>  
+
                         {% elif o.status == "Fondos transferidos" %}
                           <td style="color: green">{{ o.status }}</td>  
+                        
                         {% else %}
                           <td style="color: orange">{{ o.status }}</td>  
+                        
                         {% endif %}
                         <td>
                           <a id='{{o.code}}' onclick='return modal("{% url "operationModal" o.code %}")'>

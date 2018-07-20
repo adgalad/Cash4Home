@@ -1,0 +1,32 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %} Confirmación de reclamo {% endblock title %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    
+    <div class="x_panel">
+      <br><br>
+      <div class='row'>
+        <div class="col-xs-6 col-sm-6 col-md-6 col-xs-offset-3" style="margin-bottom: 50px;">
+          <!-- <div class="text-center admin_content"> -->
+          <div class="text-center">
+            <h3>Se ha procesado su reclamo</h3>
+          </div>
+          <br>
+          <h5>
+            
+            <p style="text-align: center;">
+              Nuestro equipo se comunicará con usted a traves de su correo electrónico.
+            </p>
+            <br>
+            <br>
+            <div align="center">
+              <a href="{% url 'dashboard' %}"><button class="btn btn-primary">Regresar</button></a>
+            </div>
+          </h5>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

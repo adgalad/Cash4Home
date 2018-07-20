@@ -132,8 +132,45 @@
                 <span class="count_top green"><i class="fa fa-check"></i> Operaciones finalizadas</span>
                 <div class="count">{{totalEnded}}</div>
               </div>
+              <div class="col-md-3 col-sm-4 col-xs-6 tile_stats_count">
+                <span class="count_top red"><i class="fa fa-warning"></i> Operaciones en reclamo</span>
+                <div class="count">{{totalClaim}}</div>
+              </div>
             </div> 
             <div class="x_panel">
+              
+              <div class="row">             
+                <div class="col-md-4 col-sm-6 col-xs-8"> 
+                  <form  id="filterForm" method="post">
+                    {% csrf_token %}
+                    <input type="text" name="filter" id="filter" style="display:none">
+                    <div class="col-md-4 col-sm-4 col-xs-3"> 
+                      <label>{{ dateForm.dateMY.label }}</label>
+                    </div>
+                    <div class="col-md-8 col-sm-6 col-xs-6"> 
+                      {{ dateForm.dateMY }} 
+                    </div>
+                  </form>
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-3"> 
+                  <button class="btn btn-primary" onclick='document.getElementById("filterForm").submit();'>
+                    <i class="fa fa-search"></i>&nbsp; Filtrar
+                  </button>
+                  {% if hasFilter %}
+                  <br>
+                  <form method="post">
+                      {% csrf_token %}
+                      <input type="text" name="filter" id="filter" style="display:none">
+                      <button class="btn btn-danger" type="submit">
+                        <i class="fa fa-times"></i>&nbsp; Quitar Filtro
+                      </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </div>
+              <br>
+
+
               <div class="x_title">
                 <h2>Lista de operaciones pendientes</h2>
                 <ul class="nav navbar-right panel_toolbox">
@@ -209,7 +246,13 @@
                           <td>{{ op.fiat_amount|mul:op.exchange_rate | currency | safe}} {{op.target_currency.code}}</td>  
                           <td><p>{{ op.date }}</p></td>
                           <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>
-                          <td>{{ op.status }}</td>
+                          <td>
+                            {% if op.status == "En reclamo" %}
+                              <div style="color:red">{{ op.status }}</div>
+                            {% else %}
+                              {{ op.status }}
+                            {% endif %}
+                          </td>
                           <td>
                             <a href="{% url 'operationDetailDashboard' op.code %}">
                               <i class="fa fa-search"></i>
@@ -254,44 +297,14 @@
                         <td>{{ op.fiat_amount|mul:op.exchange_rate | currency | safe}} {{op.target_currency.code}}</td>  
                         <td>{{ op.date }}</td>
                         <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>
-                        <td>{{ op.status }}</td>
+                        <td>
+                          {{ op.status }}
+                        </td>
                         <td><a href="{% url 'operationDetailDashboard' op.code %}"><i class="fa fa-search"></i></a></td>
                       </tr>
                     {% endfor %}
                   </tbody>
                 </table>
-                <hr>
-                {% if hasFilter %}
-                <div class="row"> 
-                  <div class="col-md-2 col-sm-4 col-xs-4"> 
-                    <form method="post">
-                        {% csrf_token %}
-                        <input type="text" name="filter" id="filter" style="display:none">
-                        <button class="btn btn-danger" type="submit">
-                          <i class="fa fa-times"></i>&nbsp; Quitar Filtro
-                        </button>
-                    </form>
-                  </div>
-                </div>
-                {% endif %}
-                <div class="row"> 
-                  <div class="col-md-4 col-sm-6 col-xs-8"> 
-                    <form method="post">
-                      {% csrf_token %}
-                      <input type="text" name="filter" id="filter" style="display:none">
-                      <div class="col-md-3 col-sm-4 col-xs-3"> 
-                        <label>{{ dateForm.dateMY.label }}</label>
-                      </div>
-                      <div class="col-md-7 col-sm-6 col-xs-6"> 
-                        {{ dateForm.dateMY }} 
-                      </div>
-                      <div class="col-md-2 col-sm-2 col-xs-3"> 
-                        <button class="btn btn-primary" type="submit">
-                          <i class="fa fa-search"></i>&nbsp; Filtrar
-                        </button>
-                      </div>
-                    </form>
-                  </div>
 
                 </div>
               </div>

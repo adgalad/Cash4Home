@@ -312,6 +312,13 @@ function SmartWizard (target, options) {
         $('#id_currency').parent().addClass('bad')
         return
       }
+      fromCurrency = fromAccs[parseInt($('#id_account').val())]['currency']
+      toCurrency = $('#id_currency').val()
+      _rate = rate[fromCurrency + '/' + toCurrency]
+      if (!_rate){
+        alert("No se pueden realizar operaciones de " + fromCurrency + " a " + toCurrency + "\nIntente mas tarde.");
+        return
+      }
       loadStep2()
       
     } else if (this.curStepIdx == 1) {
