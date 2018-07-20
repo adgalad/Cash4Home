@@ -32,7 +32,7 @@ from C4H.settings import (MEDIA_ROOT, STATIC_ROOT, EMAIL_HOST_USER,
 
 from app.encryptation import encrypt, decrypt
 import random
-from django.db.models import Q
+from django.db.models import Q, Sum
 from decimal import *
 from django.core.serializers.json import DjangoJSONEncoder
 
@@ -277,6 +277,7 @@ def dashboard(request):
             crypto_used.save()
 
           messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
+          return redirect('dashboard')
 
       else:
         
@@ -364,54 +365,7 @@ def dashboard(request):
                   messages.error(request, "Las transacciones fueron creadas exitosamente", extra_tags="alert-success")
         else:
           print("formClosure.errors")
-        
-      # The user can see all operation or is admin
-      if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
-        actualOperations = Operation.objects.filter(is_active=True).order_by('date')
-        endedOperations = Operation.objects.filter(is_active=False).order_by('date')
-      
-      # The user can coordinate other users operations
-      elif request.user.has_perm('coordinate_operation'):
-        ids = request.user.coordinatesUsers.all().values_list('id', flat=True) + [request.user.id]
-        actualOperations = Operation.objects.filter(
-                              Q(is_active=True) & 
-                              (Q(id_allie_origin__id__in=ids) | Q(id_allie_target__id__in=ids))
-                           ).order_by('date')
-        endedOperations = Operation.objects.exclude(status="Cancelada"
-                            ).filter( 
-                              Q(is_active=False) &
-                              (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
-                            ).order_by('date')
-      
-      # The user can only see it's operations
-      else:
-        actualOperations = Operation.objects.filter(
-                              Q(is_active=True) &
-                              (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
-                            ).order_by('date')
-        endedOperations = Operation.objects.exclude(status="Cancelada"
-                            ).filter(
-                              Q(is_active=False) &
-                              (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
-                            ).order_by('date')
-      
-      dateForm = FilterDashboardByDateForm()
-      today = timezone.now()
-      actualOperations = actualOperations.filter(date__month=today.month, date__year=today.year)
-      endedOperations = endedOperations.filter(date__month=today.month, date__year=today.year)
-      
-      totalOpen = actualOperations.count()
-      totalEnded = endedOperations.count()
-
-      initialForm = [{'operation': op.code, 'selected': False} for op in actualOperations.iterator()]
-      if (isAllie):
-        initialFormEnded = [{'operation': op.code, 'selected': False} for op in endedOperations.iterator()]
-
-      formChoice = StateChangeBulkForm()
-      OperationFormSet = formset_factory(OperationBulkForm, extra=0)
-      formset = OperationFormSet(initial=initialForm)
-      if (isAllie):
-        formset_ended = OperationFormSet(initial=initialFormEnded)
+        return redirect('dashboard')
 
     else:
       OperationFormSet = formset_factory(OperationBulkForm, extra=0)
@@ -2159,8 +2113,24 @@ def summaryByAlly(request):
   else:
     allies = User.objects.filter(groups__name='Aliado-1')
     closure_table = {}
-    for ally in allies.iterate():
-      totalReceived = Operation.objects.filter(id_allie_origin=)
+    general_received = 0
+    general_sent = 0
+    for ally in allies.iterator():
+      op_involved = Operation.objects.filter(id_allie_origin=ally)
+      currencies = op_involved.values_list('origin_currency', flat=True).distinct()
+      for c in currencies:
+        op_currency = op_involved.filter(origin_currency=c)
+        total_received = op_currency.count()
+        aux_received = op_currency.aggregate(total_received=Sum('fiat_amount'))
+        aux = op_currency.filter(ally_pay_back=True)
+        total_sent = aux.count()
+        aux_sent = aux.aggregate(total_sent=Sum('fiat_amount'))
+        closure_table[str(ally.id)+c] = [ally, aux_received['total_received'], total_received, aux_sent['total_sent'], total_sent, c]
+        general_received += total_received
+        general_sent += total_sent
+
+  return render(request, 'admin/summaryByAlly.html', {'closure_table': closure_table, 'general_received': general_received, 'general_sent': general_sent})
+  return
 
 
 # Me parece q crear permiso no sirve de mucho, ya que hay q tocar codigo o crear un mecanismo dinamico que asigne el permiso a una view.

@@ -137,6 +137,9 @@ urlpatterns = [
         views.operationHistory,
         name="operationHistory"
        ),
+
+    url(r'^closure$', views.summaryByAlly, name="summaryByAlly"),
+    
 ] + static(MEDIA_URL, document_root=MEDIA_ROOT)
 
 handler404 = views.handler404

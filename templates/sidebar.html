@@ -64,16 +64,6 @@
       
       <ul class="nav side-menu">
 
-<!--         {% if perms.admin.view_operation or perms.admin.edit_operation or perms.admin.add_operation %}
-        <li><a><i class="fa fa-book"></i> Operaciones <span class="fa fa-chevron-down"></span></a>
-          <ul class="nav child_menu">
-            {% if perms.admin.view_operation or perms.admin.edit_operation %}
-            <li><a href="#">Editar</a></li>
-            {% endif %}
-          </ul>
-        </li>
-        {% endif %} -->
-
         {% if perms.admin.view_rate or perms.admin.edit_rate or perms.admin.add_rate %}
         <li><a><i class="fa fa-percent"></i> Tasas <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
@@ -213,6 +203,16 @@
           </li>
         </ul>
         {% endif %}
+
+        
+        <ul class="nav side-menu">
+          <li>
+            <a href="{% url 'summaryByAlly' %}">
+              <i class="fa fa-calculator"></i> Cierre de operaciones 
+            </a>
+          </li>
+        </ul>
+      
 
       </ul>
       {% endif %}
