@@ -140,30 +140,30 @@
             <div class="x_panel">
               
               <div class="row">             
-                <div class="col-md-4 col-sm-6 col-xs-8"> 
+                <div class="col-md-4 col-sm-8 col-xs-8"> 
                   <form  id="filterForm" method="post">
                     {% csrf_token %}
                     <input type="text" name="filter" id="filter" style="display:none">
-                    <div class="col-md-4 col-sm-4 col-xs-3"> 
+                    <div class="col-md-4 col-sm-4 col-xs-4"> 
                       <label>{{ dateForm.dateMY.label }}</label>
                     </div>
-                    <div class="col-md-8 col-sm-6 col-xs-6"> 
+                    <div class="col-md-8 col-sm-8 col-xs-8"> 
                       {{ dateForm.dateMY }} 
                     </div>
                   </form>
                 </div>
-                <div class="col-md-2 col-sm-2 col-xs-3"> 
+                <div class="col-md-6 col-sm-4 col-xs-4"> 
                   <button class="btn btn-primary" onclick='document.getElementById("filterForm").submit();'>
                     <i class="fa fa-search"></i>&nbsp; Filtrar
                   </button>
+                  <button class="btn btn-danger" type="submit">
+                        <i class="fa fa-times"></i>&nbsp; Quitar Filtro
+                      </button>
                   {% if hasFilter %}
-                  <br>
                   <form method="post">
                       {% csrf_token %}
                       <input type="text" name="filter" id="filter" style="display:none">
-                      <button class="btn btn-danger" type="submit">
-                        <i class="fa fa-times"></i>&nbsp; Quitar Filtro
-                      </button>
+                      
                   </form>
                   {% endif %}
                 </div>

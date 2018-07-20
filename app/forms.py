@@ -509,7 +509,7 @@ class SelectCurrencyForm(forms.Form):
 
 class FilterDashboardByDateForm(forms.Form):
 
-    dateMY = forms.CharField(label = "Filtrar por mes", required = False, widget = MonthYearWidget(attrs={"class": "select"}))
+    dateMY = forms.CharField(label = "Filtrar por mes", required = False, widget = MonthYearWidget(attrs={"class": "select", "style":"width:50%; display:inline;"}))
     # endedDate = forms.DateField(label = "Filtrar por fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
 
     def __init__(self, *args, **kwargs):
