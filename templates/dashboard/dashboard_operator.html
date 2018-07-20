@@ -181,8 +181,10 @@
               </div>
               <div class="x_content">
                 
-                  <form class="form-horizontal form-label-left" id="form" name="form" method="post">
+                  <form class="form-horizontal form-label-left" id="form" name="form" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
+                    <div id="modalPending" class="modal fade" role="dialog"></div>
+                    <input type="text" name="pending" id="pending" style="display:none">
                     <div id="stateModal" class="modal fade" role="dialog">
                       <div class="modal-dialog modal-lg openModal" id="modal" style="max-width: 40%; min-width: 300px">
 
@@ -215,6 +217,7 @@
                         </div>
                       </div>
                     </div>
+                    
                     <table class="table table-striped table-bordered bulk_action" id="datatable-pending" cellspacing="0" width="100%">
                       <thead>
                         <tr class="headings">
@@ -229,11 +232,20 @@
                           <th class="column-title">Aliados</th>
                           <th class="column-title">Estado</th>
                           <th class="column-title"></th>
-                          <th class="bulk-actions" colspan="10">
-                            <a class="antoo" style="font-weight:500;">( <span class="action-cnt"> </span> ) Cambiar estado a {{ formChoice.action }}
-                              <button class="btn btn-primary submit" type="submit" id="button1">Aplicar</button>
-                              <button class="btn btn-primary submit"  type="button" id="button2" style="display: none;" data-toggle="modal" data-target="#stateModal">Aplicar</button></a>
-                          </th>
+                          {% if isAllie %}
+                            <th class="column-title">Devuelto</th>
+                            <th class="bulk-actions" colspan="11">
+                              <a class="antoo" style="font-weight:500;">( <span class="action-cnt"> </span> )
+                                <button class="btn btn-primary submit" type="button" id="buttonClosure" onclick='return modal("{% url "closureTransactionModal" %}")'>Realizar envío</button>
+                              </a>
+                            </th>
+                          {% else %}
+                            <th class="bulk-actions" colspan="10">
+                              <a class="antoo" style="font-weight:500;">( <span class="action-cnt"> </span> ) Cambiar estado a {{ formChoice.action }}
+                                <button class="btn btn-primary submit" type="submit" id="button1">Aplicar</button>
+                                <button class="btn btn-primary submit"  type="button" id="button2" style="display: none;" data-toggle="modal" data-target="#stateModal">Aplicar</button></a>
+                            </th>
+                          {% endif %}
                         </tr>
                       </thead>
                       <tbody>
@@ -261,6 +273,15 @@
                               <i class="fa fa-edit"></i>
                             </a>
                           </td>
+                          {% if isAllie %}
+                            <td>
+                              {% if op.ally_pay_back %}
+                                <i class="fa fa-check green"></i>
+                              {% else %}
+                                  <i class="fa fa-times red"></i>
+                              {% endif %}
+                            </td>
+                          {% endif %}
 
                         </tr>
                       {% endfor %}
@@ -275,38 +296,77 @@
                 <div class="clearfix"></div>
               </div>
               <div class="x_content">
-                <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive" cellspacing="0" width="100%">
-                  <thead>
-                    <tr>
-                      <th>Código</th>
-                      <th>Cliente</th>
-                      <th>Cant. recibida</th>
-                      <th>Cant. enviada</th>
-                      <th>Fecha Creación</th>
-                      <th>Aliados</th>
-                      <th>Estado</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for op in endedO %}
+                <form class="form-horizontal form-label-left" id="form" name="form" method="post" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <div id="modalEnded" class="modal fade" role="dialog"></div>
+                  <input type="text" name="ended" id="ended" style="display:none">
+                  
+                  <table id="datatable-ended" class="table table-striped table-bordered bulk_action_ended" cellspacing="0" width="100%">
+                    <thead>
                       <tr>
-                        <td>{{ op.code }}</td>
-                        <td>{{ op.id_client.get_full_name }}</td>
-                        <td>{{ op.fiat_amount | currency }} {{ op.origin_currency.code }}</td>
-                        <td>{{ op.fiat_amount|mul:op.exchange_rate | currency | safe}} {{op.target_currency.code}}</td>  
-                        <td>{{ op.date }}</td>
-                        <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>
-                        <td>
-                          {{ op.status }}
-                        </td>
-                        <td><a href="{% url 'operationDetailDashboard' op.code %}"><i class="fa fa-search"></i></a></td>
+                        {% if isAllie %}
+                          <th><input type="checkbox" id="check-all-ended" class="flat"></th>
+                        {% endif %}
+                        <th class="column-title-ended">Código</th>
+                        <th class="column-title-ended">Cliente</th>
+                        <th class="column-title-ended">Cant. recibida</th>
+                        <th class="column-title-ended">Cant. enviada</th>
+                        <th class="column-title-ended">Fecha Creación</th>
+                        <th class="column-title-ended">Aliados</th>
+                        <th class="column-title-ended">Estado</th>
+                        <th class="column-title-ended"></th>
+                        {% if isAllie %}
+                          <th class="column-title-ended">Devuelto</th>
+                          <th class="bulk-actions-ended" colspan="12" style="display: none;">
+                            <a class="antoo" style="font-weight:500;">( <span class="action-cnt-ended"> </span> )
+                              <button class="btn btn-primary submit" type="button" id="buttonClosure" onclick='return modalEnded("{% url "closureTransactionModal" %}")'>Realizar envío</button>
+                            </a>
+                          </th>
+                        {% endif %}
                       </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-
-                </div>
+                    </thead>
+                    <tbody>
+                      {% if isAllie %}
+                        {% for f, op in formEnded|zip:endedO %}
+                          <tr>
+                            <td class="a-center ">{{ f.selected }} <input type="text" name="{{f.operation.html_name}}" id="{{f.operation.auto_id}}" value="{{f.operation.value}}" style="display:none"></td>
+                            <td>{{ op.code }}</td>
+                            <td>{{ op.id_client.get_full_name }}</td>
+                            <td>{{ op.fiat_amount | currency }} {{ op.origin_currency.code }}</td>
+                            <td>{{ op.fiat_amount|mul:op.exchange_rate | currency | safe}} {{op.target_currency.code}}</td>  
+                            <td>{{ op.date }}</td>
+                            <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>
+                            <td>{{ op.status }}</td>
+                            <td><a href="{% url 'operationDetailDashboard' op.code %}"><i class="fa fa-search"></i></a></td>
+                            {% if isAllie %}
+                            <td>
+                              {% if op.ally_pay_back %}
+                                <i class="fa fa-check green"></i>
+                              {% else %}
+                                  <i class="fa fa-times red"></i>
+                              {% endif %}
+                            </td>
+                          {% endif %}
+                          </tr>
+                        {% endfor %}
+                      {% else %}
+                        {% for op in endedO %}
+                          <tr>
+                            <td>{{ op.code }}</td>
+                            <td>{{ op.id_client.get_full_name }}</td>
+                            <td>{{ op.fiat_amount | currency }} {{ op.origin_currency.code }}</td>
+                            <td>{{ op.fiat_amount|mul:op.exchange_rate | currency | safe}} {{op.target_currency.code}}</td>  
+                            <td>{{ op.date }}</td>
+                            <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>
+                            <td>{{ op.status }}</td>
+                            <td><a href="{% url 'operationDetailDashboard' op.code %}"><i class="fa fa-search"></i></a></td>
+                          </tr>
+                        {% endfor %}
+                      {% endif %}
+                    </tbody>
+                  </table>
+                </form>
+                <hr>
               </div>
             </div>    
             
@@ -357,6 +417,22 @@
         document.getElementById("id_rate").required = false;
       }
     });
+  </script>
+  <script type="text/javascript">
+    function modal (url) {
+      $('#modalPending').load(url, function () {
+        $(this).modal('show')
+        // $('#closeModal').onclick(function(){ return false })
+      })
+      return false
+    }
+    function modalEnded (url) {
+      $('#modalEnded').load(url, function () {
+        $(this).modal('show')
+        // $('#closeModal').onclick(function(){ return false })
+      })
+      return false
+    }
   </script>
 {% endblock javascripts %}
 

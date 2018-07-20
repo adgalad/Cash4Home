@@ -32,7 +32,7 @@ from C4H.settings import (MEDIA_ROOT, STATIC_ROOT, EMAIL_HOST_USER,
 
 from app.encryptation import encrypt, decrypt
 import random
-from django.db.models import Q
+from django.db.models import Q, Sum
 from decimal import *
 from django.core.serializers.json import DjangoJSONEncoder
 
@@ -109,8 +109,26 @@ def activateEmail(request, token):
 def home(request):
   return render(request, 'index.html')
 
+def checkCurrency(formset, isTarget):
+  firstCurrency = None
+  # Recorro la primera vez para asegurar que todas las monedas sean iguales
+  for form in formset:
+    if (form.cleaned_data['selected']):
+      actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+      if not(firstCurrency):
+        firstCurrency = actual_op.target_currency.code if isTarget else actual_op.origin_currency.code
+      elif (firstCurrency != (actual_op.target_currency.code if isTarget else actual_op.origin_currency.code)):
+        return False
+  return True
+
+@login_required(login_url="/login/")
+def closureTransactionModal(request):
+  formClosure = ClosureTransactionForm()
+  return render(request, 'dashboard/closureTransactionModal.html', {'formClosure':formClosure}) 
+  
 @login_required(login_url="/login/")
 def dashboard(request):
+  isAllie = request.user.groups.filter(name='Aliado-1').exists()
   if not (request.user.has_perm('dashboard.btc_price') or request.user.has_perm('dashboard.operations_operator')):    
     if request.user.canVerify:
       message = ''' <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
@@ -156,6 +174,7 @@ def dashboard(request):
                           ).order_by('date')
 
     hasFilter = False
+
     if request.method == 'POST' and 'filter' in request.POST:
       dateForm = FilterDashboardByDateForm(request.POST)
       if dateForm.is_valid() and 'dateMY_year' in request.POST and 'dateMY_month' in request.POST:
@@ -190,6 +209,8 @@ def dashboard(request):
     file.close()
 
     initialForm = [{'operation': op.code, 'selected': False} for op in actualOperations.iterator()]
+    if (isAllie):
+      initialFormEnded = [{'operation': op.code, 'selected': False} for op in endedOperations.iterator()]
 
     if request.method == 'POST' and not 'filter' in request.POST:
       POST = request.POST.copy()
@@ -199,143 +220,294 @@ def dashboard(request):
       POST['form-INITIAL_FORMS'] = auxCount
       POST['form-MAX_NUM_FORMS'] = auxCount
 
-      formChoice = StateChangeBulkForm(request.POST)
       OperationFormSet = formset_factory(OperationBulkForm, extra=0)
       formset = OperationFormSet(POST)
 
-      if (formChoice.is_valid() and formset.is_valid()):
-        new_status = formChoice.cleaned_data['action']
-        firstCurrency = None
-        totalAmount = Decimal(0)
+      if not(isAllie):
+        formChoice = StateChangeBulkForm(request.POST)
 
-        if (new_status == 'Fondos ubicados'):
-          crypto_used = formChoice.cleaned_data['crypto_used']
-          rate = formChoice.cleaned_data['rate']
+        if (formChoice.is_valid() and formset.is_valid()):
+          new_status = formChoice.cleaned_data['action']
+          firstCurrency = None
+          totalAmount = Decimal(0)
 
-        # Recorro la primera vez para asegurar que todas las monedas sean iguales
-        for form in formset:
+# <<<<<<< HEAD
+#         # Recorro la primera vez para asegurar que todas las monedas sean iguales
+#         for form in formset:
+#             if (form.cleaned_data['selected']):
+#                 actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+#                 if not(firstCurrency):
+#                   firstCurrency = actual_op.target_currency.code
+#                 elif ((firstCurrency != actual_op.target_currency.code) and new_status=='Fondos ubicados'):
+#                   messages.error(request, "Para realizar este cambio de estado debe seleccionar operaciones con la misma moneda destino", extra_tags="alert-warning")
+#                   formChoice = StateChangeBulkForm()
+#                   return render(request, 'dashboard/dashboard_operator.html', {
+#                       'prices': prices,
+#                       'actualO': actualOperations,
+#                       'endedO': endedOperations,
+#                       'totalOpen': totalOpen,
+#                       'totalEnded': totalEnded,
+#                       'totalClaim': totalClaim,
+#                       'dateForm': dateForm,
+#                       'hasFilter': hasFilter,
+#                       'form': formset,
+#                       'formChoice': formChoice})
+#         for form in formset:
+#           if (form.cleaned_data['selected']):
+#             actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+
+#             if actual_op.status != 'Cancelada' and (canChangeStatusAdmin(actual_op, new_status, request.user.is_superuser) or canChangeStatus(actual_op, new_status)):
+#               OperationStateChange(operation=actual_op, 
+#                                    user=request.user,
+#                                    original_status=actual_op.status,
+#                                    new_status=new_status).save()
+#               actual_op.status = new_status
+
+#               if (new_status == 'Fondos ubicados'):
+#                 actual_op.crypto_rate = rate
+#                 actual_op.exchanger = crypto_used.exchanger
+#                 actual_op.crypto_used = crypto_used.currency
+
+#                 totalAmount += actual_op.fiat_amount*actual_op.exchange_rate
+
+#               actual_op.save()
+#             else:
+#               msg = "No se puede cambiar el status a %s" % status
+#               messages.error(request, msg, extra_tags="alert-warning")  
+#               return render(request, 'dashboard/dashboard_operator.html', {
+#                       'prices': prices,
+#                       'actualO': actualOperations,
+#                       'endedO': endedOperations,
+#                       'totalOpen': totalOpen,
+#                       'totalEnded': totalEnded,
+#                       'totalClaim': totalClaim,
+#                       'dateForm': dateForm,
+#                       'hasFilter': hasFilter,
+#                       'form': formset,
+#                       'formChoice': formChoice})
+
+#         if (new_status == 'Fondos ubicados'):
+#           crypto_used.amount_acc -= totalAmount/rate
+#           crypto_used.save()
+
+
+#       messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
+#       # The user can see all operation or is admin
+#       if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
+#         actualOperations = Operation.objects.filter(is_active=True).order_by('date')
+#         endedOperations = Operation.objects.filter(is_active=False).order_by('date')
+      
+#       # The user can coordinate other users operations
+#       elif request.user.has_perm('coordinate_operation'):
+#         ids = request.user.coordinatesUsers.all().values_list('id', flat=True) + [request.user.id]
+#         actualOperations = Operation.objects.filter(
+#                               Q(is_active=True) & 
+#                               (Q(id_allie_origin__id__in=ids) | Q(id_allie_target__id__in=ids))
+#                            ).order_by('date')
+#         endedOperations = Operation.objects.exclude(status="Cancelada"
+#                             ).filter( 
+#                               Q(is_active=False) &
+#                               (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
+#                             ).order_by('date')
+      
+#       # The user can only see it's operations
+#       else:
+#         actualOperations = Operation.objects.filter(
+#                               Q(is_active=True) &
+#                               (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
+#                             ).order_by('date')
+#         endedOperations = Operation.objects.exclude(status="Cancelada"
+#                             ).filter(
+#                               Q(is_active=False) &
+#                               (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
+#                             ).order_by('date')
+      
+#       dateForm = FilterDashboardByDateForm()
+#       today = timezone.now()
+#       actualOperations = actualOperations.filter(date__month=today.month, date__year=today.year)
+#       endedOperations = endedOperations.filter(date__month=today.month, date__year=today.year)
+      
+#       totalOpen = actualOperations.count()
+#       totalEnded = endedOperations.count()
+#       totalClaim = actualOperations.filter(status="En reclamo").count()
+# =======
+          if (new_status == 'Fondos ubicados'):
+            crypto_used = formChoice.cleaned_data['crypto_used']
+            rate = formChoice.cleaned_data['rate']
+# >>>>>>> vicky
+
+          # Recorro la primera vez para asegurar que todas las monedas sean iguales
+          if not(checkCurrency(formset,True)):
+            messages.error(request, "Para realizar este cambio de estado debe seleccionar operaciones con la misma moneda destino", extra_tags="alert-warning")
+            formChoice = StateChangeBulkForm()
+            return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations, 'endedO': endedOperations,
+                                                                          'totalOpen': totalOpen, 'totalEnded': totalEnded, 'dateForm': dateForm,
+                                                                          'hasFilter': hasFilter, 'form': formset, 'formChoice': formChoice, 'isAllie': False})
+
+          for form in formset:
             if (form.cleaned_data['selected']):
-                actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
-                if not(firstCurrency):
-                  firstCurrency = actual_op.target_currency.code
-                elif ((firstCurrency != actual_op.target_currency.code) and new_status=='Fondos ubicados'):
-                  messages.error(request, "Para realizar este cambio de estado debe seleccionar operaciones con la misma moneda destino", extra_tags="alert-warning")
-                  formChoice = StateChangeBulkForm()
-                  return render(request, 'dashboard/dashboard_operator.html', {
-                      'prices': prices,
-                      'actualO': actualOperations,
-                      'endedO': endedOperations,
-                      'totalOpen': totalOpen,
-                      'totalEnded': totalEnded,
-                      'totalClaim': totalClaim,
-                      'dateForm': dateForm,
-                      'hasFilter': hasFilter,
-                      'form': formset,
-                      'formChoice': formChoice})
-        for form in formset:
-          if (form.cleaned_data['selected']):
-            actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+              actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
 
-            if actual_op.status != 'Cancelada' and (canChangeStatusAdmin(actual_op, new_status, request.user.is_superuser) or canChangeStatus(actual_op, new_status)):
-              OperationStateChange(operation=actual_op, 
-                                   user=request.user,
-                                   original_status=actual_op.status,
-                                   new_status=new_status).save()
-              actual_op.status = new_status
+              if actual_op.status != 'Cancelada' and (canChangeStatusAdmin(actual_op, new_status, request.user.is_superuser) or canChangeStatus(actual_op, new_status)):
+                OperationStateChange(operation=actual_op, 
+                                     user=request.user,
+                                     original_status=actual_op.status).save()
+                actual_op.status = new_status
 
-              if (new_status == 'Fondos ubicados'):
-                actual_op.crypto_rate = rate
-                actual_op.exchanger = crypto_used.exchanger
-                actual_op.crypto_used = crypto_used.currency
+                if (new_status == 'Fondos ubicados'):
+                  actual_op.crypto_rate = rate
+                  actual_op.exchanger = crypto_used.exchanger
+                  actual_op.crypto_used = crypto_used.currency
 
-                totalAmount += actual_op.fiat_amount*actual_op.exchange_rate
+                  totalAmount += actual_op.fiat_amount*actual_op.exchange_rate
 
-              actual_op.save()
-            else:
-              msg = "No se puede cambiar el status a %s" % status
-              messages.error(request, msg, extra_tags="alert-warning")  
-              return render(request, 'dashboard/dashboard_operator.html', {
-                      'prices': prices,
-                      'actualO': actualOperations,
-                      'endedO': endedOperations,
-                      'totalOpen': totalOpen,
-                      'totalEnded': totalEnded,
-                      'totalClaim': totalClaim,
-                      'dateForm': dateForm,
-                      'hasFilter': hasFilter,
-                      'form': formset,
-                      'formChoice': formChoice})
+                actual_op.save()
+              else:
+                msg = "No se puede cambiar el status a %s" % status
+                messages.error(request, msg, extra_tags="alert-warning")  
+                return render(request, 'dashboard/dashboard_operator.html', {
+                        'prices': prices,
+                        'actualO': actualOperations,
+                        'endedO': endedOperations,
+                        'totalOpen': totalOpen,
+                        'totalEnded': totalEnded,
+                        'dateForm': dateForm,
+                        'hasFilter': hasFilter,
+                        'form': formset,
+                        'isAllie': False,
+                        'totalClaim': totalClaim,
+                        'formChoice': formChoice})
 
-        if (new_status == 'Fondos ubicados'):
-          crypto_used.amount_acc -= totalAmount/rate
-          crypto_used.save()
+          if (new_status == 'Fondos ubicados'):
+            crypto_used.amount_acc -= totalAmount/rate
+            crypto_used.save()
 
+          messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
+          return redirect('dashboard')
 
-      messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
-      # The user can see all operation or is admin
-      if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
-        actualOperations = Operation.objects.filter(is_active=True).order_by('date')
-        endedOperations = Operation.objects.filter(is_active=False).order_by('date')
-      
-      # The user can coordinate other users operations
-      elif request.user.has_perm('coordinate_operation'):
-        ids = request.user.coordinatesUsers.all().values_list('id', flat=True) + [request.user.id]
-        actualOperations = Operation.objects.filter(
-                              Q(is_active=True) & 
-                              (Q(id_allie_origin__id__in=ids) | Q(id_allie_target__id__in=ids))
-                           ).order_by('date')
-        endedOperations = Operation.objects.exclude(status="Cancelada"
-                            ).filter( 
-                              Q(is_active=False) &
-                              (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
-                            ).order_by('date')
-      
-      # The user can only see it's operations
       else:
-        actualOperations = Operation.objects.filter(
-                              Q(is_active=True) &
-                              (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
-                            ).order_by('date')
-        endedOperations = Operation.objects.exclude(status="Cancelada"
-                            ).filter(
-                              Q(is_active=False) &
-                              (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
-                            ).order_by('date')
-      
-      dateForm = FilterDashboardByDateForm()
-      today = timezone.now()
-      actualOperations = actualOperations.filter(date__month=today.month, date__year=today.year)
-      endedOperations = endedOperations.filter(date__month=today.month, date__year=today.year)
-      
-      totalOpen = actualOperations.count()
-      totalEnded = endedOperations.count()
-      totalClaim = actualOperations.filter(status="En reclamo").count()
+        
+        formClosure = ClosureTransactionForm(request.POST, request.FILES)
 
-      initialForm = [{'operation': op.code, 'selected': False} for op in actualOperations.iterator()]
+        if (formClosure.is_valid()): #Check the modal
+          date = formClosure.cleaned_data['date']
+          transfer_image = request.FILES['transfer_image']
+          type_account = formClosure.cleaned_data['type_account']
+          exchanger_accepts = formClosure.cleaned_data['exchanger']
+          exchanger = exchanger_accepts.exchanger
+          currency = exchanger_accepts.currency
 
-      formChoice = StateChangeBulkForm()
-      OperationFormSet = formset_factory(OperationBulkForm, extra=0)
-      formset = OperationFormSet(initial=initialForm)
+          POST_END = request.POST.copy()
 
+          auxCount = len(initialFormEnded)
+          POST_END['form-TOTAL_FORMS' ] = auxCount
+          POST_END['form-INITIAL_FORMS'] = auxCount
+          POST_END['form-MAX_NUM_FORMS'] = auxCount
+
+          formset_ended = OperationFormSet(POST_END)
+         
+          if 'pending' in request.POST:
+         
+            if (formset.is_valid()):
+              if not(checkCurrency(formset, False)):
+                messages.error(request, "Para realizar esta transacción debe seleccionar operaciones con la misma moneda origen", extra_tags="alert-warning")
+                return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,'endedO': endedOperations, 
+                                                                              'totalOpen': totalOpen, 'totalEnded': totalEnded, 'dateForm': dateForm,
+                                                                              'hasFilter': hasFilter, 'form': formset, 'formEnded': formset_ended,
+                                                                              'formClosure': formClosure, 'isAllie': True, 'totalClaim': totalClaim})
+
+              for form in formset:
+                if (form.cleaned_data['selected']):
+                  actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+                  origin_account = actual_op.account_allie_origin if type_account=='O' else actual_op.account_allie_target
+                  existTransaction = actual_op.transactions.filter(operation_type='TC').exists()
+                  if not(existTransaction):
+                    new_transaction = Transaction(date=date,
+                                                  operation_type="TC",
+                                                  transfer_image=transfer_image,
+                                                  id_operation=actual_op,
+                                                  origin_account=origin_account,
+                                                  to_exchanger=exchanger,
+                                                  currency=currency,
+                                                  amount=actual_op.fiat_amount
+                                                  ).save()
+
+                  exchanger_accepts.amount_acc += actual_op.fiat_amount
+                  exchanger_accepts.save()
+                  actual_op.ally_pay_back = True
+                  actual_op.save()
+                  messages.error(request, "Las transacciones fueron creadas exitosamente", extra_tags="alert-success")
+
+          elif 'ended' in request.POST:
+            
+            if (formset_ended.is_valid()):
+              if not(checkCurrency(formset_ended, False)):
+                messages.error(request, "Para realizar esta transacción debe seleccionar operaciones con la misma moneda origen", extra_tags="alert-warning")
+                return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,'endedO': endedOperations, 
+                                                                              'totalOpen': totalOpen, 'totalEnded': totalEnded, 'dateForm': dateForm,
+                                                                              'hasFilter': hasFilter, 'form': formset, 'formEnded': formset_ended,
+                                                                              'formClosure': formClosure, 'isAllie': True, 'totalClaim': totalClaim})
+
+              for form in formset_ended:
+                if (form.cleaned_data['selected']):
+                  actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+                  origin_account = actual_op.account_allie_origin if type_account=='O' else actual_op.account_allie_target
+                  existTransaction = actual_op.transactions.filter(operation_type='TC').exists()
+                  if not(existTransaction):
+                    new_transaction = Transaction(date=date,
+                                                  operation_type="TC",
+                                                  transfer_image=transfer_image,
+                                                  id_operation=actual_op,
+                                                  origin_account=origin_account,
+                                                  to_exchanger=exchanger,
+                                                  currency=currency,
+                                                  amount=actual_op.fiat_amount
+                                                  ).save()
+
+                  exchanger_accepts.amount_acc += actual_op.fiat_amount
+                  exchanger_accepts.save()
+                  actual_op.ally_pay_back = True
+                  actual_op.save()
+                  messages.error(request, "Las transacciones fueron creadas exitosamente", extra_tags="alert-success")
+        else:
+          print("formClosure.errors")
+        return redirect('dashboard')
 
     else:
       OperationFormSet = formset_factory(OperationBulkForm, extra=0)
       formset = OperationFormSet(initial=initialForm)
+      if (isAllie):
+        formset_ended = OperationFormSet(initial=initialFormEnded)
       formChoice = StateChangeBulkForm()
 
-    return render(request, 'dashboard/dashboard_operator.html', {
-                      'prices': prices,
-                      'actualO': actualOperations,
-                      'endedO': endedOperations,
-                      'totalOpen': totalOpen,
-                      'totalEnded': totalEnded,
-                      'totalClaim': totalClaim,
-                      'dateForm': dateForm,
-                      'hasFilter': hasFilter,
-                      'form': formset,
-                      'formChoice': formChoice})
+# <<<<<<< HEAD
+#     return render(request, 'dashboard/dashboard_operator.html', {
+#                       'prices': prices,
+#                       'actualO': actualOperations,
+#                       'endedO': endedOperations,
+#                       'totalOpen': totalOpen,
+#                       'totalEnded': totalEnded,
+#                       'totalClaim': totalClaim,
+#                       'dateForm': dateForm,
+#                       'hasFilter': hasFilter,
+#                       'form': formset,
+#                       'formChoice': formChoice})
 
+# =======
+    if (isAllie):
+      return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,
+                                                                    'endedO': endedOperations, 'totalOpen': totalOpen,
+                                                                    'totalEnded': totalEnded, 'dateForm': dateForm,
+                                                                    'hasFilter': hasFilter, 'form': formset,
+                                                                    'formChoice': formChoice, 'formEnded': formset_ended,
+                                                                     'isAllie': True, 'totalClaim': totalClaim})
+# >>>>>>> vicky
 
+    return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,
+                                                                  'endedO': endedOperations,'totalOpen': totalOpen,
+                                                                  'totalEnded': totalEnded, 'dateForm': dateForm,
+                                                                  'hasFilter': hasFilter, 'form': formset,
+                                                                  'formChoice': formChoice, 'isAllie': False, 'totalClaim': totalClaim})
 
 def company(request):
   return render(request, 'company.html')
@@ -1865,16 +2037,15 @@ def addExchanger(request):
         if (form.is_valid()):
             name = form.cleaned_data['name']
 
-            if (Exchanger.objects.filter(name=name).exists()):
-                msg = "El nombre ingresado ya existe en el sistema"
-                messages.error(request, msg, extra_tags="alert-warning")
-                return render(request, 'admin/addExchanger.html', {'form': form})
-
-            new_exchanger = Exchanger(name=name, is_active=True)
-            new_exchanger.save()
+            if not(Exchanger.objects.filter(name=name).exists()):
+              new_exchanger = Exchanger(name=name, is_active=True)
+              new_exchanger.save()
+            else: 
+              new_exchanger = Exchanger.objects.get(name=name)
 
             currency = form.cleaned_data['currency']
             for c in currency:
+              if not(ExchangerAccepts.objects.filter(exchanger=new_exchanger, currency=c).exists()):
                 accepts = ExchangerAccepts(exchanger=new_exchanger,
                                            currency=c,
                                            amount_acc=0)
@@ -1917,7 +2088,7 @@ def editExchanger(request, _ex_id, _currency_id):
 
     else:
         form = EditExchangerForm(initial={'name': actual_exchanger.name, 'currency': currency.name,
-                                    'is_active': actual_exchanger.is_active})
+                                    'is_active': actual_exchanger.is_active, 'amount': ex_accepts.amount_acc})
 
     return render(request, 'admin/editExchanger.html', {'form': form})
 
@@ -2078,6 +2249,32 @@ def globalSettings(request):
   else:
     form = GlobalSettingsForm(instance=GlobalSettings.get())
   return render(request, 'admin/editSettings.html', {'form': form})
+
+
+def summaryByAlly(request):
+  if (request.method == 'POST'):
+    pass
+  else:
+    allies = User.objects.filter(groups__name='Aliado-1')
+    closure_table = {}
+    general_received = 0
+    general_sent = 0
+    for ally in allies.iterator():
+      op_involved = Operation.objects.filter(id_allie_origin=ally)
+      currencies = op_involved.values_list('origin_currency', flat=True).distinct()
+      for c in currencies:
+        op_currency = op_involved.filter(origin_currency=c)
+        total_received = op_currency.count()
+        aux_received = op_currency.aggregate(total_received=Sum('fiat_amount'))
+        aux = op_currency.filter(ally_pay_back=True)
+        total_sent = aux.count()
+        aux_sent = aux.aggregate(total_sent=Sum('fiat_amount'))
+        closure_table[str(ally.id)+c] = [ally, aux_received['total_received'], total_received, aux_sent['total_sent'], total_sent, c]
+        general_received += total_received
+        general_sent += total_sent
+
+  return render(request, 'admin/summaryByAlly.html', {'closure_table': closure_table, 'general_received': general_received, 'general_sent': general_sent})
+  return
 
 
 # Me parece q crear permiso no sirve de mucho, ya que hay q tocar codigo o crear un mecanismo dinamico que asigne el permiso a una view.

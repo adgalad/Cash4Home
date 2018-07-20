@@ -302,6 +302,7 @@ class Operation(models.Model):
     id_allie_origin = models.ForeignKey(User, related_name='user_allie_origin', verbose_name="Aliado origen", blank=True, null=True)
     account_allie_target = models.ForeignKey(Account, related_name='account_allie_target', verbose_name="Cuenta aliado origen", blank=True, null=True)
     id_allie_target = models.ForeignKey(User, related_name='user_allie_target', verbose_name="Aliado destino", blank=True, null=True)
+    ally_pay_back = models.BooleanField(verbose_name="Aliado transfirió", default=False)
 
     def save(self, *args, **kwargs):
         if (self.pk and self.is_active):

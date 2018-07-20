@@ -38,6 +38,7 @@ urlpatterns = [
 
     #User
     url(r'^dashboard$', views.dashboard, name='dashboard'),
+    url(r'^dashboard/closure$', views.closureTransactionModal, name='closureTransactionModal'),
     url(r'^user/profile$', views.profile, name='profile'),
     url(r'^user/verification$', views.userVerification, name='userVerification'),
 
@@ -137,6 +138,9 @@ urlpatterns = [
         views.operationHistory,
         name="operationHistory"
        ),
+
+    url(r'^closure$', views.summaryByAlly, name="summaryByAlly"),
+    
 ] + static(MEDIA_URL, document_root=MEDIA_ROOT)
 
 handler404 = views.handler404

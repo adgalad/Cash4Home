@@ -1,0 +1,82 @@
+{% extends "base_dashboard.html" %}
+{% load i18n %}
+{% load mathfilters %}
+{% block title %} Detalle de la operación {% endblock title %}
+
+{% block meta %}
+{% endblock meta %}
+{% block stylesheets %}
+  <!-- Animate.css -->
+{% endblock stylesheets %}
+
+{% block body_class %}login{% endblock body_class %}
+
+{% block body %}
+
+
+    <div class="modal-dialog modal-lg openModal" id="modal" style="max-width: 40%; min-width: 300px">
+
+      <div class="modal-content" style="padding: 4%; background-color: white !important;">
+        <div class="table-responsive-sm" style="z-index:19999 !important;">
+          
+          <h3>Detalles de la transacción</h3><hr>
+          {% for field in formClosure %}
+            {{field.label_tag}}
+            {{field}}
+          {% endfor %}
+           
+          <br><br><hr>
+          <div align="center" style="padding-bottom: 4%">
+            <a id="closeModal" class="btn btn-danger" data-dismiss="modal" href="{% url 'dashboard' %}"><i class="fa fa-times"></i>&nbsp Cancelar </a>
+            <button class="btn btn-primary submit" type="submit">Enviar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+{% endblock body %}
+{% block javascripts %}
+  <script type="text/javascript">
+    $('#id_date').daterangepicker({
+    singleDatePicker: true,
+    singleClasses: 'picker_2',
+    "locale": {
+        "format": "DD/MM/YYYY",
+        "separator": " - ",
+        "applyLabel": "Aplicar",
+        "cancelLabel": "Cancelar",
+        "fromLabel": "Desde",
+        "toLabel": "Hasta",
+        "customRangeLabel": "Custom",
+        "daysOfWeek": [
+            "Do",
+            "Lu",
+            "Mar",
+            "Miér",
+            "Jue",
+            "Vi",
+            "Sa"
+        ],
+        "monthNames": [
+            "Enero",
+            "Febrero",
+            "Marzo",
+            "Abril",
+            "Mayo",
+            "Junio",
+            "Julio",
+            "Agosto",
+            "Septiembre",
+            "Octubre",
+            "Noviembre",
+            "Diciembre"
+        ],
+        "firstDay": 1
+      }
+  }, function (start, end, label) {
+    console.log(start.toISOString(), end.toISOString(), label)
+  })
+  </script>
+{% endblock javascripts %}
+

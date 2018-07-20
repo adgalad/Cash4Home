@@ -507,8 +507,6 @@ class SelectCurrencyForm(forms.Form):
         
       self.fields['currency'].choices = currenciesC
 
-
-
 class FilterDashboardByDateForm(forms.Form):
 
     dateMY = forms.CharField(label = "Filtrar por mes", required = False, widget = MonthYearWidget(attrs={"class": "select"}))
@@ -518,18 +516,6 @@ class FilterDashboardByDateForm(forms.Form):
       super(FilterDashboardByDateForm, self).__init__(*args, **kwargs)
       for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
-
-
-def namedWidget(input_name, widget=forms.CharField):
-    if isinstance(widget, type):
-        widget = widget()
-
-    render = widget.render
-
-    widget.render = lambda name, value, attrs={'class' : 'flat'}: \
-        render(input_name, value, attrs)
-
-    return widget
 
 class OperationBulkForm(forms.Form):
     selected = forms.BooleanField(label="Seleccionar", required=False)
@@ -555,3 +541,16 @@ class StateChangeBulkForm(forms.Form):
       for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control2'})
 
+class ClosureTransactionForm(forms.Form):
+    exchanger = GroupedModelChoiceField(required=False, label="Moneda", 
+                                            queryset=ExchangerAccepts.objects.all().order_by('exchanger'),
+                                                 group_by_field='exchanger')
+    DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
+    date = forms.DateField(label = "Fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
+    transfer_image = forms.FileField(label="Imagen del comprobante", required=False)
+    choices = (('O', 'Origen'), ('D', 'Destino'))
+    type_account = forms.ChoiceField(choices=choices, required=False, label="¿Aliado origen o destino?")
+    def __init__(self, *args, **kwargs):
+      super(ClosureTransactionForm, self).__init__(*args, **kwargs)
+      for i in self.fields:
+          self.fields[i].widget.attrs.update({'class' : 'form-control'})
