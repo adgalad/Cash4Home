@@ -908,6 +908,8 @@ def verifyOperation(request, _operation_id):
         operation.status = "Por verificar"
         operation.save()
         trans = Transaction(date = timezone.now(),
+                            amount = operation.fiat_amount,
+                            currency = operation.origin_currency,
                             operation_type = "TO",
                             transfer_image = file,
                             id_operation   = operation,
@@ -1073,7 +1075,7 @@ def sendEmailValidation(user):
     'operation': 'activateUserByEmail',
     'expiration': (timezone.now()+datetime.timedelta(seconds=GlobalSettings.get().EMAIL_VALIDATION_EXPIRATION*60)).strftime('%s')
   }
-  #token = encrypt(str.encode(json.dumps(token)))
+  token = encrypt(str.encode(json.dumps(token)))
 
   link = DEFAULT_DOMAIN+"activateEmail/" + token
   plain_message = 'Para validar tu correo electronico, porfavor ingresa al siguiente correo: ' + link
