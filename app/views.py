@@ -1899,7 +1899,7 @@ def operationAddTransaction(request, _operation_id):
                         currency       = form.cleaned_data['currency']).save() 
 
             # Sacamos todas las transacciones destino y sumamos sus montos
-            allTransactions = Transaction.objects.filter(id_operation=operation, operation_type='TD') 
+            allTransactions = Transaction.objects.filter(id_operation=operation, operation_type='TD', currency=operation.target_currency) 
             totalAmount = sum([tx.amount for tx in allTransactions])
             if totalAmount >= operation.fiat_amount * operation.exchange_rate:
               if operation.status == 'Fondos ubicados' and canChangeStatus(operation, 'Fondos transferidos'):
