@@ -70,6 +70,7 @@ urlpatterns = [
     url(r'^add/exchange_rate/$', views.addExchangeRate, name="addExchangeRate"),
     url(r'^all/exchange_rate/$', views.adminExchangeRate, name="adminExchangeRate"),
     url(r'^edit/exchange_rate/(?P<_rate_id>\w+)', views.editExchangeRate, name="editExchangeRate"),
+    url(r'^all/exchange_rate/(?P<_rate_id>\w+)', views.historyExchangeRate, name="historyExchangeRate"),
 
     url(r'^add/bank/$', views.addBank, name="addBank"),
     url(r'^all/bank/$', views.adminBank, name="adminBank"),

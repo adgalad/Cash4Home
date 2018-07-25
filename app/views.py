@@ -7,7 +7,7 @@ import random
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, Http404
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponseServerError
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from django.contrib.auth import authenticate, update_session_auth_hash
@@ -76,7 +76,16 @@ class EmailThread(threading.Thread):
                   recipient_list=self.recipient_list)
 
 def activateEmail(request, token):
-
+  '''
+    Para activar el email, se debe acceder a un link especial emitido para cada usuario al registrarse,
+    que contiene un token encriptado con la informacion necesaria para validar si es el usuario correcto
+    Si el token no es valido, se da un error de Permiso denegado.
+    El token posee la siguiente informacion:
+      - Id del usuario
+      - Email asociado al usuario al momento de enviar el correo de validacion
+      - Fecha de expiracion del token
+      - El tipo de operacion. En este caso "activateUserByEmail"
+  '''
   try:
     decrypted = decrypt(token)
   except:
@@ -106,15 +115,24 @@ def activateEmail(request, token):
     
   return redirect(reverse('login'))
 
+
+
+
 def home(request):
   return render(request, 'index.html')
+
+
+
 
 def checkCurrency(formset, isTarget):
   firstCurrency = None
   # Recorro la primera vez para asegurar que todas las monedas sean iguales
   for form in formset:
     if (form.cleaned_data['selected']):
-      actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+      try:
+        actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
+      except:
+        return HttpResponseServerError()
       if not(firstCurrency):
         firstCurrency = actual_op.target_currency.code if isTarget else actual_op.origin_currency.code
       elif (firstCurrency != (actual_op.target_currency.code if isTarget else actual_op.origin_currency.code)):
@@ -128,7 +146,12 @@ def closureTransactionModal(request):
   
 @login_required(login_url="/login/")
 def dashboard(request):
-  isAllie = request.user.groups.filter(name='Aliado-1').exists()
+  '''
+    View del dashboard, tanto para usuarios clientes, como para staff y aliados
+    En caso de ser usuario cliente, se redirige al view pendingOperations  
+  '''
+
+  # Si es un usuario cliente, deberia entrar en el siguiente condicional
   if not (request.user.has_perm('dashboard.btc_price') or request.user.has_perm('dashboard.operations_operator')):    
     if request.user.canVerify:
       message = ''' <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
@@ -140,15 +163,15 @@ def dashboard(request):
             </a>'''
       messages.error(request, message, extra_tags="safe alert alert-warning alert-dismissible fade in")
     return redirect(reverse('pendingOperations'))
-
+  
+  # Si es aliado o staff
   else:
-
-    # The user can see all operation or is admin
+    # Si es usuario tiene el permiso 'operation_all' o admin, puede ver todas las operaciones
     if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
       actualOperations = Operation.objects.filter(is_active=True).order_by('date')
       endedOperations = Operation.objects.filter(is_active=False).order_by('date')
     
-    # The user can coordinate other users operations
+    # El usuario coordinador puede ver sus operaciones y la de sus coordinados
     elif request.user.has_perm('coordinate_operation'):
       ids = request.user.coordinatesUsers.all().values_list('id', flat=True) + [request.user.id]
       actualOperations = Operation.objects.filter(
@@ -161,7 +184,7 @@ def dashboard(request):
                             (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
                           ).order_by('date')
     
-    # The user can only see it's operations
+    # De otro modo, solo puede ver las operaciones relacionadas a el
     else:
       actualOperations = Operation.objects.filter(
                             Q(is_active=True) &
@@ -173,41 +196,87 @@ def dashboard(request):
                             (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
                           ).order_by('date')
 
+    # Suponemos que no tiene filtro. En caso de que sea POST y contenga el form de un filtre, cambia a True
     hasFilter = False
+    # El filtro por default. Esta variable indica en el view, cual de ambas opciones debe colocar "month" o "date" 
+    filter = "month" 
 
+    ''' 
+      Verificamos si se debe hacer un filtro por mes o por fecha 
+    '''
     if request.method == 'POST' and 'filter' in request.POST:
+      monthForm = FilterDashboardByMonthForm(request.POST)
       dateForm = FilterDashboardByDateForm(request.POST)
-      if dateForm.is_valid() and 'dateMY_year' in request.POST and 'dateMY_month' in request.POST:
-        year = int(request.POST['dateMY_year'])
-        month = int(request.POST['dateMY_month'])
-        if year and month:
-          actualOperations = actualOperations.filter(date__month=month,
-                                                     date__year=year)
-          endedOperations = endedOperations.filter(date__month=month,
-                                                   date__year=year)
-          hasFilter = True
-        else:
-          today = timezone.now()
-          actualOperations = actualOperations.filter(date__month=today.month, date__year=today.year)
-          endedOperations = endedOperations.filter(date__month=today.month, date__year=today.year)
-    else:
+      
+      # Si el input 'filter' es 'month', entonces se trata de un filtro por mes
+      if request.POST['filter'] == "month" and monthForm.is_valid():
+          year = int(request.POST['dateMY_year'])
+          month = int(request.POST['dateMY_month'])
+          if year and month:
+            hasFilter = True
+            actualOperations = actualOperations.filter(date__month=month,date__year=year)
+            endedOperations = endedOperations.filter(date__month=month,date__year=year)
+            
+      # Por el contrario, si es 'date', entonces es un filtro de fecha
+      elif request.POST['filter'] == "date" and dateForm.is_valid():
+        date = dateForm.cleaned_data['date']
+        # Como el campo date de la operacion es un datetime, hay que tomar solo dia, mes y año
+        # ya que toma en cuenta las horas, minutos, etc
+        day, month, year = (date.day, date.month, date.year)
+        actualOperations = actualOperations.filter(date__day=day, date__month=month, date__year=year)
+        endedOperations = endedOperations.filter(date__day=day, date__month=month, date__year=year)
+        hasFilter = True
+        filter = "date" # Cambiamos el filtro de "month" a "date"
+
+    '''
+      Si no tiene filtro, entonces colocamos todas las operaciones del mes 
+      e inicializamos 2 nuevos forms
+    ''' 
+    if not hasFilter:
+      monthForm = FilterDashboardByMonthForm()
       dateForm = FilterDashboardByDateForm()
       today = timezone.now()
       actualOperations = actualOperations.filter(date__month=today.month, date__year=today.year)
       endedOperations = endedOperations.filter(date__month=today.month, date__year=today.year)
 
 
+
+    '''
+      Cada vez que se piden las operaciones, se actualiza su estado*/
+      A decir verdad, esto deberia estar en un hilo aparte, que se ejecute cada cierto tiempo
+      Pero ya que tiene complejidad O(n), no me parecio descabellado
+    '''
     for i in actualOperations:
       i.isCanceled()
+
+
+    '''
+      Calcular los cuatro indicadores del dashboard
+    '''
+    # Numero de transacciones bancarias realizadas (Solo las TD)
+    nTransactions = 0
+    for i in actualOperations:
+      nTransactions += i.transactions.filter(operation_type="TD").count()
+    for i in endedOperations:
+      nTransactions += i.transactions.filter(operation_type="TD").count()
     
+    # Operaciones pendientes
     totalOpen = actualOperations.count()
+    # Operaciones terminadas
     totalEnded = endedOperations.count()
+    # Operaciones en reclamo
     totalClaim = actualOperations.filter(status="En reclamo").count()
 
+    '''
+      Pedimos la informacion del archivo static/BTCPrice.json,
+      el cual se actualiza con el proceso creado con `$python3 app/cron.py` 
+    '''
     file = open(os.path.join(STATIC_ROOT, "BTCPrice.json"), "r")
     prices = json.loads(file.read())
     file.close()
 
+
+    isAllie = request.user.groups.filter(name='Aliado-1').exists()
     initialForm = [{'operation': op.code, 'selected': False} for op in actualOperations.iterator()]
     if (isAllie):
       initialFormEnded = [{'operation': op.code, 'selected': False} for op in endedOperations.iterator()]
@@ -231,117 +300,17 @@ def dashboard(request):
           firstCurrency = None
           totalAmount = Decimal(0)
 
-# <<<<<<< HEAD
-#         # Recorro la primera vez para asegurar que todas las monedas sean iguales
-#         for form in formset:
-#             if (form.cleaned_data['selected']):
-#                 actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
-#                 if not(firstCurrency):
-#                   firstCurrency = actual_op.target_currency.code
-#                 elif ((firstCurrency != actual_op.target_currency.code) and new_status=='Fondos ubicados'):
-#                   messages.error(request, "Para realizar este cambio de estado debe seleccionar operaciones con la misma moneda destino", extra_tags="alert-warning")
-#                   formChoice = StateChangeBulkForm()
-#                   return render(request, 'dashboard/dashboard_operator.html', {
-#                       'prices': prices,
-#                       'actualO': actualOperations,
-#                       'endedO': endedOperations,
-#                       'totalOpen': totalOpen,
-#                       'totalEnded': totalEnded,
-#                       'totalClaim': totalClaim,
-#                       'dateForm': dateForm,
-#                       'hasFilter': hasFilter,
-#                       'form': formset,
-#                       'formChoice': formChoice})
-#         for form in formset:
-#           if (form.cleaned_data['selected']):
-#             actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
-
-#             if actual_op.status != 'Cancelada' and (canChangeStatusAdmin(actual_op, new_status, request.user.is_superuser) or canChangeStatus(actual_op, new_status)):
-#               OperationStateChange(operation=actual_op, 
-#                                    user=request.user,
-#                                    original_status=actual_op.status,
-#                                    new_status=new_status).save()
-#               actual_op.status = new_status
-
-#               if (new_status == 'Fondos ubicados'):
-#                 actual_op.crypto_rate = rate
-#                 actual_op.exchanger = crypto_used.exchanger
-#                 actual_op.crypto_used = crypto_used.currency
-
-#                 totalAmount += actual_op.fiat_amount*actual_op.exchange_rate
-
-#               actual_op.save()
-#             else:
-#               msg = "No se puede cambiar el status a %s" % status
-#               messages.error(request, msg, extra_tags="alert-warning")  
-#               return render(request, 'dashboard/dashboard_operator.html', {
-#                       'prices': prices,
-#                       'actualO': actualOperations,
-#                       'endedO': endedOperations,
-#                       'totalOpen': totalOpen,
-#                       'totalEnded': totalEnded,
-#                       'totalClaim': totalClaim,
-#                       'dateForm': dateForm,
-#                       'hasFilter': hasFilter,
-#                       'form': formset,
-#                       'formChoice': formChoice})
-
-#         if (new_status == 'Fondos ubicados'):
-#           crypto_used.amount_acc -= totalAmount/rate
-#           crypto_used.save()
-
-
-#       messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
-#       # The user can see all operation or is admin
-#       if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
-#         actualOperations = Operation.objects.filter(is_active=True).order_by('date')
-#         endedOperations = Operation.objects.filter(is_active=False).order_by('date')
-      
-#       # The user can coordinate other users operations
-#       elif request.user.has_perm('coordinate_operation'):
-#         ids = request.user.coordinatesUsers.all().values_list('id', flat=True) + [request.user.id]
-#         actualOperations = Operation.objects.filter(
-#                               Q(is_active=True) & 
-#                               (Q(id_allie_origin__id__in=ids) | Q(id_allie_target__id__in=ids))
-#                            ).order_by('date')
-#         endedOperations = Operation.objects.exclude(status="Cancelada"
-#                             ).filter( 
-#                               Q(is_active=False) &
-#                               (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
-#                             ).order_by('date')
-      
-#       # The user can only see it's operations
-#       else:
-#         actualOperations = Operation.objects.filter(
-#                               Q(is_active=True) &
-#                               (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
-#                             ).order_by('date')
-#         endedOperations = Operation.objects.exclude(status="Cancelada"
-#                             ).filter(
-#                               Q(is_active=False) &
-#                               (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
-#                             ).order_by('date')
-      
-#       dateForm = FilterDashboardByDateForm()
-#       today = timezone.now()
-#       actualOperations = actualOperations.filter(date__month=today.month, date__year=today.year)
-#       endedOperations = endedOperations.filter(date__month=today.month, date__year=today.year)
-      
-#       totalOpen = actualOperations.count()
-#       totalEnded = endedOperations.count()
-#       totalClaim = actualOperations.filter(status="En reclamo").count()
-# =======
           if (new_status == 'Fondos ubicados'):
             crypto_used = formChoice.cleaned_data['crypto_used']
             rate = formChoice.cleaned_data['rate']
-# >>>>>>> vicky
 
           # Recorro la primera vez para asegurar que todas las monedas sean iguales
           if not(checkCurrency(formset,True)):
             messages.error(request, "Para realizar este cambio de estado debe seleccionar operaciones con la misma moneda destino", extra_tags="alert-warning")
             formChoice = StateChangeBulkForm()
-            return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations, 'endedO': endedOperations,
-                                                                          'totalOpen': totalOpen, 'totalEnded': totalEnded, 'dateForm': dateForm,
+            return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations, 'endedO': endedOperations, 'nTransactions': nTransactions, 
+                                                                          'totalOpen': totalOpen, 'totalEnded': totalEnded, 'monthForm': monthForm,
+                                                                          'dateForm': dateForm, 'filter':filter,
                                                                           'hasFilter': hasFilter, 'form': formset, 'formChoice': formChoice, 'isAllie': False})
 
           for form in formset:
@@ -368,10 +337,12 @@ def dashboard(request):
                 return render(request, 'dashboard/dashboard_operator.html', {
                         'prices': prices,
                         'actualO': actualOperations,
-                        'endedO': endedOperations,
+                        'endedO': endedOperations, 'nTransactions': nTransactions, 
                         'totalOpen': totalOpen,
                         'totalEnded': totalEnded,
-                        'dateForm': dateForm,
+                        'monthForm': monthForm,
+                        'dateForm': dateForm, 
+                        'filter':filter,
                         'hasFilter': hasFilter,
                         'form': formset,
                         'isAllie': False,
@@ -411,8 +382,9 @@ def dashboard(request):
             if (formset.is_valid()):
               if not(checkCurrency(formset, False)):
                 messages.error(request, "Para realizar esta transacción debe seleccionar operaciones con la misma moneda origen", extra_tags="alert-warning")
-                return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,'endedO': endedOperations, 
-                                                                              'totalOpen': totalOpen, 'totalEnded': totalEnded, 'dateForm': dateForm,
+                return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,'endedO': endedOperations, 'nTransactions': nTransactions,  
+                                                                              'totalOpen': totalOpen, 'totalEnded': totalEnded, 'monthForm': monthForm,
+                                                                              'dateForm': dateForm, 'filter':filter,
                                                                               'hasFilter': hasFilter, 'form': formset, 'formEnded': formset_ended,
                                                                               'formClosure': formClosure, 'isAllie': True, 'totalClaim': totalClaim})
 
@@ -443,8 +415,9 @@ def dashboard(request):
             if (formset_ended.is_valid()):
               if not(checkCurrency(formset_ended, False)):
                 messages.error(request, "Para realizar esta transacción debe seleccionar operaciones con la misma moneda origen", extra_tags="alert-warning")
-                return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,'endedO': endedOperations, 
-                                                                              'totalOpen': totalOpen, 'totalEnded': totalEnded, 'dateForm': dateForm,
+                return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,'endedO': endedOperations, 'nTransactions': nTransactions,  
+                                                                              'totalOpen': totalOpen, 'totalEnded': totalEnded, 'monthForm': monthForm,
+                                                                              'dateForm': dateForm, 'filter':filter,
                                                                               'hasFilter': hasFilter, 'form': formset, 'formEnded': formset_ended,
                                                                               'formClosure': formClosure, 'isAllie': True, 'totalClaim': totalClaim})
 
@@ -480,34 +453,12 @@ def dashboard(request):
         formset_ended = OperationFormSet(initial=initialFormEnded)
       formChoice = StateChangeBulkForm()
 
-# <<<<<<< HEAD
-#     return render(request, 'dashboard/dashboard_operator.html', {
-#                       'prices': prices,
-#                       'actualO': actualOperations,
-#                       'endedO': endedOperations,
-#                       'totalOpen': totalOpen,
-#                       'totalEnded': totalEnded,
-#                       'totalClaim': totalClaim,
-#                       'dateForm': dateForm,
-#                       'hasFilter': hasFilter,
-#                       'form': formset,
-#                       'formChoice': formChoice})
-
-# =======
-    if (isAllie):
-      return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,
-                                                                    'endedO': endedOperations, 'totalOpen': totalOpen,
-                                                                    'totalEnded': totalEnded, 'dateForm': dateForm,
-                                                                    'hasFilter': hasFilter, 'form': formset,
-                                                                    'formChoice': formChoice, 'formEnded': formset_ended,
-                                                                     'isAllie': True, 'totalClaim': totalClaim})
-# >>>>>>> vicky
-
     return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,
-                                                                  'endedO': endedOperations,'totalOpen': totalOpen,
-                                                                  'totalEnded': totalEnded, 'dateForm': dateForm,
+                                                                  'endedO': endedOperations, 'nTransactions': nTransactions, 'totalOpen': totalOpen,
+                                                                  'totalEnded': totalEnded, 'monthForm': monthForm,
+                                                                  'dateForm': dateForm, 'filter':filter,
                                                                   'hasFilter': hasFilter, 'form': formset,
-                                                                  'formChoice': formChoice, 'isAllie': False, 'totalClaim': totalClaim})
+                                                                  'formChoice': formChoice, 'isAllie': isAllie, 'totalClaim': totalClaim})
 
 def company(request):
   return render(request, 'company.html')
@@ -554,10 +505,13 @@ def userVerification(request):
         file2 = request.FILES['file2']
         file3 = request.FILES['file3']
         file4 = request.FILES['file4']
+
+        # Verificar que todos tienen extension png o jpeg
         ok  = file1.name.lower().endswith(('.png', '.jpeg', '.jpg'))
         ok &= file2.name.lower().endswith(('.png', '.jpeg', '.jpg'))
         ok &= file3.name.lower().endswith(('.png', '.jpeg', '.jpg'))
         ok &= file4.name.lower().endswith(('.png', '.jpeg', '.jpg'))
+        
         if ok:
           request.user.service_image = file1
           request.user.id_front = file2
@@ -583,36 +537,53 @@ def createOperation(request):
 
 
   abt        = AccountBelongsTo.objects.filter(id_client=request.user.id)
-  fee        = 0.00
-  rates      = {}
-  toAccs     = {}
-  fromAccs   = {}
-  currencies = []
+  fee        = 0.00 # No se usa en este momento
+
+  rates      = {} #> Estas tres variables se convierten en un json, que despues es
+  toAccs     = {} #> utilizado en los javascripts, ya que se busca que sea lo mas 
+  fromAccs   = {} #> interactivo posible.
+  
+  currencies = [] # Se usa para filtrar las cuentas por monedas
   queryset1  = abt.filter(use_type='Origen') # Cuentas origen
-  queryset2  = abt.filter(use_type='Destino') # Cuentas destino
+  queryset2  = abt.filter(use_type='Destino')  # Cuentas destino
   ToAccountFormSet = formset_factory(ToAccountForm)
   
+  '''
+    Obtenemos las tasas de cambio
+  '''
   for i in ExchangeRate.objects.all():
     rates[str(i)] = i.rate
 
+  '''
+    Obtenemos la informacion necesaria de las cuentas origen
+  '''
   for i in queryset1:
     fromAccs[i.id] = { 
       'currency':str(i.id_account.id_currency),
-      'name': str(i)
+      'name': str(i),
+      'country': i.id_account.id_bank.country.name
     }
 
+  '''
+    Obtenemos la informacion necesaria de las cuentas destino
+  '''
   for i in queryset2:
     toAccs[i.id] = {
       'currency':str(i.id_account.id_currency),
-      'name': str(i)
+      'name': str(i),
     }
+    # Se guardan las monedas para luego filtrar por ellas
     currencies.append(i.id_account.id_currency.pk)
 
   if request.method == 'POST':
-    POST = request.POST.copy()
+    # Debemos copiar el POST para poder modificarlo y agregarle un maximo de 5 campos en multiform
+    POST = request.POST.copy() 
+
+    # El form1 pide al usuario, de cual cuenta quiere enviar dinero (Origen)
     form1 = FromAccountForm(request.POST).setQueryset(queryset1)
     form1.fields['currency'].queryset = Currency.objects.filter(currency_type='FIAT', pk__in=currencies).order_by('code')
 
+    # El form2 da chance al usuario de elegir hasta 5 cuentas destino a las cuales enviar dinero
     POST['form-TOTAL_FORMS' ] = 5
     POST['form-INITIAL_FORMS'] = 5
     POST['form-MAX_NUM_FORMS'] = 5
@@ -625,6 +596,9 @@ def createOperation(request):
       toAccounts = []
       ok = True
       total = 0
+      '''
+        Verificamos que todos los datos ingreados sean correctos
+      '''
       for i in form2:
         acc = i.cleaned_data["account"]
         amount = i.cleaned_data["amount"]
@@ -641,6 +615,12 @@ def createOperation(request):
       toCurrency = form1.cleaned_data['currency']
       strInRrat = (str(fromCurrency) + "/" + str(toCurrency)) in rates
       
+      '''
+        Apartir de aqui, se hace la busqueda del aliado que se asociara con la nueva operacion
+        Primero se buscan aliados asociado al banco origen
+        Luego, se intenta viendo los bancos a los cuales "puede enviar" el banco origen
+        De no encontrar, se arroja un error.
+      '''
       if ok and strInRrat:
         rate   = rates[str(fromCurrency) + "/" + str(toCurrency)]
         bank   = fromAccount.id_account.id_bank
@@ -663,19 +643,18 @@ def createOperation(request):
           except:
             for ally in allies:
               try:
-                a = ally.hasAccount.filter()
-                b = ally.hasAccount.filter(use_type='Origen')
                 belongsTo = ally.hasAccount.filter(use_type='Origen', id_account__id_bank__pk__in=cst)[0]
                 account = belongsTo.id_account
               except Exception as e:
                 account = None
 
+          # Si el aliado es encontrado, se crea la operacion exitosamente
           if account is not None:
             delta = datetime.timedelta(seconds=GlobalSettings.get().OPERATION_TIMEOUT*60)
 
             operation = Operation(fiat_amount     = total,
                                   crypto_rate     = None,
-                                  status          = 'Falta verificacion',
+                                  status          = 'Faltan recaudos',
                                   exchanger       = None,
                                   date            = timezone.now(),
                                   expiration      = timezone.now()+delta,
@@ -688,12 +667,19 @@ def createOperation(request):
                                   account_allie_origin = account,
                                 )
 
+            # El metodo _save, es un wrapper que permite crear el codigo de la operacion
+            # ya que dentro de la operacion no podemos saber el codigo ISO de los paises involucrados
+            # Nota: Solo se toman en cuenta el pais origen y el primer pais destino 
             operation._save( fromAccount.id_account.id_bank.country.iso_code,
                              toAccounts[0][0].id_account.id_bank.country.iso_code,
                              timezone.now()
                             )
 
-            # Verificar que en alguno de los paises hay un feriado
+            '''
+              Se verifica si es un dia feriado en alguno de los paises involucrados
+              En caso positivo, se da una advertencia de que la operacion puede tomar 
+              mas tiempo que de costumbre.
+            '''
             holiday = False
             if Holiday.objects.filter(date=datetime.date.today(), country=fromAccount.id_account.id_bank.country.name).count():
               holiday = True
@@ -707,7 +693,10 @@ def createOperation(request):
               messages.error(request, 'Debido a que hoy es un día feriado en alguno de '
                                       'los paises involucrados en la operación, el proceso '
                                       'de la misma puede presentar demoras.', extra_tags="alert-warning")
-              
+            
+            '''
+              Se envia el correo de confirmacion
+            '''
             plain_message = 'Se ha creado una operación para el envio de %s %s desde su cuenta %s'%(fromCurrency, total, fromAccount.id_account) 
             
             message = '''
@@ -815,7 +804,7 @@ def cancelOperation(request, _operation_id):
       operation = Operation.objects.get(code=_operation_id, id_client=request.user.id)
   except: raise PermissionDenied
 
-  if (admin and not operation.status in ['Cancelada', 'Fondos transferidos']) or operation.status == 'Falta verificacion':
+  if (admin and not operation.status in ['Cancelada', 'Fondos transferidos']) or operation.status == 'Faltan recaudos':
     operation.status = 'Cancelada'
     operation.is_active = False
     operation.save()
@@ -831,7 +820,7 @@ def verifyOperation(request, _operation_id):
   except: raise Http404
   if operation.id_client.id != request.user.id:
     raise PermissionDenied
-  elif operation.status != "Falta verificacion":
+  elif operation.status != "Faltan recaudos":
     messages.error(request, 'Esta operación ya fue verificada', extra_tags="alert-error")
   elif operation.isCanceled():
     messages.error(request, 'Esta operación fue cancelada o expiró', extra_tags="alert-error")
@@ -885,9 +874,9 @@ def createAccount(request):
   if request.method == 'POST':
     form = BankAccountForm(request.POST) if own else BankAccountDestForm(request.POST)
     if request.user.canBuyDollar or not own:
-      form.fields['bank'].queryset = Bank.objects.all()
+      form.fields['bank'].queryset = Bank.objects.all().order_by('country')
     else:
-      form.fields['bank'].queryset = Bank.objects.all().exclude(country="Venezuela")
+      form.fields['bank'].queryset = Bank.objects.all().exclude(country="Venezuela").order_by('country')
 
     if form.is_valid():
       number = form.cleaned_data.get('number')
@@ -940,9 +929,9 @@ def createAccount(request):
 
     form = BankAccountForm() if own else BankAccountDestForm()
     if request.user.canBuyDollar or not own:
-      form.fields['bank'].queryset = Bank.objects.all()
+      form.fields['bank'].queryset = Bank.objects.all().order_by('country')
     else:
-      form.fields['bank'].queryset = Bank.objects.all().exclude(country="Venezuela")
+      form.fields['bank'].queryset = Bank.objects.all().exclude(country="Venezuela").order_by('country')
   return render(request, 'dashboard/createAccount.html', {"form": form, 'own':own})
 
 
@@ -1222,7 +1211,10 @@ def editExchangeRate(request, _rate_id):
                     msg = "Las monedas no pueden ser iguales. Elija otras monedas"
                     messages.error(request, msg, extra_tags="alert-warning")
                     return render(request, 'admin/editExchangeRate.html', {'form': form})
-
+            ExchangeRateHistory(rate=actualRate.rate,
+                                date=actualRate.date,
+                                original_rate=actualRate,
+                                user=request.user).save()
             actualRate.rate = rate
             actualRate.origin_currency = origin
             actualRate.target_currency = target
@@ -1237,6 +1229,14 @@ def editExchangeRate(request, _rate_id):
                                                 'target_currency': actualRate.target_currency.code})
 
     return render(request, 'admin/editExchangeRate.html', {'form': form})
+
+def historyExchangeRate(request, _rate_id):
+  try:
+    actualRate = ExchangeRate.objects.get(id=_rate_id)
+  except:
+    raise Http404
+
+  return render(request, 'admin/historyExchangeRate.html', {'rate': actualRate})
 
 @permission_required('admin.add_bank', login_url='/login/')
 def addBank(request):
@@ -1667,16 +1667,16 @@ def editCountry(request, _country_id):
 
 
 def canChangeStatus(operation, newStatus):
-  if operation.status == 'Falta verificacion' and newStatus == 'Por verificar':
+  if operation.status == 'Faltan recaudos' and newStatus == 'Por verificar':
     operation.status = newStatus
     return True
   if operation.status == 'Por verificar' and newStatus == 'Verificado' and operation.transactions.filter(operation_type='TO').count() > 0:
     operation.status = newStatus
     return True
-  if operation.status == 'Verificado' and newStatus == 'Fondos por ubicar':
+  if operation.status == 'Verificado' and newStatus == 'Fondos ubicados':
     operation.status = newStatus
     return True
-  if operation.status == 'Fondos por ubicar' and newStatus == 'Fondos transferidos' and operation.transactions.filter(operation_type='TD').count() > 0:
+  if operation.status == 'Fondos ubicados' and newStatus == 'Fondos transferidos' and operation.transactions.filter(operation_type='TD').count() > 0:
     operation.status = newStatus
     operation.is_active = False
     return True
@@ -1820,10 +1820,10 @@ def operationAddTransaction(request, _operation_id):
                       currency       = form.cleaned_data['currency']).save() 
 
           # Sacamos todas las transacciones destino y sumamos sus montos
-          allTransactions = Transaction.objects.filter(id_operation=operation, operation_type='TD') 
+          allTransactions = operation.transactions.filter(operation_type='TD') 
           totalAmount = sum([tx.amount for tx in allTransactions])
           if totalAmount >= operation.fiat_amount * operation.exchange_rate:
-            if operation.status == 'Fondos por ubicar' and canChangeStatus(operation, 'Fondos transferidos'):
+            if operation.status == 'Fondos ubicados' and canChangeStatus(operation, 'Fondos transferidos'):
               operation.save()
               sendEmailOperationFinished(operation)
         

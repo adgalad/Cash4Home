@@ -580,7 +580,7 @@ summary = function () {
 
     table = $('#toAccTable')
     table.html('')
-    for (var i = 0; i < nOptions - 1; ++i) {
+    for (var i = 0; i < nOptions; ++i) {
       var acc = toAccs[$('#id_form-' + i + '-account').val()]
       var amount = fcurrency($('#id_form-' + i + '-amount').val())
       if (!acc) continue

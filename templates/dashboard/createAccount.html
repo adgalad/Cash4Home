@@ -61,8 +61,6 @@
             {% endfor %}
             <form class="form-horizontal form-label-left" method="post" style="margin-left: 2%; max-width: 500px;">
               {% csrf_token %}
-              {{ form.errors }}
-              {{ form.non_field_errors }}
               {% for field in form %}
                 <div class="form-group has-feedback">
                   <label>

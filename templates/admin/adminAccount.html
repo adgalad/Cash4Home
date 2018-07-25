@@ -39,6 +39,7 @@
                     <th>Moneda</th>
                     <th>ABA</th>
                     <th>Editar</th>
+                    <th class="none">Clientes asociados a la cuenta</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -54,6 +55,16 @@
                         <td>N/A</td>
                       {% endif %}
                       <td><a href="{% url 'editAccount' a.id %}"><i class="fa fa-edit"></i></a></td>
+                      <td>
+                        <br>
+                        <ul>
+                          {% for abt in a.belongsTo.all %}
+                            <li>
+                              <a href="{% url 'viewUser' abt.id_client.pk %}">{{abt.id_client}}</a>
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      </td>                      
                     </tr>
                   {% endfor %}
                 </tbody>
