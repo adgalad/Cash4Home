@@ -81,10 +81,10 @@
         <li><a><i class="fa fa-money"></i> Monedas <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
             {% if perms.admin.add_currency %}  
-              <li><a href="{% url 'addCurrencies' %}">Agregar</a>
+              <li><a href="{% url 'addCurrencies' %}">Agregar</a></li>
             {% endif %}
             {% if perms.admin.view_currency or perms.admin.edit_currency %}
-              <li><a href="{% url 'adminCurrencies' %}">Ver</a>
+              <li><a href="{% url 'adminCurrencies' %}">Ver</a></li>
             {% endif %}
           </ul>
         </li>
@@ -93,10 +93,10 @@
         <li><a><i class="fa fa-bank"></i> Cuentas <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
             {% if perms.admin.add_account %}
-              <li><a href="{% url 'addAccount' %}">Agregar</a>
+              <li><a href="{% url 'addAccount' %}">Agregar</a></li>
             {% endif %}
             {% if perms.admin.view_account or perms.admin.edit_account %}
-              <li><a href="{% url 'adminAccount' %}">Ver</a>
+              <li><a href="{% url 'adminAccount' %}">Ver</a></li>
             {% endif %}
           </ul>
         </li>
@@ -133,10 +133,10 @@
         <li><a><i class="fa fa-bank"></i> Bancos <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
             {% if perms.admin.add_bank %}
-              <li><a href="{% url 'addBank' %}">Agregar</a>
+              <li><a href="{% url 'addBank' %}">Agregar</a></li>
             {% endif %}
             {% if perms.admin.view_bank or perms.admin.edit_bank %}
-              <li><a href="{% url 'adminBank' %}">Ver</a>
+              <li><a href="{% url 'adminBank' %}">Ver</a></li>
             {% endif %}
           </ul>
         </li>
@@ -146,10 +146,10 @@
         <li><a><i class="fa fa-calendar"></i> Feriados <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
             {% if perms.admin.add_holiday %}
-              <li><a href="{% url 'addHoliday' %}">Agregar</a>
+              <li><a href="{% url 'addHoliday' %}">Agregar</a></li>
             {% endif %}
             {% if perms.admin.view_holiday or perms.admin.edit_holiday %}
-              <li><a href="{% url 'adminHoliday' %}">Ver</a>
+              <li><a href="{% url 'adminHoliday' %}">Ver</a></li>
             {% endif %}
           </ul>
         </li>
@@ -159,10 +159,10 @@
         <li><a><i class="fa fa-users"></i> Usuarios <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
             {% if perms.admin.add_user %}
-              <li><a href="{% url 'addUser' %}">Agregar</a>
+              <li><a href="{% url 'addUser' %}">Agregar</a></li>
             {% endif %}
             {% if perms.admin.view_user or perms.admin.edit_user %}
-              <li><a href="{% url 'adminUser' %}">Ver</a>
+              <li><a href="{% url 'adminUser' %}">Ver</a></li>
             {% endif %}
           </ul>
         </li>
@@ -172,10 +172,10 @@
         <li><a><i class="fa fa-globe"></i> Países <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
             {% if perms.admin.add_country %}
-              <li><a href="{% url 'addCountry' %}">Agregar</a>
+              <li><a href="{% url 'addCountry' %}">Agregar</a></li>
             {% endif %}
             {% if perms.admin.view_country or perms.admin.edit_country %}
-              <li><a href="{% url 'adminCountry' %}">Ver</a>
+              <li><a href="{% url 'adminCountry' %}">Ver</a></li>
             {% endif %}
           </ul>
         </li>
@@ -185,10 +185,10 @@
         <li><a><i class="fa fa-lock"></i> Grupos <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
             {% if perms.admin.add_group %}
-              <li><a href="{% url 'addGroup' %}">Agregar</a>
+              <li><a href="{% url 'addGroup' %}">Agregar</a></li>
             {% endif %}
             {% if perms.admin.view_group or perms.admin.edit_group %}
-              <li><a href="{% url 'adminGroup' %}">Ver</a>
+              <li><a href="{% url 'adminGroup' %}">Ver</a></li>
             {% endif %}
           </ul>
         </li>
@@ -207,16 +207,17 @@
         
         <ul class="nav side-menu">
           <li>
-            <a href="{% url 'summaryByAlly' %}">
-              <i class="fa fa-calculator"></i> Cierre de operaciones 
-            </a>
+            <a><i class="fa fa-calculator"></i> Cierre de operaciones <span class="fa fa-chevron-down"></span></a>
+            <ul class="nav child_menu">
+              <li><a href="{% url 'summaryByAlly' %}">Ver</a></li>
+              <li><a href="{% url 'historyClosure' %}">Histórico</a></li>
+          </ul>
           </li>
         </ul>
       
 
       </ul>
       {% endif %}
-
     </div>
   </div>
   <!-- /sidebar menu -->

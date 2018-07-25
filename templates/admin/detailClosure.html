@@ -1,6 +1,6 @@
 {% extends "base_dashboard.html" %}
 
-{% block title %} Detalles de la recompra {% endblock title %}
+{% block title %} Detalles del cierre de operaciones {% endblock title %}
 
 {% block stylesheets %}
   {{ block.super }}
@@ -18,68 +18,55 @@
       <div class="clearfix"></div>
 
       <div class="row">
-        {% for message in messages %}
-          <section class="table-view {{message.tags}}">
-            <div class="container" style="display: table-cell; text-align: center; vertical-align: middle; padding-left: 15px;">
-                {% if 'safe' in message.tags %}
-                  {{ message | safe }}
-                {% else %}
-                  {{ message }}
-                {% endif %}
-            </div>
-          </section>   
-          <br>
-        {% endfor %}
-
         <div class="col-md-12 col-sm-12 col-xs-12">
           <div class="x_panel">
             <div class="x_title">
-              <h2>Detalles de la recompra</h2>
+              <h2>Detalles del cierre de operaciones</h2>
               <div class="clearfix"></div>
             </div>
             <div class="x_content">
               <div class="row">
                 <div class="col-md-2 col-sm-2 col-xs-12">
-                  <b>Código</b>
+                  <b>Nombre del aliado</b>
                 </div>
                 <div class="col-md-3 col-sm-3 col-xs-12">
-                  {{ rep.id }}
+                  {{ closure.ally.get_full_name }}
                 </div>
                 <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>Correo electrónico</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ closure.ally.email }}
+                </div>
+              </div>
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
                   <b>Fecha</b>
                 </div>
                 <div class="col-md-3 col-sm-3 col-xs-12 ">
-                  {{ rep.date }}
+                  {{ closure.date }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>Moneda</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ closure.currency.code }}
                 </div>
               </div>
               <div class="row">
                 <hr>
                 <div class="col-md-2 col-sm-2 col-xs-12">
-                  <b>Moneda origen</b>
+                  <b>Cantidad total enviada por el aliado</b>
                 </div>
                 <div class="col-md-3 col-sm-3 col-xs-12">
-                  {{ rep.origin_currency.code }}
+                  {{ closure.final_amount }} {{ closure.currency.code }}
                 </div>
                 <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
-                  <b>Moneda destino</b>
+                  <b>Estado actual</b>
                 </div>
                 <div class="col-md-3 col-sm-3 col-xs-12 ">
-                  {{ rep.target_currency.code }}
-                </div>
-              </div>
-              <div class="row">
-                <hr>
-                <div class="col-md-2 col-sm-2 col-xs-12">
-                  <b>Tasa de cambio</b>
-                </div>
-                <div class="col-md-3 col-sm-3 col-xs-12">
-                  {{ rep.rate }}{{ rep.target_currency.code }}
-                </div>
-                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
-                  <b>Exchanger</b>
-                </div>
-                <div class="col-md-3 col-sm-3 col-xs-12 ">
-                  {{ rep.exchanger.name }}
+                  {{ closure.status }}
                 </div>
               </div>
               <div class="row">
@@ -89,8 +76,8 @@
                 </div>
                 <div class="col-md-10 col-sm-10 col-xs-12">
                     <p>
-                      {% for came in came_from %}
-                        {{came.id_operation.code}}, 
+                      {% for op in operations %}
+                        {{ op.code }}, 
                       {% endfor %}
                     </p>
                 </div>
@@ -99,7 +86,7 @@
               <hr>
               <br><br>
               <div style="float:right;">
-                <a class="btn btn-primary" href="{% url 'adminRepurchase' %}" onclick="return !goToPreviousPage()"><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
+                <a class="btn btn-primary" href="{% url 'summaryByAlly' %}" onclick="return !goToPreviousPage()"><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
               </div>
               
             </div>

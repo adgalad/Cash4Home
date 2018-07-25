@@ -275,6 +275,29 @@ class ExchangerAccepts(models.Model):
     def __str__(self):
         return str(self.currency.code)
 
+class BoxClosure(models.Model):
+    # The primary key is the django id
+    date = models.DateTimeField()
+    currency = models.ForeignKey(Currency)
+    ally = models.ForeignKey(User, related_name="ally", verbose_name="ally")
+    final_amount = models.DecimalField(max_digits=30, decimal_places=15)
+    status_choices = (('Cerrado', 'Cerrado'), ('Activo', 'Activo'))
+    status = models.CharField(choices=status_choices, max_length=10)
+
+    class Meta:
+        unique_together = ('date', 'currency', 'ally')
+        default_permissions = ()
+
+    def __str__(self):
+        return self.ally.get_full_name() + " - " + str(self.date.strftime("%d%m%Y")) + " - " + self.currency.code
+
+class BoxClosureHistory(models.Model):
+    closure = models.ForeignKey(BoxClosure)
+    date = models.DateTimeField()
+    made_by = models.ForeignKey(User, related_name="made_by", verbose_name="made_by")
+    status_choices = (('Cerrado', 'Cerrado'), ('Activo', 'Activo'))
+    new_status = models.CharField(choices=status_choices, max_length=10)
+
 class Operation(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True)
     fiat_amount = models.DecimalField(max_digits=30, decimal_places=15)
@@ -284,7 +307,6 @@ class Operation(models.Model):
                       ('Falta verificacion', 'Falta verificacion'),
                       ('Por verificar', 'Por verificar'), 
                       ('Verificado', 'Verificado'),
-                      ('Fondos por ubicar', 'Fondos por ubicar'),
                       ('Fondos ubicados', 'Fondos ubicados'),
                       ('Fondos transferidos', 'Fondos transferidos'),
                       ('En reclamo', 'En reclamo'))
@@ -303,6 +325,7 @@ class Operation(models.Model):
     account_allie_target = models.ForeignKey(Account, related_name='account_allie_target', verbose_name="Cuenta aliado origen", blank=True, null=True)
     id_allie_target = models.ForeignKey(User, related_name='user_allie_target', verbose_name="Aliado destino", blank=True, null=True)
     ally_pay_back = models.BooleanField(verbose_name="Aliado transfirió", default=False)
+    closure = models.ForeignKey(BoxClosure, related_name="box_closure")
 
     def save(self, *args, **kwargs):
         if (self.pk and self.is_active):
@@ -413,23 +436,11 @@ class OperationStateChange(models.Model):
     # The primary key is the django id
     date = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User)
-    status_choices = (('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Fondos por ubicar', 'Fondos por ubicar'),
+    status_choices = (('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'),
                       ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'), ('En reclamo', 'En reclamo'))
     original_status = models.CharField(choices=status_choices, max_length=20)
     new_status = models.CharField(choices=status_choices, max_length=20)
     operation = models.ForeignKey(Operation, null=True, related_name='changeHistory')
     
     class Meta:
-        default_permissions = ()
-
-class BoxClosure(models.Model):
-    # The primary key is the django id
-    date = models.DateTimeField()
-    user = models.ForeignKey(User)
-    currency = models.ForeignKey(Currency)
-    exchanger = models.ForeignKey(Exchanger)
-    final_amount = models.DecimalField(max_digits=30, decimal_places=15)
-
-    class Meta:
-        unique_together = ('date', 'exchanger', 'currency')
         default_permissions = ()

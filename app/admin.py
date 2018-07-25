@@ -134,6 +134,9 @@ class CanSendToAdmin(admin.ModelAdmin):
 class BoxClosureAdmin(admin.ModelAdmin):
     pass
 
+class BoxClosureHistoryAdmin(admin.ModelAdmin):
+    pass
+
 admin.site.register(User, UserAdmin)
 admin.site.register(Holiday, HolidayAdmin)
 admin.site.register(Currency, CurrencyAdmin)
@@ -153,3 +156,4 @@ admin.site.register(ExchangerAccepts, ExchangerAcceptsAdmin)
 admin.site.register(OperationStateChange, OperationStateChangeAdmin)
 admin.site.register(CanSendTo, CanSendToAdmin)
 admin.site.register(BoxClosure, BoxClosureAdmin)
+admin.site.register(BoxClosureHistory, BoxClosureHistoryAdmin)

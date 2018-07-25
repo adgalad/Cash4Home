@@ -502,7 +502,7 @@ def userVerification(request):
 @login_required(login_url="/login/")
 def createOperation(request):
   if not request.user.verified:
-    messages.error(request, 'Usted no puede realizar envios de dinero hasta que su cuenta no haya sido verificada.',
+    messages.error(request, 'Usted no puede realizar envíos de dinero hasta que su cuenta no haya sido verificada.',
                    extra_tags="safe alert alert-warning alert-dismissible fade in")
     return redirect(reverse('dashboard'))
 
@@ -588,8 +588,8 @@ def createOperation(request):
           except:
             for ally in allies:
               try:
-                a = ally.hasAccount.filter()
-                b = ally.hasAccount.filter(use_type='Origen')
+                #a = ally.hasAccount.filter()
+                #b = ally.hasAccount.filter(use_type='Origen')
                 belongsTo = ally.hasAccount.filter(use_type='Origen', id_account__id_bank__pk__in=cst)[0]
                 account = belongsTo.id_account
               except Exception as e:
@@ -597,6 +597,29 @@ def createOperation(request):
 
           if account is not None:
             delta = datetime.timedelta(seconds=GlobalSettings.get().OPERATION_TIMEOUT*60)
+
+            boxClosure = BoxClosure.objects.filter(date__date=timezone.now().date(), ally=ally, currency=fromCurrency)
+
+            if not(boxClosure.exists()):
+              boxClosure = BoxClosure(date=timezone.now(),
+                                      currency=fromCurrency,
+                                      ally=ally,
+                                      final_amount=Decimal(0),
+                                      status='Activo')
+              boxClosure.save()
+            elif (boxClosure[0].status == 'Cerrado'):
+              boxClosure = BoxClosure.objects.filter(date__date=timezone.now() + timezone.timedelta(days=1), ally=ally, currency=fromCurrency)
+              if not(boxClosure.exists()):
+                boxClosure = BoxClosure(date=timezone.now() + timezone.timedelta(days=1),
+                                        currency=fromCurrency,
+                                        ally=ally,
+                                        final_amount=Decimal(0),
+                                        status='Activo')
+                boxClosure.save()
+              else:
+                boxClosure = boxClosure[0]
+            else:
+              boxClosure = boxClosure[0]
 
             operation = Operation(fiat_amount     = total,
                                   crypto_rate     = None,
@@ -611,6 +634,7 @@ def createOperation(request):
                                   target_currency = toCurrency,
                                   id_allie_origin = ally,
                                   account_allie_origin = account,
+                                  closure = boxClosure
                                 )
 
             operation._save( fromAccount.id_account.id_bank.country.iso_code,
@@ -1732,36 +1756,39 @@ def operationAddTransaction(request, _operation_id):
     if request.method == "POST":
       form = TransactionForm(request.POST, request.FILES)
       if form.is_valid():
-        type = form.cleaned_data['operation_type']
-        file = request.FILES['transfer_image']
-        if type in ['TD', 'TO']:
-          Transaction(id_operation   = operation,
-                      operation_type = type,
-                      transfer_image = file,
-                      origin_account = form.cleaned_data['origin_account'],
-                      target_account = form.cleaned_data['target_account'],
-                      date           = form.cleaned_data['date'],
-                      amount         = form.cleaned_data['amount'],
-                      currency       = form.cleaned_data['currency']).save() 
+        if (operation.closure.status == 'Activo'):
+          type = form.cleaned_data['operation_type']
+          file = request.FILES['transfer_image']
+          if type in ['TD', 'TO']:
+            Transaction(id_operation   = operation,
+                        operation_type = type,
+                        transfer_image = file,
+                        origin_account = form.cleaned_data['origin_account'],
+                        target_account = form.cleaned_data['target_account'],
+                        date           = form.cleaned_data['date'],
+                        amount         = form.cleaned_data['amount'],
+                        currency       = form.cleaned_data['currency']).save() 
 
-          # Sacamos todas las transacciones destino y sumamos sus montos
-          allTransactions = Transaction.objects.filter(id_operation=operation, operation_type='TD') 
-          totalAmount = sum([tx.amount for tx in allTransactions])
-          if totalAmount >= operation.fiat_amount * operation.exchange_rate:
-            if operation.status == 'Fondos por ubicar' and canChangeStatus(operation, 'Fondos transferidos'):
-              operation.save()
-              sendEmailOperationFinished(operation)
-        
-        elif type == 'TC':
-          Transaction(id_operation   = operation,
-                      operation_type = type,
-                      transfer_image = file,
-                      to_exchanger   = form.cleaned_data['to_exchanger'],
-                      date           = form.cleaned_data['date'],
-                      amount         = form.cleaned_data['amount'],
-                      currency       = form.cleaned_data['currency']).save()
+            # Sacamos todas las transacciones destino y sumamos sus montos
+            allTransactions = Transaction.objects.filter(id_operation=operation, operation_type='TD') 
+            totalAmount = sum([tx.amount for tx in allTransactions])
+            if totalAmount >= operation.fiat_amount * operation.exchange_rate:
+              if operation.status == 'Fondos por ubicar' and canChangeStatus(operation, 'Fondos transferidos'):
+                operation.save()
+                sendEmailOperationFinished(operation)
           
-        messages.error(request, 'La transacción ha sido agregada con éxito', extra_tags="alert-success")
+          elif type == 'TC':
+            Transaction(id_operation   = operation,
+                        operation_type = type,
+                        transfer_image = file,
+                        to_exchanger   = form.cleaned_data['to_exchanger'],
+                        date           = form.cleaned_data['date'],
+                        amount         = form.cleaned_data['amount'],
+                        currency       = form.cleaned_data['currency']).save()
+            
+          messages.error(request, 'La transacción ha sido agregada con éxito', extra_tags="alert-success")
+        else:
+          messages.error(request, 'Ya se realizó el cierre de operaciones de este día, no se pueden agregar transacciones', extra_tags="alert-warning")
       else:
         return render(request, 'admin/addTransaction.html', {'form':form, 'operation':operation})
     form = TransactionForm()
@@ -2047,7 +2074,7 @@ def addRepurchase(request, _currency_id):
 
     existing_rep = RepurchaseCameFrom.objects.values_list('id_operation',flat=True)
     available_op = Operation.objects.filter(origin_currency=origin_currency, status="Fondos transferidos").exclude(code__in=existing_rep).values_list('code', 'fiat_amount', 'date')
-    initialForm = [{'operation': op[0], 'amount': op[1], 'date': op[2], 'selected': False} for op in available_op]
+    initialForm = [{'operation': op[0], 'amount': op[1], 'date': op[2].strftime("%d/%m/%Y"), 'selected': False} for op in available_op]
 
     if (request.method == 'POST'):
         POST = request.POST.copy()
@@ -2105,6 +2132,9 @@ def addRepurchase(request, _currency_id):
           msg = "La recompra fue agregada con éxito"
           messages.error(request, msg, extra_tags="alert-success")
           return redirect('adminRepurchase')
+        else:
+          print(formset.errors)
+          print(formRep.errors)
     else:
         OperationFormSet = formset_factory(NewRepurchaseOpForm, extra=0)
         formset = OperationFormSet(initial=initialForm)
@@ -2175,7 +2205,7 @@ def globalSettings(request):
     form = GlobalSettingsForm(instance=GlobalSettings.get())
   return render(request, 'admin/editSettings.html', {'form': form})
 
-
+#Faltan permisos
 def summaryByAlly(request):
   if (request.method == 'POST'):
     pass
@@ -2186,16 +2216,57 @@ def summaryByAlly(request):
     general_sent = 0
     for ally in allies.iterator():
       op_involved = Operation.objects.filter(id_allie_origin=ally)
-      currencies = op_involved.values_list('origin_currency', flat=True).distinct()
-      for c in currencies:
-        op_currency = op_involved.filter(origin_currency=c)
-        total_received = op_currency.count()
-        aux_received = op_currency.aggregate(total_received=Sum('fiat_amount'))
-        aux = op_currency.filter(ally_pay_back=True)
+      closures = BoxClosure.objects.filter(ally=ally)
+      #currencies = op_involved.values_list('origin_currency', flat=True).distinct()
+      #for c in currencies:
+      for c in closures.iterator():
+        op_closure = op_involved.filter(closure=c)
+        total_received = op_closure.count()
+        aux_received = op_closure.aggregate(total_received=Sum('fiat_amount'))
+        aux = op_closure.filter(ally_pay_back=True)
         total_sent = aux.count()
         aux_sent = aux.aggregate(total_sent=Sum('fiat_amount'))
-        closure_table[str(ally.id)+c] = [ally, aux_received['total_received'], total_received, aux_sent['total_sent'], total_sent, c]
+        closure_table[str(ally.id)+c.date.strftime("%d%m%Y")] = [c, aux_received['total_received'], total_received, aux_sent['total_sent'], total_sent]
         general_received += total_received
         general_sent += total_sent
 
   return render(request, 'admin/summaryByAlly.html', {'closure_table': closure_table, 'general_received': general_received, 'general_sent': general_sent})
+
+#Faltan permisos
+def detailClosure(request,_closure_id):
+  try:
+    closure = BoxClosure.objects.get(id=_closure_id)
+  except:
+    raise Http404
+
+  operations = closure.box_closure.all()
+
+  return render(request, 'admin/detailClosure.html', {'closure': closure, 'operations': operations})
+
+#Faltan permisos
+def changeStatusClosure(request, _closure_id):
+  try:
+    closure = BoxClosure.objects.get(id=_closure_id)
+  except:
+    raise Http404
+
+  if (closure.status == 'Activo'):
+    closure.status = 'Cerrado'
+  else:
+    closure.status = 'Activo'
+
+  closure.save()
+  new_change = BoxClosureHistory(closure=closure,
+                                 date=timezone.now(),
+                                 made_by=request.user,
+                                 new_status=closure.status).save()
+
+  messages.error(request,'Se cambió el estado correctamente', extra_tags="alert-success")
+  return redirect('summaryByAlly')
+
+#Faltan permisos
+def historyClosure(request):
+
+  all_closures = BoxClosureHistory.objects.all()
+
+  return render(request, 'admin/historyClosure.html', {'closures': all_closures})

@@ -13,6 +13,17 @@
 
 {% block content %}
   <div class="right_col" role="main">
+    {% for message in messages %}
+      <section class="table-view {{message.tags}}">
+        <div class="container" style="display: table-cell; text-align: center; vertical-align: middle; padding-left: 15px;">
+            {% if 'safe' in message.tags %}
+              {{ message | safe }}
+            {% else %}
+              {{ message }}
+            {% endif %}
+        </div>
+      </section>   
+    {% endfor %}
     <div class="">
       <div class="clearfix"></div>
 
@@ -45,33 +56,49 @@
                 <thead>
                   <tr>
                     <th>Nombre</th>
-                    <th>Correo</th>
+                    <th class="none">Correo</th>
                     <th>Moneda</th>
-                    <th># operaciones recibidas</th>
-                    <th>Total dinero recibido</th>
-                    <th># operaciones enviadas</th>
-                    <th>Total dinero enviado</th>
+                    <th>Fecha</th>
+                    <th>Operaciones recibidas</th>
+                    <th>Dinero recibido</th>
+                    <th>Operaciones enviadas</th>
+                    <th>Dinero enviado</th>
+                    <th>Estado</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for key,values in closure_table.items %}
                     <tr>
-                      <td>{{ values.0.get_full_name }}</td>
-                      <td>{{ values.0.email }}</td>
-                      <td>{{ values.5 }}</td>
+                      <td>{{ values.0.ally.get_full_name }}</td>
+                      <td>{{ values.0.ally.email }}</td>
+                      <td>{{ values.0.currency.code }}</td>
+                      <td>{{ values.0.date }}</td>
                       <td>{{ values.2 }}</td>  
                       {% if not values.1 %}
                         <td>0 {{ values.5 }}</td>
                       {% else %}
-                        <td>{{ values.1 }} {{ values.5 }}</td>
+                        <td>{{ values.1 }} {{ values.0.currency.code }}</td>
                       {% endif %}
                       <td>{{ values.4}}</td>
                       {% if not values.3 %}
                         <td>0 {{ values.5 }}</td>
                       {% else %}
-                        <td>{{ values.3 }} {{ values.5 }}</td>
+                        <td>{{ values.3 }} {{ values.0.currency.code }}</td>
                       {% endif %}
-                      
+                      <td>{{ values.0.status }}</td>
+                      <td>
+                        <a href="{% url 'detailClosure' values.0.id %}">
+                          <i class="fa fa-search"></i>
+                        </a>
+                        <a href="{% url 'changeStatusClosure' values.0.id %}">
+                          {% if values.0.status == 'Activo' %}
+                            <i class="fa fa-lock"></i>
+                          {% else %}
+                            <i class="fa fa-unlock"></i>
+                          {% endif %}
+                        </a>
+                      </td>
                     </tr>
                   {% endfor %}
                 </tbody>

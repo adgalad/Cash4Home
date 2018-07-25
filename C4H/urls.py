@@ -140,6 +140,9 @@ urlpatterns = [
        ),
 
     url(r'^closure$', views.summaryByAlly, name="summaryByAlly"),
+    url(r'^change/closure/(?P<_closure_id>\w+)', views.changeStatusClosure, name="changeStatusClosure"),
+    url(r'^detail/closure/(?P<_closure_id>\w+)', views.detailClosure, name="detailClosure"),
+    url(r'^history/closure/$', views.historyClosure, name="historyClosure"),
     
 ] + static(MEDIA_URL, document_root=MEDIA_ROOT)
 

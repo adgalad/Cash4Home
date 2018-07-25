@@ -181,10 +181,10 @@ class EditCurrencyForm(forms.Form):
 class NewExchangeRateForm(forms.Form):
 
   rate = forms.DecimalField(required=True, label="Tasa" , min_value=0)
-  origin_currency = forms.ModelChoiceField(required=True, label="Moneda origen",
-                          widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}), queryset=Currency.objects.all())
-  target_currency = forms.ModelChoiceField(required=True, label="Moneda destino",
-                                  widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}), queryset=Currency.objects.all())
+  origin_currency = GroupedModelChoiceField(required=True, label="Moneda origen", group_by_field="currency_type",
+                          widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}), queryset=Currency.objects.all().order_by('currency_type'))
+  target_currency = GroupedModelChoiceField(required=True, label="Moneda destino", group_by_field="currency_type",
+                                  widget = forms.Select(attrs={'style': 'width:100%; background-color:white'}), queryset=Currency.objects.all().order_by('currency_type'))
 
   def __init__(self,*args,**kwargs):
 
@@ -248,8 +248,8 @@ class NewAccountForm(forms.ModelForm):
     number = forms.CharField(max_length=270, required=True, label="Número de cuenta*", widget = forms.TextInput(attrs={'style': 'width:100%;'}))  
     id_bank = GroupedModelChoiceField(label='Banco*', group_by_field='country', queryset=Bank.objects.all())
     aba = forms.CharField(max_length=10, required=False, label="ABA (Solo para bancos de USA)", widget = forms.TextInput(attrs={'style': 'width:100%;'}))
-    id_currency = GroupedModelChoiceField(required=True, label="Moneda*", group_by_field='currency_type',
-                                    queryset=Currency.objects.all().order_by('code'),
+    id_currency = forms.ModelChoiceField(required=True, label="Moneda*", 
+                                    queryset=Currency.objects.filter(currency_type='FIAT').order_by('code'),
                                     widget = forms.Select(attrs={'style': 'width:100%; background-color:white'})
                                   )
 

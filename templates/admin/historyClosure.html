@@ -1,6 +1,6 @@
 {% extends "base_dashboard.html" %}
 
-{% block title %} Histórico de cambios {% endblock title %}
+{% block title %} Históricos de cierres de operaciones {% endblock title %}
 
 {% block stylesheets %}
   {{ block.super }}
@@ -34,7 +34,7 @@
         <div class="col-md-12 col-sm-12 col-xs-12">
           <div class="x_panel">
             <div class="x_title">
-              <h2>Historico de cambios <b>{{ operation.code }}<b></h2>
+              <h2>Historico de cambios</h2>
               <div class="clearfix"></div>
             </div>
             <div class="x_content">
@@ -42,17 +42,21 @@
                 <thead>
                   <tr class="headings">
                     <th class="column-title">Usuario</th>
-                    <th class="column-title">Status original</th>
+                    <th class="column-title">Estado nuevo</th>
                     <th class="column-title">Fecha</th>
+                    <th class="column-title">Aliado asociado</th>
+                    <th class="column-title">Moneda</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {% for item in history %}
+                  {% for c in closures %}
                   <tr class="even pointer">
-                    <td class=" ">{{ item.user }}</td>
-                    <td class=" ">{{ item.original_status }}</i></td>
-                    <td class=" ">{{ item.date }}</td>
+                    <td class=" ">{{ c.made_by.get_full_name }} | {{ c.made_by.email }} </td>
+                    <td class=" ">{{ c.new_status }}</i></td>
+                    <td class=" ">{{ c.date }}</td>
+                    <td class=" ">{{ c.closure.ally.get_full_name }}</td>
+                    <td class=" ">{{ c.closure.currency.code }}</td>
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -60,7 +64,7 @@
             </div>
             <br>
             <div style="text-align: center">
-              <a class="btn btn-primary" href="{% url 'operationDetailDashboard' operation.code %}" onclick="return !goToPreviousPage()"><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
+              <a class="btn btn-primary" onclick="return !goToPreviousPage()"><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
             </div>
           </div>
         </div>
