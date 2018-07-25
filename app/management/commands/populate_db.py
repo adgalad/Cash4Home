@@ -16,6 +16,7 @@ class Command(BaseCommand):
         bank        = ContentType(app_label='admin', model='Bancos')
         account     = ContentType(app_label='admin', model='Cuentas')
         country     = ContentType(app_label='admin', model='Paises')
+        closure     = ContentType(app_label='admin', model='Cierre')
         holiday     = ContentType(app_label='admin', model='Feriados')
         operation   = ContentType(app_label='admin', model='Operaciones')
         transaction = ContentType(app_label='admin', model='Transacciones')
@@ -35,6 +36,7 @@ class Command(BaseCommand):
         bank.save()
         account.save()
         country.save()
+        closure.save()
         holiday.save()
         operation.save()
         transaction.save()
@@ -71,6 +73,13 @@ class Command(BaseCommand):
         view_account.save()
         edit_account.save()
         
+
+        add_closure  = Permission(name='Crear',  codename='add_closure',  content_type=closure)
+        view_closure = Permission(name='Ver', codename='view_closure', content_type=closure)
+        edit_closure = Permission(name='Editar', codename='edit_closure', content_type=closure)
+        add_closure.save()       
+        view_closure.save()
+        edit_closure.save()
 
         add_country  = Permission(name='Crear',  codename='add_country',  content_type=country)
         view_country = Permission(name='Ver', codename='view_country', content_type=country)

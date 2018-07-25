@@ -182,6 +182,7 @@ class Currency(models.Model):
         return self.code
 
     class Meta:
+        ordering = ["currency_type", "name"]
         default_permissions = ()
 
 class ExchangeRate(models.Model):
@@ -190,12 +191,22 @@ class ExchangeRate(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     origin_currency = models.ForeignKey(Currency, related_name='origin_currency_pair')
     target_currency = models.ForeignKey(Currency, related_name='target_currency_pair')
+
     
     def __str__(self):
         return str(self.origin_currency) + "/" + str(self.target_currency)
 
     class Meta:
         default_permissions = ()
+
+class ExchangeRateHistory(models.Model):
+    rate = models.DecimalField(max_digits=29, decimal_places=15)
+    date = models.DateTimeField(auto_now_add=True)
+    original_rate = models.ForeignKey(ExchangeRate, related_name="history")
+    user = models.ForeignKey(User)
+
+    class Meta:
+        ordering = ['date']
 
 class Bank(models.Model):
     swift = models.CharField(max_length=12, primary_key=True, unique=True, blank=True)
@@ -207,6 +218,7 @@ class Bank(models.Model):
         return self.name
 
     class Meta:
+        ordering = ["country", "name"]
         default_permissions = ()
 
 
@@ -242,6 +254,7 @@ class AccountBelongsTo(models.Model):
     class Meta:
         unique_together = ('id_account', 'id_client')
         default_permissions = ()
+        ordering = ['alias', 'owner']
 
     def __str__(self):
         name = str(self.id_account)
@@ -304,7 +317,7 @@ class Operation(models.Model):
     crypto_rate = models.DecimalField(blank=True, null=True, max_digits=30, decimal_places=15)
     crypto_used = models.ForeignKey(Currency, related_name='crypto_used', blank=True, null=True)
     status_choices = (('Cancelada', 'Cancelada'),
-                      ('Falta verificacion', 'Falta verificacion'),
+                      ('Faltan recaudos', 'Faltan recaudos'),
                       ('Por verificar', 'Por verificar'), 
                       ('Verificado', 'Verificado'),
                       ('Fondos ubicados', 'Fondos ubicados'),
@@ -329,7 +342,7 @@ class Operation(models.Model):
 
     def save(self, *args, **kwargs):
         if (self.pk and self.is_active):
-            self.is_active = (not self.status == 'Falta verificacion') or (timezone.now() < self.expiration)
+            self.is_active = (not self.status == 'Faltan recaudos') or (timezone.now() < self.expiration)
         super(Operation, self).save(*args, **kwargs)
 
 
@@ -342,7 +355,7 @@ class Operation(models.Model):
     def isCanceled(self):
         if self.status == 'Cancelada' or not self.is_active:
             return True
-        elif timezone.now() > self.expiration and self.status == 'Falta verificacion':
+        elif timezone.now() > self.expiration and self.status == 'Faltan recaudos':
             self.status = 'Cancelada'
             self.is_active = False
             self.save()
@@ -436,7 +449,7 @@ class OperationStateChange(models.Model):
     # The primary key is the django id
     date = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User)
-    status_choices = (('Falta verificacion', 'Falta verificacion'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'),
+    status_choices = (('Faltan recaudos', 'Faltan recaudos'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'),
                       ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'), ('En reclamo', 'En reclamo'))
     original_status = models.CharField(choices=status_choices, max_length=20)
     new_status = models.CharField(choices=status_choices, max_length=20)

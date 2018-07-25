@@ -129,26 +129,35 @@
                 <div class="count">{{totalOpen}}</div>
               </div>
               <div class="col-md-3 col-sm-4 col-xs-6 tile_stats_count">
+                <span class="count_top red"><i class="fa fa-warning"></i> Operaciones en reclamo</span>
+                <div class="count">{{totalClaim}}</div>
+              </div>
+              <div class="col-md-3 col-sm-4 col-xs-6 tile_stats_count">
                 <span class="count_top green"><i class="fa fa-check"></i> Operaciones finalizadas</span>
                 <div class="count">{{totalEnded}}</div>
               </div>
+              
               <div class="col-md-3 col-sm-4 col-xs-6 tile_stats_count">
-                <span class="count_top red"><i class="fa fa-warning"></i> Operaciones en reclamo</span>
-                <div class="count">{{totalClaim}}</div>
+                <span class="count_top green"><i class="fa fa-bank"></i> Transacciones bancarias</span>
+                <div class="count">{{nTransactions}}</div>
               </div>
             </div> 
             <div class="x_panel">
               
               <div class="row">             
-                <div class="col-md-4 col-sm-8 col-xs-8"> 
+                <div class="col-md-5 col-sm-8 col-xs-8"> 
                   <form  id="filterForm" method="post">
                     {% csrf_token %}
-                    <input type="text" name="filter" id="filter" style="display:none">
-                    <div class="col-md-4 col-sm-4 col-xs-4"> 
-                      <label>{{ dateForm.dateMY.label }}</label>
+                    <div class="col-md-5 col-sm-4 col-xs-4"> 
+                      <select id="filterSelect" class="form-control" onchange="changeFilter()">
+                        <option value="month">{{ monthForm.dateMY.label }}</option>
+                        <option value="date">{{ dateForm.date.label }}</option>
+                      </select>
                     </div>
-                    <div class="col-md-8 col-sm-8 col-xs-8"> 
-                      {{ dateForm.dateMY }} 
+                    <div class="col-md-7 col-sm-8 col-xs-8">
+                      <input type="text" name="filter" id="filter" style="display:none">
+                      <div id="monthFilter"> {{ monthForm.dateMY }} </div>
+                      <div id="dateFilter" style="display: none"> {{ dateForm.date }} </div>
                     </div>
                   </form>
                 </div>
@@ -156,14 +165,14 @@
                   <button class="btn btn-primary" onclick='document.getElementById("filterForm").submit();'>
                     <i class="fa fa-search"></i>&nbsp; Filtrar
                   </button>
-                  <button class="btn btn-danger" type="submit">
-                        <i class="fa fa-times"></i>&nbsp; Quitar Filtro
-                      </button>
                   {% if hasFilter %}
-                  <form method="post">
+                  <button class="btn btn-danger" type="submit" onclick='document.getElementById("removeFilter").submit();'>
+                      <i class="fa fa-times"></i>&nbsp; Quitar Filtro
+                  </button>  
+                  <form method="post" id="removeFilter">
                       {% csrf_token %}
                       <input type="text" name="filter" id="filter" style="display:none">
-                      
+
                   </form>
                   {% endif %}
                 </div>
@@ -450,6 +459,20 @@
       })
       return false
     }
+
+    function changeFilter(){
+      const value = $('#filterSelect').val()
+      $('#filter').val(value)
+      if (value == "month"){
+        $('#monthFilter').show()
+        $('#dateFilter').hide()
+      } else if (value == "date"){
+        $('#monthFilter').hide()
+        $('#dateFilter').show()
+      }
+    }
+    $('#filterSelect').val("{{filter}}")
+    changeFilter();
   </script>
 {% endblock javascripts %}
 

@@ -67,11 +67,11 @@
 
           <tr>
             <td><b>Estatus:</b></td>
-            {% if operation.status == "Falta verificacion" %}
+            {% if operation.status == "Faltan recaudos" %}
               <td style="color: red;">
                 <i class="fa fa-warning"></i>
                 <a href='{% url "verifyOperation" operation.code %}' style="color: red; text-decoration: underline;"> 
-                  Falta verificar
+                  Faltan recaudos
                 </a>
               </td>  
             {% else %}

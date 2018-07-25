@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from app.models import *
@@ -51,7 +53,13 @@ class SignUpForm(UserCreationForm):
   mobile_phone = forms.RegexField(regex=r'^\+?\d{9,15}$', required=True, label="Número de teléfono ( Ej +582125834456 )")
   country = forms.ModelChoiceField(label=_("País de residencia"), required=True, queryset=Country.objects.filter(status=True), empty_label="País de residencia")
   address = forms.CharField(max_length=100, required=True, label='Dirección')
-  id_number = forms.CharField(max_length=30, required=True, label='Número de identificación')
+  id_number = forms.CharField(max_length=30, required=True, label='Número de identificación ( Ej 12345678 )')
+
+  def clean_id_number(self):
+    id_number = self.cleaned_data['id_number']
+    if not re.match(r'[0-9]+', id_number):
+      raise forms.ValidationError('El número de identificación no puede contener letras o signos de puntuación.')
+    return id_number
 
   def __init__(self, *args, **kwargs):
     super(SignUpForm, self).__init__(*args, **kwargs)
@@ -115,7 +123,16 @@ class BankAccountDestForm(BankAccountForm):
   id_number = forms.CharField(max_length=30, required=True, label=_(u'Número de identificación*'))
   email = forms.EmailField(required=True, label=_(u"Email del titular*"))
   alias = forms.CharField(required=False, label=_(u"Alias"))
-
+  
+  def clean_id_number(self):
+    id_number = self.cleaned_data['id_number']
+    if not re.match(r'[0-9]+', id_number):
+      raise forms.ValidationError('El número de identificación no puede contener letras o signos de puntuación.')
+    return id_number
+  
+  def __init__(self, *args, **kwargs):
+    super(BankAccountDestForm, self).__init__(*args, **kwargs)
+    self.fields['id_number'].widget.attrs.update({'placeholder':'Ej 12345678'})
 
 class FromAccountForm(forms.Form):
   account = forms.ModelChoiceField(queryset=None,label="Cuenta origen", required=True)
@@ -335,6 +352,12 @@ class NewUserForm(forms.ModelForm):
   def clean_last_name(self):
     return self.cleaned_data['last_name'].title()
 
+  def clean_id_number(self):
+    id_number = self.cleaned_data['id_number']
+    if not re.match(r'[0-9]+', id_number):
+      raise forms.ValidationError('El número de identificación no puede contener letras o signos de puntuación.')
+    return id_number
+
   class Meta:
     model = User
     fields = ('first_name', 'last_name', 'email', 'id_number', 'country', 'address', 'mobile_phone', 'referred_by', 'coordinatesUsers', 'canBuyDollar', 'is_active', 'groups' )
@@ -360,6 +383,12 @@ class NewThirdAccountAssociatedForm(forms.Form):
   email = forms.EmailField(label="Email", required=True)
   id_number = forms.CharField(label='N° de identificación del titular', required=True, max_length=70)
 
+  def clean_id_number(self):
+    id_number = self.cleaned_data['id_number']
+    if not re.match(r'[0-9]+', id_number):
+      raise forms.ValidationError('El número de identificación no puede contener letras o signos de puntuación.')
+    return id_number
+
   def __init__(self, *args, **kwargs):
 
     super(NewThirdAccountAssociatedForm, self).__init__(*args, **kwargs)
@@ -368,7 +397,7 @@ class NewThirdAccountAssociatedForm(forms.Form):
 
 class NewExchangerForm(forms.Form):
     name = forms.CharField(required=True, label="Nombre", max_length=140)
-    currency = forms.ModelMultipleChoiceField(required=True, label="Monedas que acepta", queryset=Currency.objects.all().order_by('code'))
+    currency = forms.ModelMultipleChoiceField(required=True, label="Monedas que acepta", queryset=Currency.objects.all())
 
     def __init__(self, *args, **kwargs):
 
@@ -394,7 +423,7 @@ class EditExchangerForm(forms.Form):
         self.fields['is_active'].widget.attrs.update({'class' : 'flat'})
 
 class ChangeOperationStatusForm(forms.Form):
-  status_choices = (('Falta verificacion', 'Falta verificacion'),
+  status_choices = (('Faltan recaudos', 'Faltan recaudos'),
                     ('Por verificar', 'Por verificar'),
                     ('Verificado', 'Verificado'),
                     ('Fondos ubicados', 'Fondos ubicados'),
@@ -506,11 +535,17 @@ class SelectCurrencyForm(forms.Form):
         
       self.fields['currency'].choices = currenciesC
 
-class FilterDashboardByDateForm(forms.Form):
-
+class FilterDashboardByMonthForm(forms.Form):
     dateMY = forms.CharField(label = "Filtrar por mes", required = False, widget = MonthYearWidget(attrs={"class": "select", "style":"width:50%; display:inline;"}))
     # endedDate = forms.DateField(label = "Filtrar por fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
+    def __init__(self, *args, **kwargs):
+      super(FilterDashboardByMonthForm, self).__init__(*args, **kwargs)
+      for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
 
+class FilterDashboardByDateForm(forms.Form):
+    DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
+    date = forms.DateField(label = "Filtrar por fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
     def __init__(self, *args, **kwargs):
       super(FilterDashboardByDateForm, self).__init__(*args, **kwargs)
       for i in self.fields:
