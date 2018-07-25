@@ -1902,7 +1902,7 @@ def operationAddTransaction(request, _operation_id):
             allTransactions = Transaction.objects.filter(id_operation=operation, operation_type='TD') 
             totalAmount = sum([tx.amount for tx in allTransactions])
             if totalAmount >= operation.fiat_amount * operation.exchange_rate:
-              if operation.status == 'Fondos por ubicar' and canChangeStatus(operation, 'Fondos transferidos'):
+              if operation.status == 'Fondos ubicados' and canChangeStatus(operation, 'Fondos transferidos'):
                 operation.save()
                 sendEmailOperationFinished(operation)
           
