@@ -125,6 +125,27 @@ def checkCurrency(formset, isTarget):
 def closureTransactionModal(request):
   formClosure = ClosureTransactionForm()
   return render(request, 'dashboard/closureTransactionModal.html', {'formClosure':formClosure}) 
+
+def prepareDataOperations(tmpActual, tmpEnded):
+  
+  actualOperations = []
+  endedOperations = []
+
+  for op in tmpActual.iterator():
+    tmpSet = set()
+    goesTo = op.goesTo.all()
+    for g in goesTo.iterator():
+      tmpSet.add(g.number_account.id_bank.name)
+    actualOperations.append([op, tmpSet])
+
+  for op in tmpEnded.iterator():
+    tmpSet = set()
+    goesTo = op.goesTo.all()
+    for g in goesTo.iterator():
+      tmpSet.add(g.number_account.id_bank.name)
+    endedOperations.append([op, tmpSet])
+
+  return actualOperations, endedOperations
   
 @login_required(login_url="/login/")
 def dashboard(request):
@@ -145,17 +166,17 @@ def dashboard(request):
 
     # The user can see all operation or is admin
     if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
-      actualOperations = Operation.objects.filter(is_active=True).order_by('date')
-      endedOperations = Operation.objects.filter(is_active=False).order_by('date')
+      tmpActOperations = Operation.objects.filter(is_active=True).order_by('date')
+      tmpEndOperations = Operation.objects.filter(is_active=False).order_by('date')
     
     # The user can coordinate other users operations
     elif request.user.has_perm('coordinate_operation'):
       ids = request.user.coordinatesUsers.all().values_list('id', flat=True) + [request.user.id]
-      actualOperations = Operation.objects.filter(
+      tmpActOperations = Operation.objects.filter(
                             Q(is_active=True) & 
                             (Q(id_allie_origin__id__in=ids) | Q(id_allie_target__id__in=ids))
                          ).order_by('date')
-      endedOperations = Operation.objects.exclude(status="Cancelada"
+      tmpEndOperations = Operation.objects.exclude(status="Cancelada"
                           ).filter( 
                             Q(is_active=False) &
                             (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
@@ -163,11 +184,11 @@ def dashboard(request):
     
     # The user can only see it's operations
     else:
-      actualOperations = Operation.objects.filter(
+      tmpActOperations = Operation.objects.filter(
                             Q(is_active=True) &
                             (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
                           ).order_by('date')
-      endedOperations = Operation.objects.exclude(status="Cancelada"
+      tmpEndOperations = Operation.objects.exclude(status="Cancelada"
                           ).filter(
                             Q(is_active=False) &
                             (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
@@ -181,36 +202,40 @@ def dashboard(request):
         year = int(request.POST['dateMY_year'])
         month = int(request.POST['dateMY_month'])
         if year and month:
-          actualOperations = actualOperations.filter(date__month=month,
+          tmpActOperations = tmpActOperations.filter(date__month=month,
                                                      date__year=year)
-          endedOperations = endedOperations.filter(date__month=month,
+          tmpEndOperations = tmpEndOperations.filter(date__month=month,
                                                    date__year=year)
           hasFilter = True
         else:
           today = timezone.now()
-          actualOperations = actualOperations.filter(date__month=today.month, date__year=today.year)
-          endedOperations = endedOperations.filter(date__month=today.month, date__year=today.year)
+          tmpActOperations = tmpActOperations.filter(date__month=today.month, date__year=today.year)
+          tmpEndOperations = tmpEndOperations.filter(date__month=today.month, date__year=today.year)
+
+        actualOperations, endedOperations = prepareDataOperations(tmpActOperations, tmpEndOperations)
     else:
       dateForm = FilterDashboardByDateForm()
       today = timezone.now()
-      actualOperations = actualOperations.filter(date__month=today.month, date__year=today.year)
-      endedOperations = endedOperations.filter(date__month=today.month, date__year=today.year)
+      tmpActOperations = tmpActOperations.filter(date__month=today.month, date__year=today.year)
+      tmpEndOperations = tmpEndOperations.filter(date__month=today.month, date__year=today.year)
+
+      actualOperations, endedOperations = prepareDataOperations(tmpActOperations, tmpEndOperations)
 
 
-    for i in actualOperations:
+    for i in tmpActOperations:
       i.isCanceled()
     
-    totalOpen = actualOperations.count()
-    totalEnded = endedOperations.count()
-    totalClaim = actualOperations.filter(status="En reclamo").count()
+    totalOpen = tmpActOperations.count()
+    totalEnded = tmpEndOperations.count()
+    totalClaim = tmpActOperations.filter(status="En reclamo").count()
 
     file = open(os.path.join(STATIC_ROOT, "BTCPrice.json"), "r")
     prices = json.loads(file.read())
     file.close()
 
-    initialForm = [{'operation': op.code, 'selected': False} for op in actualOperations.iterator()]
+    initialForm = [{'operation': op.code, 'selected': False} for op in tmpActOperations.iterator()]
     if (isAllie):
-      initialFormEnded = [{'operation': op.code, 'selected': False} for op in endedOperations.iterator()]
+      initialFormEnded = [{'operation': op.code, 'selected': False} for op in tmpEndOperations.iterator()]
 
     if request.method == 'POST' and not 'filter' in request.POST:
       POST = request.POST.copy()
@@ -231,110 +256,9 @@ def dashboard(request):
           firstCurrency = None
           totalAmount = Decimal(0)
 
-# <<<<<<< HEAD
-#         # Recorro la primera vez para asegurar que todas las monedas sean iguales
-#         for form in formset:
-#             if (form.cleaned_data['selected']):
-#                 actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
-#                 if not(firstCurrency):
-#                   firstCurrency = actual_op.target_currency.code
-#                 elif ((firstCurrency != actual_op.target_currency.code) and new_status=='Fondos ubicados'):
-#                   messages.error(request, "Para realizar este cambio de estado debe seleccionar operaciones con la misma moneda destino", extra_tags="alert-warning")
-#                   formChoice = StateChangeBulkForm()
-#                   return render(request, 'dashboard/dashboard_operator.html', {
-#                       'prices': prices,
-#                       'actualO': actualOperations,
-#                       'endedO': endedOperations,
-#                       'totalOpen': totalOpen,
-#                       'totalEnded': totalEnded,
-#                       'totalClaim': totalClaim,
-#                       'dateForm': dateForm,
-#                       'hasFilter': hasFilter,
-#                       'form': formset,
-#                       'formChoice': formChoice})
-#         for form in formset:
-#           if (form.cleaned_data['selected']):
-#             actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
-
-#             if actual_op.status != 'Cancelada' and (canChangeStatusAdmin(actual_op, new_status, request.user.is_superuser) or canChangeStatus(actual_op, new_status)):
-#               OperationStateChange(operation=actual_op, 
-#                                    user=request.user,
-#                                    original_status=actual_op.status,
-#                                    new_status=new_status).save()
-#               actual_op.status = new_status
-
-#               if (new_status == 'Fondos ubicados'):
-#                 actual_op.crypto_rate = rate
-#                 actual_op.exchanger = crypto_used.exchanger
-#                 actual_op.crypto_used = crypto_used.currency
-
-#                 totalAmount += actual_op.fiat_amount*actual_op.exchange_rate
-
-#               actual_op.save()
-#             else:
-#               msg = "No se puede cambiar el status a %s" % status
-#               messages.error(request, msg, extra_tags="alert-warning")  
-#               return render(request, 'dashboard/dashboard_operator.html', {
-#                       'prices': prices,
-#                       'actualO': actualOperations,
-#                       'endedO': endedOperations,
-#                       'totalOpen': totalOpen,
-#                       'totalEnded': totalEnded,
-#                       'totalClaim': totalClaim,
-#                       'dateForm': dateForm,
-#                       'hasFilter': hasFilter,
-#                       'form': formset,
-#                       'formChoice': formChoice})
-
-#         if (new_status == 'Fondos ubicados'):
-#           crypto_used.amount_acc -= totalAmount/rate
-#           crypto_used.save()
-
-
-#       messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
-#       # The user can see all operation or is admin
-#       if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
-#         actualOperations = Operation.objects.filter(is_active=True).order_by('date')
-#         endedOperations = Operation.objects.filter(is_active=False).order_by('date')
-      
-#       # The user can coordinate other users operations
-#       elif request.user.has_perm('coordinate_operation'):
-#         ids = request.user.coordinatesUsers.all().values_list('id', flat=True) + [request.user.id]
-#         actualOperations = Operation.objects.filter(
-#                               Q(is_active=True) & 
-#                               (Q(id_allie_origin__id__in=ids) | Q(id_allie_target__id__in=ids))
-#                            ).order_by('date')
-#         endedOperations = Operation.objects.exclude(status="Cancelada"
-#                             ).filter( 
-#                               Q(is_active=False) &
-#                               (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
-#                             ).order_by('date')
-      
-#       # The user can only see it's operations
-#       else:
-#         actualOperations = Operation.objects.filter(
-#                               Q(is_active=True) &
-#                               (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
-#                             ).order_by('date')
-#         endedOperations = Operation.objects.exclude(status="Cancelada"
-#                             ).filter(
-#                               Q(is_active=False) &
-#                               (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
-#                             ).order_by('date')
-      
-#       dateForm = FilterDashboardByDateForm()
-#       today = timezone.now()
-#       actualOperations = actualOperations.filter(date__month=today.month, date__year=today.year)
-#       endedOperations = endedOperations.filter(date__month=today.month, date__year=today.year)
-      
-#       totalOpen = actualOperations.count()
-#       totalEnded = endedOperations.count()
-#       totalClaim = actualOperations.filter(status="En reclamo").count()
-# =======
           if (new_status == 'Fondos ubicados'):
             crypto_used = formChoice.cleaned_data['crypto_used']
             rate = formChoice.cleaned_data['rate']
-# >>>>>>> vicky
 
           # Recorro la primera vez para asegurar que todas las monedas sean iguales
           if not(checkCurrency(formset,True)):
@@ -396,6 +320,7 @@ def dashboard(request):
           exchanger_accepts = formClosure.cleaned_data['exchanger']
           exchanger = exchanger_accepts.exchanger
           currency = exchanger_accepts.currency
+          amount = formClosure.cleaned_data['amount']
 
           POST_END = request.POST.copy()
 
@@ -415,28 +340,35 @@ def dashboard(request):
                                                                               'totalOpen': totalOpen, 'totalEnded': totalEnded, 'dateForm': dateForm,
                                                                               'hasFilter': hasFilter, 'form': formset, 'formEnded': formset_ended,
                                                                               'formClosure': formClosure, 'isAllie': True, 'totalClaim': totalClaim})
-
+              atLeastOne = False
               for form in formset:
                 if (form.cleaned_data['selected']):
                   actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
-                  origin_account = actual_op.account_allie_origin if type_account=='O' else actual_op.account_allie_target
-                  existTransaction = actual_op.transactions.filter(operation_type='TC').exists()
-                  if not(existTransaction):
-                    new_transaction = Transaction(date=date,
-                                                  operation_type="TC",
-                                                  transfer_image=transfer_image,
-                                                  id_operation=actual_op,
-                                                  origin_account=origin_account,
-                                                  to_exchanger=exchanger,
-                                                  currency=currency,
-                                                  amount=actual_op.fiat_amount
-                                                  ).save()
+                  if (actual_op.status != 'Cancelada'):
+                    atLeastOne = True
+                    origin_account = actual_op.account_allie_origin if type_account=='O' else actual_op.account_allie_target
+                    existTransaction = actual_op.transactions.filter(operation_type='TC').exists()
+                    if not(existTransaction):
+                      new_transaction = Transaction(date=date,
+                                                    operation_type="TC",
+                                                    transfer_image=transfer_image,
+                                                    id_operation=actual_op,
+                                                    origin_account=origin_account,
+                                                    to_exchanger=exchanger,
+                                                    currency=currency,
+                                                    amount=actual_op.fiat_amount
+                                                    ).save()
 
-                  exchanger_accepts.amount_acc += actual_op.fiat_amount
-                  exchanger_accepts.save()
-                  actual_op.ally_pay_back = True
-                  actual_op.save()
-                  messages.error(request, "Las transacciones fueron creadas exitosamente", extra_tags="alert-success")
+                    #exchanger_accepts.amount_acc += actual_op.fiat_amount
+                    #exchanger_accepts.save()
+                    actual_op.ally_pay_back = True
+                    actual_op.save()
+
+              if atLeastOne:
+                exchanger_accepts.amount_acc += amount
+                exchanger_accepts.save()
+                messages.error(request, "Las transacciones fueron creadas exitosamente", extra_tags="alert-success")
+
 
           elif 'ended' in request.POST:
             
@@ -448,27 +380,34 @@ def dashboard(request):
                                                                               'hasFilter': hasFilter, 'form': formset, 'formEnded': formset_ended,
                                                                               'formClosure': formClosure, 'isAllie': True, 'totalClaim': totalClaim})
 
+              atLeastOne = False
               for form in formset_ended:
                 if (form.cleaned_data['selected']):
                   actual_op = Operation.objects.get(code=form.cleaned_data['operation'])
-                  origin_account = actual_op.account_allie_origin if type_account=='O' else actual_op.account_allie_target
-                  existTransaction = actual_op.transactions.filter(operation_type='TC').exists()
-                  if not(existTransaction):
-                    new_transaction = Transaction(date=date,
-                                                  operation_type="TC",
-                                                  transfer_image=transfer_image,
-                                                  id_operation=actual_op,
-                                                  origin_account=origin_account,
-                                                  to_exchanger=exchanger,
-                                                  currency=currency,
-                                                  amount=actual_op.fiat_amount
-                                                  ).save()
+                  if (actual_op.status != 'Cancelada'):
+                    atLeastOne = True
+                    origin_account = actual_op.account_allie_origin if type_account=='O' else actual_op.account_allie_target
+                    existTransaction = actual_op.transactions.filter(operation_type='TC').exists()
+                    if not(existTransaction):
+                      new_transaction = Transaction(date=date,
+                                                    operation_type="TC",
+                                                    transfer_image=transfer_image,
+                                                    id_operation=actual_op,
+                                                    origin_account=origin_account,
+                                                    to_exchanger=exchanger,
+                                                    currency=currency,
+                                                    amount=actual_op.fiat_amount
+                                                    ).save()
 
-                  exchanger_accepts.amount_acc += actual_op.fiat_amount
-                  exchanger_accepts.save()
-                  actual_op.ally_pay_back = True
-                  actual_op.save()
-                  messages.error(request, "Las transacciones fueron creadas exitosamente", extra_tags="alert-success")
+                    #exchanger_accepts.amount_acc += actual_op.fiat_amount
+                    #exchanger_accepts.save()
+                    actual_op.ally_pay_back = True
+                    actual_op.save()
+
+              if atLeastOne:
+                exchanger_accepts.amount_acc += amount
+                exchanger_accepts.save()
+                messages.error(request, "Las transacciones fueron creadas exitosamente", extra_tags="alert-success")
         else:
           print("formClosure.errors")
         return redirect('dashboard')
@@ -479,21 +418,8 @@ def dashboard(request):
       if (isAllie):
         formset_ended = OperationFormSet(initial=initialFormEnded)
       formChoice = StateChangeBulkForm()
+      actualOperations, endedOperations = prepareDataOperations(tmpActOperations, tmpEndOperations)
 
-# <<<<<<< HEAD
-#     return render(request, 'dashboard/dashboard_operator.html', {
-#                       'prices': prices,
-#                       'actualO': actualOperations,
-#                       'endedO': endedOperations,
-#                       'totalOpen': totalOpen,
-#                       'totalEnded': totalEnded,
-#                       'totalClaim': totalClaim,
-#                       'dateForm': dateForm,
-#                       'hasFilter': hasFilter,
-#                       'form': formset,
-#                       'formChoice': formChoice})
-
-# =======
     if (isAllie):
       return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,
                                                                     'endedO': endedOperations, 'totalOpen': totalOpen,
@@ -501,7 +427,6 @@ def dashboard(request):
                                                                     'hasFilter': hasFilter, 'form': formset,
                                                                     'formChoice': formChoice, 'formEnded': formset_ended,
                                                                      'isAllie': True, 'totalClaim': totalClaim})
-# >>>>>>> vicky
 
     return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,
                                                                   'endedO': endedOperations,'totalOpen': totalOpen,
@@ -2274,16 +2199,3 @@ def summaryByAlly(request):
         general_sent += total_sent
 
   return render(request, 'admin/summaryByAlly.html', {'closure_table': closure_table, 'general_received': general_received, 'general_sent': general_sent})
-  return
-
-
-# Me parece q crear permiso no sirve de mucho, ya que hay q tocar codigo o crear un mecanismo dinamico que asigne el permiso a una view.
-
-# def addPermission(request):
-#   form = PermissionForm()
-#   if request.method == 'POST':
-#     form = PermissionForm(request.POST)
-#     if form.is_valid():
-#       form.save()
-#       messages.error(request, 'El permiso fue agregado con éxito', extra_tags="alert-success")
-#   return render(request, 'admin/addPermission.html', {'form': form})

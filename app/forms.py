@@ -397,7 +397,6 @@ class ChangeOperationStatusForm(forms.Form):
   status_choices = (('Falta verificacion', 'Falta verificacion'),
                     ('Por verificar', 'Por verificar'),
                     ('Verificado', 'Verificado'),
-                    ('Fondos por ubicar', 'Fondos por ubicar'),
                     ('Fondos ubicados', 'Fondos ubicados'),
                     ('Fondos transferidos', 'Fondos transferidos'))
   status = forms.ChoiceField(required=True, choices=status_choices, label="Status de la operación")
@@ -547,9 +546,11 @@ class ClosureTransactionForm(forms.Form):
                                                  group_by_field='exchanger')
     DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
     date = forms.DateField(label = "Fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
+    amount = forms.DecimalField(required=False, label="Monto total")
     transfer_image = forms.FileField(label="Imagen del comprobante", required=False)
     choices = (('O', 'Origen'), ('D', 'Destino'))
     type_account = forms.ChoiceField(choices=choices, required=False, label="¿Aliado origen o destino?")
+
     def __init__(self, *args, **kwargs):
       super(ClosureTransactionForm, self).__init__(*args, **kwargs)
       for i in self.fields:

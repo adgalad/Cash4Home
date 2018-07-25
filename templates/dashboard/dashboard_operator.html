@@ -218,10 +218,11 @@
                       </div>
                     </div>
                     
-                    <table class="table table-striped table-bordered bulk_action" id="datatable-pending" cellspacing="0" width="100%">
+                    <table class="table table-striped table-bordered bulk_action dt-responsive" id="datatable-pending" cellspacing="0" width="100%">
                       <thead>
                         <tr class="headings">
-                          <th>
+                          <th class="no-order"></th>
+                          <th class="no-order">
                             <input type="checkbox" id="check-all" class="flat">
                           </th>
                           <th class="column-title">Código</th>
@@ -231,9 +232,10 @@
                           <th class="column-title">Fecha Creación</th>
                           <th class="column-title">Aliados</th>
                           <th class="column-title">Estado</th>
-                          <th class="column-title"></th>
+                          <th class="column-title no-order">Devuelto</th>
+                          <th class="column-title no-order"></th>
+                          <th class="none">Bancos en el país destino:</th>
                           {% if isAllie %}
-                            <th class="column-title">Devuelto</th>
                             <th class="bulk-actions" colspan="11">
                               <a class="antoo" style="font-weight:500;">( <span class="action-cnt"> </span> )
                                 <button class="btn btn-primary submit" type="button" id="buttonClosure" onclick='return modal("{% url "closureTransactionModal" %}")'>Realizar envío</button>
@@ -251,38 +253,42 @@
                       <tbody>
                       {% for f, op in form|zip:actualO %}
                         <tr>
+                          <td></td>
                           <td class="a-center ">{{ f.selected }} <input type="text" name="{{f.operation.html_name}}" id="{{f.operation.auto_id}}" value="{{f.operation.value}}" style="display:none"></td>
-                          <td>{{ op.code }}</td>
-                          <td>{{ op.id_client.get_full_name }}</td>
-                          <td>{{ op.fiat_amount | currency }} {{ op.origin_currency.code }}</td>
-                          <td>{{ op.fiat_amount|mul:op.exchange_rate | currency | safe}} {{op.target_currency.code}}</td>  
-                          <td><p>{{ op.date }}</p></td>
-                          <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>
+                          <td>{{ op.0.code }}</td>
+                          <td>{{ op.0.id_client.get_full_name }}</td>
+                          <td>{{ op.0.fiat_amount | currency }} {{ op.0.origin_currency.code }}</td>
+                          <td>{{ op.0.fiat_amount|mul:op.0.exchange_rate | currency | safe}} {{op.0.target_currency.code}}</td>  
+                          <td><p>{{ op.0.date }}</p></td>
+                          <td>{{ op.0.id_allie_origin.get_full_name }},{{ op.0.id_allie_target.get_full_name }} </td>
                           <td>
-                            {% if op.status == "En reclamo" %}
-                              <div style="color:red">{{ op.status }}</div>
+                            {% if op.0.status == "En reclamo" %}
+                              <div style="color:red">{{ op.0.status }}</div>
                             {% else %}
-                              {{ op.status }}
+                              {{ op.0.status }}
                             {% endif %}
                           </td>
                           <td>
-                            <a href="{% url 'operationDetailDashboard' op.code %}">
-                              <i class="fa fa-search"></i>
-                            </a>
-                            <a href="{% url 'operationEditDashboard' op.code %}">
-                              <i class="fa fa-edit"></i>
-                            </a>
-                          </td>
-                          {% if isAllie %}
-                            <td>
-                              {% if op.ally_pay_back %}
+                              {% if op.0.ally_pay_back %}
                                 <i class="fa fa-check green"></i>
                               {% else %}
                                   <i class="fa fa-times red"></i>
                               {% endif %}
-                            </td>
-                          {% endif %}
-
+                          </td>
+                          <td>
+                            <a href="{% url 'operationDetailDashboard' op.0.code %}">
+                              <i class="fa fa-search"></i>
+                            </a>
+                            <a href="{% url 'operationEditDashboard' op.0.code %}">
+                              <i class="fa fa-edit"></i>
+                            </a>
+                          </td>
+                          <td>
+                            {% for b in op.1 %}
+                              {{ b }}, 
+                            {% endfor %}
+                          </td>
+                        
                         </tr>
                       {% endfor %}
                     </tbody>
@@ -305,7 +311,7 @@
                     <thead>
                       <tr>
                         {% if isAllie %}
-                          <th><input type="checkbox" id="check-all-ended" class="flat"></th>
+                          <th class="no-order"><input type="checkbox" id="check-all-ended" class="flat"></th>
                         {% endif %}
                         <th class="column-title-ended">Código</th>
                         <th class="column-title-ended">Cliente</th>
@@ -313,10 +319,10 @@
                         <th class="column-title-ended">Cant. enviada</th>
                         <th class="column-title-ended">Fecha Creación</th>
                         <th class="column-title-ended">Aliados</th>
-                        <th class="column-title-ended">Estado</th>
-                        <th class="column-title-ended"></th>
+                        <th class="column-title-ended no-order">Estado</th>
+                        <th class="column-title-ended no-order">Devuelto</th>
+                        <th class="column-title-ended no-order"></th>
                         {% if isAllie %}
-                          <th class="column-title-ended">Devuelto</th>
                           <th class="bulk-actions-ended" colspan="12" style="display: none;">
                             <a class="antoo" style="font-weight:500;">( <span class="action-cnt-ended"> </span> )
                               <button class="btn btn-primary submit" type="button" id="buttonClosure" onclick='return modalEnded("{% url "closureTransactionModal" %}")'>Realizar envío</button>
@@ -330,36 +336,41 @@
                         {% for f, op in formEnded|zip:endedO %}
                           <tr>
                             <td class="a-center ">{{ f.selected }} <input type="text" name="{{f.operation.html_name}}" id="{{f.operation.auto_id}}" value="{{f.operation.value}}" style="display:none"></td>
-                            <td>{{ op.code }}</td>
-                            <td>{{ op.id_client.get_full_name }}</td>
-                            <td>{{ op.fiat_amount | currency }} {{ op.origin_currency.code }}</td>
-                            <td>{{ op.fiat_amount|mul:op.exchange_rate | currency | safe}} {{op.target_currency.code}}</td>  
-                            <td>{{ op.date }}</td>
-                            <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>
-                            <td>{{ op.status }}</td>
-                            <td><a href="{% url 'operationDetailDashboard' op.code %}"><i class="fa fa-search"></i></a></td>
-                            {% if isAllie %}
+                            <td>{{ op.0.code }}</td>
+                            <td>{{ op.0.id_client.get_full_name }}</td>
+                            <td>{{ op.0.fiat_amount | currency }} {{ op.0.origin_currency.code }}</td>
+                            <td>{{ op.0.fiat_amount|mul:op.0.exchange_rate | currency | safe}} {{op.0.target_currency.code}}</td>  
+                            <td>{{ op.0.date }}</td>
+                            <td>{{ op.0.id_allie_origin.get_full_name }},{{ op.0.id_allie_target.get_full_name }} </td>
+                            <td>{{ op.0.status }}</td>
                             <td>
-                              {% if op.ally_pay_back %}
+                              {% if op.0.ally_pay_back %}
                                 <i class="fa fa-check green"></i>
                               {% else %}
                                   <i class="fa fa-times red"></i>
                               {% endif %}
                             </td>
-                          {% endif %}
+                            <td><a href="{% url 'operationDetailDashboard' op.0.code %}"><i class="fa fa-search"></i></a></td>
                           </tr>
                         {% endfor %}
                       {% else %}
                         {% for op in endedO %}
                           <tr>
-                            <td>{{ op.code }}</td>
-                            <td>{{ op.id_client.get_full_name }}</td>
-                            <td>{{ op.fiat_amount | currency }} {{ op.origin_currency.code }}</td>
-                            <td>{{ op.fiat_amount|mul:op.exchange_rate | currency | safe}} {{op.target_currency.code}}</td>  
-                            <td>{{ op.date }}</td>
-                            <td>{{ op.id_allie_origin.get_full_name }},{{ op.id_allie_target.get_full_name }} </td>
-                            <td>{{ op.status }}</td>
-                            <td><a href="{% url 'operationDetailDashboard' op.code %}"><i class="fa fa-search"></i></a></td>
+                            <td>{{ op.0.code }}</td>
+                            <td>{{ op.0.id_client.get_full_name }}</td>
+                            <td>{{ op.0.fiat_amount | currency }} {{ op.0.origin_currency.code }}</td>
+                            <td>{{ op.0.fiat_amount|mul:op.0.exchange_rate | currency | safe}} {{op.0.target_currency.code}}</td>  
+                            <td>{{ op.0.date }}</td>
+                            <td>{{ op.0.id_allie_origin.get_full_name }},{{ op.0.id_allie_target.get_full_name }} </td>
+                            <td>{{ op.0.status }}</td>
+                            <td>
+                              {% if op.0.ally_pay_back %}
+                                <i class="fa fa-check green"></i>
+                              {% else %}
+                                  <i class="fa fa-times red"></i>
+                              {% endif %}
+                            </td>
+                            <td><a href="{% url 'operationDetailDashboard' op.0.code %}"><i class="fa fa-search"></i></a></td>
                           </tr>
                         {% endfor %}
                       {% endif %}
@@ -401,6 +412,12 @@
   <script type="text/javascript">
     $( document ).ready(function() {
         $("input[name=table_records]").addClass("flat");
+        var els = document.getElementsByClassName("no-order");
+        Array.prototype.forEach.call(els, function(el) {
+            el.classList.remove("sorting");
+            el.classList.remove("sorting_desc");
+            el.classList.remove("sorting_asc");
+        });
     });
   </script>
   <script type="text/javascript">
