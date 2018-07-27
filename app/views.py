@@ -1456,10 +1456,11 @@ def editAccount(request, _account_id):
             number = form.cleaned_data['number']
             bank = form.cleaned_data['id_bank']
 
-            if (Account.objects.filter(number=number,id_bank=bank).exists()):
-                msg = "La cuenta que ingresaste ya existe en ese banco"
-                messages.error(request, msg, extra_tags="alert-warning")
-                return render(request, 'admin/editAccount.html', {'form': form})
+            if ((actualAccount.number!=number) or (actualAccount.id_bank!=bank)):
+              if (Account.objects.filter(number=number,id_bank=bank).exists()):
+                  msg = "La cuenta que ingresaste ya existe en ese banco"
+                  messages.error(request, msg, extra_tags="alert-warning")
+                  return render(request, 'admin/editAccount.html', {'form': form})
 
             aba = form.cleaned_data['aba']
             if ((bank.country.name == 'Estados Unidos') and not(aba)):
@@ -1468,6 +1469,7 @@ def editAccount(request, _account_id):
                 return render(request, 'admin/editAccount.html', {'form': form})
 
             form.save()
+            messages.error(request, "La cuenta fue editada con éxito", extra_tags="alert-success")
     else:
         form = NewAccountForm(initial={'number': actualAccount.number, 'id_bank': actualAccount.id_bank,
                                         'currency': actualAccount.id_currency, 'aba': actualAccount.aba},
@@ -2353,7 +2355,8 @@ def summaryByAlly(request):
         aux = op_closure.filter(ally_pay_back=True)
         total_sent = aux.count()
         aux_sent = aux.aggregate(total_sent=Sum('fiat_amount'))
-        closure_table[str(ally.id)+c.date.strftime("%d%m%Y")] = [c, aux_received['total_received'], total_received, aux_sent['total_sent'], total_sent]
+        diff = aux_received['total_received'] - aux_sent['total_sent']
+        closure_table[str(ally.id)+c.date.strftime("%d%m%Y")] = [c, aux_received['total_received'], total_received, aux_sent['total_sent'], total_sent, diff]
         general_received += total_received
         general_sent += total_sent
 
