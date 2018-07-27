@@ -328,6 +328,8 @@ def dashboard(request):
           if (new_status == 'Fondos ubicados'):
             crypto_used = formChoice.cleaned_data['crypto_used']
             rate = formChoice.cleaned_data['rate']
+          else:
+            banksSummary = {}
 
           # Recorro la primera vez para asegurar que todas las monedas sean iguales
           if not(checkCurrency(formset,True)):
@@ -355,6 +357,10 @@ def dashboard(request):
 
                   totalAmount += actual_op.fiat_amount*actual_op.exchange_rate
 
+                else:
+                  destiny_banks = OperationGoesTo.objects.filter(operation_code=actual_op.code)
+                  for b in destiny_banks.iterator():
+                    if (banksSummary[])
                 actual_op.save()
               else:
                 msg = "No se puede cambiar el status a %s" % status
