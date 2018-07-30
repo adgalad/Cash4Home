@@ -40,10 +40,10 @@
             <th>Cantidad acumulada</th>
           </thead>
           <tbody>
-            {% for b in banksSummary %}
+            {% for key, value in banksSummary.items %}
               <tr>
-                <td>b.0</td> <!-- Banco destino --> 
-                <td>b.1</td> <!-- Acumulado del banco -->
+                <td>{{key}}</td> <!-- Banco destino --> 
+                <td>{{value}}</td> <!-- Acumulado del banco -->
               </tr>
             {% endfor %}
           </tbody>

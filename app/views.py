@@ -360,7 +360,11 @@ def dashboard(request):
                 else:
                   destiny_banks = OperationGoesTo.objects.filter(operation_code=actual_op.code)
                   for b in destiny_banks.iterator():
-                    if (banksSummary[])
+                    bank = b.number_account.id_bank.name
+                    if (bank in banksSummary.keys()):
+                      banksSummary[bank] += b.amount
+                    else:
+                      banksSummary[bank] = b.amount
                 actual_op.save()
               else:
                 msg = "No se puede cambiar el status a %s" % status
@@ -443,6 +447,8 @@ def dashboard(request):
                       #exchanger_accepts.save()
                       actual_op.ally_pay_back = True
                       actual_op.save()
+                  else:
+                    messages.error(request, "Algunas de las operaciones seleccionadas se encuentran en cierres de operaciones ya ejecutados", extra_tags="alert-warning")
 
               if atLeastOne:
                 exchanger_accepts.amount_acc += amount
@@ -489,8 +495,10 @@ def dashboard(request):
                 exchanger_accepts.amount_acc += amount
                 exchanger_accepts.save()
                 messages.error(request, "Las transacciones fueron creadas exitosamente", extra_tags="alert-success")
+
         else:
-          print("formClosure.errors")
+          print("HOLA")
+        
         return redirect('dashboard')
 
     else:
@@ -1079,7 +1087,7 @@ def sendEmailValidation(user):
     'operation': 'activateUserByEmail',
     'expiration': (timezone.now()+datetime.timedelta(seconds=GlobalSettings.get().EMAIL_VALIDATION_EXPIRATION*60)).strftime('%s')
   }
-  #token = encrypt(str.encode(json.dumps(token)))
+  token = encrypt(str.encode(json.dumps(token)))
 
   link = DEFAULT_DOMAIN+"activateEmail/" + token
   plain_message = 'Para validar tu correo electronico, porfavor ingresa al siguiente correo: ' + link
@@ -2359,8 +2367,13 @@ def summaryByAlly(request):
         total_received = op_closure.count()
         aux_received = op_closure.aggregate(total_received=Sum('fiat_amount'))
         aux = op_closure.filter(ally_pay_back=True)
-        total_sent = aux.count()
-        aux_sent = aux.aggregate(total_sent=Sum('fiat_amount'))
+        if (aux):
+          total_sent = aux.count()
+          aux_sent = aux.aggregate(total_sent=Sum('fiat_amount'))
+        else:
+          total_sent = Decimal(0)
+          aux_sent = {}
+          aux_sent['total_sent'] = Decimal(0)
         diff = aux_received['total_received'] - aux_sent['total_sent']
         closure_table[str(ally.id)+c.date.strftime("%d%m%Y")] = [c, aux_received['total_received'], total_received, aux_sent['total_sent'], total_sent, diff]
         general_received += total_received
