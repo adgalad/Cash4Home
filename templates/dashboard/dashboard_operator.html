@@ -260,47 +260,47 @@
                         </tr>
                       </thead>
                       <tbody>
-                      {% for f, op in form|zip:actualO %}
-                        <tr>
-                          <td></td>
-                          <td class="a-center ">{{ f.selected }} <input type="text" name="{{f.operation.html_name}}" id="{{f.operation.auto_id}}" value="{{f.operation.value}}" style="display:none"></td>
-                          <td>{{ op.0.code }}</td>
-                          <td>{{ op.0.id_client.get_full_name }}</td>
-                          <td>{{ op.0.fiat_amount | currency }} {{ op.0.origin_currency.code }}</td>
-                          <td>{{ op.0.fiat_amount|mul:op.0.exchange_rate | currency | safe}} {{op.0.target_currency.code}}</td>  
-                          <td><p>{{ op.0.date }}</p></td>
-                          <td>{{ op.0.id_allie_origin.get_full_name }},{{ op.0.id_allie_target.get_full_name }} </td>
-                          <td>
-                            {% if op.0.status == "En reclamo" %}
-                              <div style="color:red">{{ op.0.status }}</div>
-                            {% else %}
-                              {{ op.0.status }}
-                            {% endif %}
-                          </td>
-                          <td>
-                              {% if op.0.ally_pay_back %}
-                                <i class="fa fa-check green"></i>
+                        {% for f, op in form|zip:actualO %}
+                          <tr>
+                            <td></td>
+                            <td class="a-center ">{{ f.selected }} <input type="text" name="{{f.operation.html_name}}" id="{{f.operation.auto_id}}" value="{{f.operation.value}}" style="display:none"></td>
+                            <td>{{ op.0.code }}</td>
+                            <td>{{ op.0.id_client.get_full_name }}</td>
+                            <td>{{ op.0.fiat_amount | currency }} {{ op.0.origin_currency.code }}</td>
+                            <td>{{ op.0.fiat_amount|mul:op.0.exchange_rate | currency | safe}} {{op.0.target_currency.code}}</td>  
+                            <td><p>{{ op.0.date }}</p></td>
+                            <td>{{ op.0.id_allie_origin.get_full_name }},{{ op.0.id_allie_target.get_full_name }} </td>
+                            <td>
+                              {% if op.0.status == "En reclamo" %}
+                                <div style="color:red">{{ op.0.status }}</div>
                               {% else %}
-                                  <i class="fa fa-times red"></i>
+                                {{ op.0.status }}
                               {% endif %}
-                          </td>
-                          <td>
-                            <a href="{% url 'operationDetailDashboard' op.0.code %}">
-                              <i class="fa fa-search"></i>
-                            </a>
-                            <a href="{% url 'operationEditDashboard' op.0.code %}">
-                              <i class="fa fa-edit"></i>
-                            </a>
-                          </td>
-                          <td>
-                            {% for b in op.1 %}
-                              {{ b }}, 
-                            {% endfor %}
-                          </td>
-                        
-                        </tr>
-                      {% endfor %}
-                    </tbody>
+                            </td>
+                            <td>
+                                {% if op.0.ally_pay_back %}
+                                  <i class="fa fa-check green"></i>
+                                {% else %}
+                                    <i class="fa fa-times red"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                              <a href="{% url 'operationDetailDashboard' op.0.code %}">
+                                <i class="fa fa-search"></i>
+                              </a>
+                              <a href="{% url 'operationEditDashboard' op.0.code %}">
+                                <i class="fa fa-edit"></i>
+                              </a>
+                            </td>
+                            <td>
+                              {% for b in op.1 %}
+                                {{ b }}, 
+                              {% endfor %}
+                            </td>
+                          
+                          </tr>
+                        {% endfor %}
+                      </tbody>
                     </table>
                   </form>
                 

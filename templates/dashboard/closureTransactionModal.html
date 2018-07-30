@@ -37,6 +37,7 @@
 
 {% endblock body %}
 {% block javascripts %}
+  {{block.super}}
   <script type="text/javascript">
     $('#id_date').daterangepicker({
     singleDatePicker: true,
@@ -77,6 +78,21 @@
   }, function (start, end, label) {
     console.log(start.toISOString(), end.toISOString(), label)
   })
+  </script>
+  <script type="text/javascript">
+      document.getElementById("id_exchanger").required = true;
+      document.getElementById("id_date").required = true;
+      document.getElementById("id_amount").required = true;
+      document.getElementById("id_transfer_image").required = true;
+      document.getElementById("id_type_account").required = true;
+
+      $("#closeModal").click(function(){
+        document.getElementById("id_exchanger").required = false;
+        document.getElementById("id_date").required = false;
+        document.getElementById("id_amount").required = false;
+        document.getElementById("id_transfer_image").required = false;
+        document.getElementById("id_type_account").required = false;
+      });
   </script>
 {% endblock javascripts %}
 

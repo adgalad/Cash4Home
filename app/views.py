@@ -165,6 +165,9 @@ def prepareDataOperations(tmpActual, tmpEnded):
 
   return actualOperations, endedOperations
   
+def summaryBanks(request):
+  pass
+
 @login_required(login_url="/login/")
 def dashboard(request):
   '''
@@ -328,6 +331,8 @@ def dashboard(request):
           if (new_status == 'Fondos ubicados'):
             crypto_used = formChoice.cleaned_data['crypto_used']
             rate = formChoice.cleaned_data['rate']
+          else:
+            banksSummary = {}
 
           # Recorro la primera vez para asegurar que todas las monedas sean iguales
           if not(checkCurrency(formset,True)):
@@ -355,6 +360,14 @@ def dashboard(request):
 
                   totalAmount += actual_op.fiat_amount*actual_op.exchange_rate
 
+                else:
+                  destiny_banks = OperationGoesTo.objects.filter(operation_code=actual_op.code)
+                  for b in destiny_banks.iterator():
+                    bank = b.number_account.id_bank.name
+                    if (bank in banksSummary.keys()):
+                      banksSummary[bank] += b.amount
+                    else:
+                      banksSummary[bank] = b.amount
                 actual_op.save()
               else:
                 msg = "No se puede cambiar el status a %s" % status
@@ -379,6 +392,8 @@ def dashboard(request):
             crypto_used.save()
 
           messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
+          if (new_status == 'Verificado'):
+            return render(request, 'dashboard/summaryBank.html', {'banksSummary': banksSummary})
           return redirect('dashboard')
 
       else:
@@ -437,6 +452,8 @@ def dashboard(request):
                       #exchanger_accepts.save()
                       actual_op.ally_pay_back = True
                       actual_op.save()
+                  else:
+                    messages.error(request, "Algunas de las operaciones seleccionadas se encuentran en cierres de operaciones ya ejecutados", extra_tags="alert-warning")
 
               if atLeastOne:
                 exchanger_accepts.amount_acc += amount
@@ -483,8 +500,10 @@ def dashboard(request):
                 exchanger_accepts.amount_acc += amount
                 exchanger_accepts.save()
                 messages.error(request, "Las transacciones fueron creadas exitosamente", extra_tags="alert-success")
+
         else:
-          print("formClosure.errors")
+          print("HOLA")
+        
         return redirect('dashboard')
 
     else:
@@ -1458,10 +1477,11 @@ def editAccount(request, _account_id):
             number = form.cleaned_data['number']
             bank = form.cleaned_data['id_bank']
 
-            if (Account.objects.filter(number=number,id_bank=bank).exists()):
-                msg = "La cuenta que ingresaste ya existe en ese banco"
-                messages.error(request, msg, extra_tags="alert-warning")
-                return render(request, 'admin/editAccount.html', {'form': form})
+            if ((actualAccount.number!=number) or (actualAccount.id_bank!=bank)):
+              if (Account.objects.filter(number=number,id_bank=bank).exists()):
+                  msg = "La cuenta que ingresaste ya existe en ese banco"
+                  messages.error(request, msg, extra_tags="alert-warning")
+                  return render(request, 'admin/editAccount.html', {'form': form})
 
             aba = form.cleaned_data['aba']
             if ((bank.country.name == 'Estados Unidos') and not(aba)):
@@ -1470,6 +1490,7 @@ def editAccount(request, _account_id):
                 return render(request, 'admin/editAccount.html', {'form': form})
 
             form.save()
+            messages.error(request, "La cuenta fue editada con éxito", extra_tags="alert-success")
     else:
         form = NewAccountForm(initial={'number': actualAccount.number, 'id_bank': actualAccount.id_bank,
                                         'currency': actualAccount.id_currency, 'aba': actualAccount.aba},
@@ -2353,9 +2374,15 @@ def summaryByAlly(request):
         total_received = op_closure.count()
         aux_received = op_closure.aggregate(total_received=Sum('fiat_amount'))
         aux = op_closure.filter(ally_pay_back=True)
-        total_sent = aux.count()
-        aux_sent = aux.aggregate(total_sent=Sum('fiat_amount'))
-        closure_table[str(ally.id)+c.date.strftime("%d%m%Y")] = [c, aux_received['total_received'], total_received, aux_sent['total_sent'], total_sent]
+        if (aux):
+          total_sent = aux.count()
+          aux_sent = aux.aggregate(total_sent=Sum('fiat_amount'))
+        else:
+          total_sent = Decimal(0)
+          aux_sent = {}
+          aux_sent['total_sent'] = Decimal(0)
+        diff = aux_received['total_received'] - aux_sent['total_sent']
+        closure_table[str(ally.id)+c.date.strftime("%d%m%Y")] = [c, aux_received['total_received'], total_received, aux_sent['total_sent'], total_sent, diff]
         general_received += total_received
         general_sent += total_sent
 

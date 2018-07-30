@@ -63,6 +63,7 @@
                     <th>Dinero recibido</th>
                     <th>Operaciones enviadas</th>
                     <th>Dinero enviado</th>
+                    <th>Diferencia</th>
                     <th>Estado</th>
                     <th></th>
                   </tr>
@@ -70,23 +71,24 @@
                 <tbody>
                   {% for key,values in closure_table.items %}
                     <tr>
-                      <td>{{ values.0.ally.get_full_name }}</td>
-                      <td>{{ values.0.ally.email }}</td>
-                      <td>{{ values.0.currency.code }}</td>
-                      <td>{{ values.0.date }}</td>
-                      <td>{{ values.2 }}</td>  
-                      {% if not values.1 %}
-                        <td>0 {{ values.5 }}</td>
+                      <td>{{ values.0.ally.get_full_name }}</td> <!-- Nombre aliado -->
+                      <td>{{ values.0.ally.email }}</td> <!-- Email aliado -->
+                      <td>{{ values.0.currency.code }}</td> <!-- Moneda -->
+                      <td>{{ values.0.date }}</td> <!-- Fecha -->
+                      <td>{{ values.2 }}</td>  <!-- Total operaciones recibidas -->
+                      {% if not values.1 %} <!-- Dinero recibido -->
+                        <td>0 {{ values.0.currency.code }}</td>
                       {% else %}
                         <td>{{ values.1 }} {{ values.0.currency.code }}</td>
                       {% endif %}
-                      <td>{{ values.4}}</td>
-                      {% if not values.3 %}
-                        <td>0 {{ values.5 }}</td>
+                      <td>{{ values.4}}</td> <!-- Total operaciones enviadas -->
+                      {% if not values.3 %} <!-- Dinero enviado -->
+                        <td>0 {{ values.0.currency.code }}</td>
                       {% else %}
                         <td>{{ values.3 }} {{ values.0.currency.code }}</td>
                       {% endif %}
-                      <td>{{ values.0.status }}</td>
+                      <td>{{ values.5 }}</td> <!-- Diferencia -->
+                      <td>{{ values.0.status }}</td> <!-- Estado del cierre -->
                       <td>
                         <a href="{% url 'detailClosure' values.0.id %}">
                           <i class="fa fa-search"></i>
