@@ -202,7 +202,7 @@ def dashboard(request):
       tmpEndOperations = Operation.objects.exclude(status="Cancelada"
                           ).filter( 
                             Q(is_active=False) &
-                            (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
+                            (Q(id_allie_origin__id__in=ids) | Q(id_allie_target__id__in=ids))
                           ).order_by('date')
     
     # De otro modo, solo puede ver las operaciones relacionadas a el
