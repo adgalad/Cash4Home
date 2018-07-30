@@ -37,6 +37,7 @@
 
 {% endblock body %}
 {% block javascripts %}
+  {{block.super}}
   <script type="text/javascript">
     $('#id_date').daterangepicker({
     singleDatePicker: true,

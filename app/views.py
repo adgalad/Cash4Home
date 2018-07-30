@@ -165,6 +165,9 @@ def prepareDataOperations(tmpActual, tmpEnded):
 
   return actualOperations, endedOperations
   
+def summaryBanks(request):
+  pass
+
 @login_required(login_url="/login/")
 def dashboard(request):
   '''
@@ -389,6 +392,8 @@ def dashboard(request):
             crypto_used.save()
 
           messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
+          if (new_status == 'Verificado'):
+            return render(request, 'dashboard/summaryBank.html', {'banksSummary': banksSummary})
           return redirect('dashboard')
 
       else:
