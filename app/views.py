@@ -927,6 +927,8 @@ def verifyOperation(request, _operation_id):
         operation.status = "Por verificar"
         operation.save()
         trans = Transaction(date = timezone.now(),
+                            amount = operation.fiat_amount,
+                            currency = operation.origin_currency,
                             operation_type = "TO",
                             transfer_image = file,
                             id_operation   = operation,
@@ -1918,10 +1920,10 @@ def operationAddTransaction(request, _operation_id):
                         currency       = form.cleaned_data['currency']).save() 
 
             # Sacamos todas las transacciones destino y sumamos sus montos
-            allTransactions = Transaction.objects.filter(id_operation=operation, operation_type='TD') 
+            allTransactions = Transaction.objects.filter(id_operation=operation, operation_type='TD', currency=operation.target_currency) 
             totalAmount = sum([tx.amount for tx in allTransactions])
             if totalAmount >= operation.fiat_amount * operation.exchange_rate:
-              if operation.status == 'Fondos por ubicar' and canChangeStatus(operation, 'Fondos transferidos'):
+              if operation.status == 'Fondos ubicados' and canChangeStatus(operation, 'Fondos transferidos'):
                 operation.save()
                 sendEmailOperationFinished(operation)
           

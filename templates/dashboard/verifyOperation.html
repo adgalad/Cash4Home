@@ -109,7 +109,6 @@
                 </div>
                 <br><br>
 
-                <a href="{% url 'pendingOperations' %}" onclick="return !goToPreviousPage()"><button type="button" class="btn btn-primary">Regresar</button></a>
                 <button type="button" class="btn btn-primary" onclick="forward()">Continuar</button>
                 <a href="{% url 'cancelOperation' operation.code %}" onclick="cancelOperation()"><button type="button" class="btn btn-danger">Cancelar operación</button></a>
               </div>
