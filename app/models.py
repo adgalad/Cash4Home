@@ -310,6 +310,9 @@ class BoxClosureHistory(models.Model):
     made_by = models.ForeignKey(User, related_name="made_by", verbose_name="made_by")
     status_choices = (('Cerrado', 'Cerrado'), ('Activo', 'Activo'))
     new_status = models.CharField(choices=status_choices, max_length=10)
+    
+    class Meta:
+        default_permissions = ()
 
 class Operation(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True)
@@ -338,7 +341,7 @@ class Operation(models.Model):
     account_allie_target = models.ForeignKey(Account, related_name='account_allie_target', verbose_name="Cuenta aliado origen", blank=True, null=True)
     id_allie_target = models.ForeignKey(User, related_name='user_allie_target', verbose_name="Aliado destino", blank=True, null=True)
     ally_pay_back = models.BooleanField(verbose_name="Aliado transfirió", default=False)
-    closure = models.ForeignKey(BoxClosure, related_name="box_closure")
+    closure = models.ForeignKey(BoxClosure, related_name="box_closure", null=True)
 
     def save(self, *args, **kwargs):
         if (self.pk and self.is_active):
@@ -390,6 +393,7 @@ class Transaction(models.Model):
     to_exchanger   = models.ForeignKey('Exchanger', null=True, blank=True, verbose_name="Exchanger")
     amount         = models.FloatField(verbose_name="Monto")
     currency       = models.ForeignKey(Currency, verbose_name="Moneda")
+    transfer_number = models.CharField(max_length=64, null=True, verbose_name="Número de la transferencia")
 
     @property
     def image_url(self):

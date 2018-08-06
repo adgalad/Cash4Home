@@ -70,11 +70,11 @@ class PriceRetriever:
         prices['PEN']['prices']['Bitinka'] = float(self.bitinka['PEN']['ask'])
 
     if self.ripio:
-        prices['USD']['prices']['Ripio (Venta)'] = float(self.ripio['rates']['USD_SELL'])
+        prices['USD']['prices']['Ripio (Venta)']  = float(self.ripio['rates']['USD_SELL'])
         prices['USD']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['USD_BUY'])
-        prices['ARS']['prices']['Ripio (Venta)'] = float(self.ripio['rates']['ARS_SELL'])
+        prices['ARS']['prices']['Ripio (Venta)']  = float(self.ripio['rates']['ARS_SELL'])
         prices['ARS']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['ARS_BUY'])
-        prices['PEN']['prices']['Ripio (Venta)'] = float(self.ripio['rates']['PEN_SELL'])
+        prices['PEN']['prices']['Ripio (Venta)']  = float(self.ripio['rates']['PEN_SELL'])
         prices['PEN']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['PEN_BUY'])
 
     prices['USD']['avg'] = self.avg('USD', prices)

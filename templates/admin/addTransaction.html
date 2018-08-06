@@ -90,6 +90,11 @@
           $('#div_id_origin_account').addClass('bad');
           ok = false
         } 
+        
+        if ($('#id_transfer_number').val() == ""){
+          $('#div_id_transfer_number').addClass('bad');
+          ok = false
+        } 
 
         if ($('#id_target_account').val() == ""){
           $('#div_id_target_account').addClass('bad');
@@ -112,11 +117,13 @@
       $('div[class="bad"]').removeClass('bad')
       if ( type == "TD") {
         $('#div_id_to_exchanger').hide()
+        $('#div_id_transfer_number').show()
         $('#div_id_origin_account').show()
         $('#div_id_target_account').show()
       }
       else if (type == "TC"){
         $('#div_id_to_exchanger').show()
+        $('#div_id_transfer_number').hide()
         $('#div_id_origin_account').hide()
         $('#div_id_target_account').hide()
       }

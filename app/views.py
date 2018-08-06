@@ -270,7 +270,7 @@ def dashboard(request):
       actualOperations, endedOperations = prepareDataOperations(tmpActOperations, tmpEndOperations)
 
     '''
-      Cada vez que se piden las operaciones, se actualiza su estado*/
+      Cada vez que se piden las operaciones, se actualiza su estado
       A decir verdad, esto deberia estar en un hilo aparte, que se ejecute cada cierto tiempo
       Pero ya que tiene complejidad O(n), no me parecio descabellado
     '''
@@ -370,22 +370,12 @@ def dashboard(request):
                       banksSummary[bank] = b.amount
                 actual_op.save()
               else:
-                msg = "No se puede cambiar el status a %s" % status
+                msg = "No se puede cambiar el status a %s" % new_status
                 messages.error(request, msg, extra_tags="alert-warning")  
-                return render(request, 'dashboard/dashboard_operator.html', {
-                        'prices': prices,
-                        'actualO': actualOperations,
-                        'endedO': endedOperations, 'nTransactions': nTransactions, 
-                        'totalOpen': totalOpen,
-                        'totalEnded': totalEnded,
-                        'monthForm': monthForm,
-                        'dateForm': dateForm, 
-                        'filter':filter,
-                        'hasFilter': hasFilter,
-                        'form': formset,
-                        'isAllie': False,
-                        'totalClaim': totalClaim,
-                        'formChoice': formChoice})
+                return render(request, 'dashboard/dashboard_operator.html', { 'prices': prices, 'actualO': actualOperations,'endedO': endedOperations, 'nTransactions': nTransactions, 
+                                                                              'totalOpen': totalOpen, 'totalEnded': totalEnded, 'monthForm': monthForm,
+                                                                              'dateForm': dateForm, 'filter':filter, 'hasFilter': hasFilter,
+                                                                              'form': formset, 'isAllie': False, 'totalClaim': totalClaim, 'formChoice': formChoice})
 
           if (new_status == 'Fondos ubicados'):
             crypto_used.amount_acc -= totalAmount/rate
@@ -517,10 +507,10 @@ def dashboard(request):
     if (isAllie):
       return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,
                                                                     'endedO': endedOperations, 'totalOpen': totalOpen,
-                                                                    'totalEnded': totalEnded, 'dateForm': dateForm,
-                                                                    'hasFilter': hasFilter, 'form': formset,
+                                                                    'totalEnded': totalEnded, 'dateForm': dateForm,'filter':filter,
+                                                                    'hasFilter': hasFilter, 'form': formset, 'monthForm': monthForm,
                                                                     'formChoice': formChoice, 'formEnded': formset_ended,
-                                                                     'isAllie': True, 'totalClaim': totalClaim})
+                                                                     'isAllie': True, 'totalClaim': totalClaim, 'nTransactions': nTransactions})
 
     return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,
                                                                   'endedO': endedOperations, 'nTransactions': nTransactions, 'totalOpen': totalOpen,

@@ -17,9 +17,9 @@ from django.utils import timezone
 class GlobalSettingsForm(forms.ModelForm):
   
   def __init__(self, *args, **kwargs):
-      super(GlobalSettingsForm, self).__init__(*args, **kwargs)
-      for i in self.fields:
-        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+    super(GlobalSettingsForm, self).__init__(*args, **kwargs)
+    for i in self.fields:
+      self.fields[i].widget.attrs.update({'class' : 'form-control'})
 
   class Meta:
     model = GlobalSettings
@@ -117,6 +117,10 @@ class BankAccountForm(forms.Form):
     for i in self.fields:
       self.fields[i].widget.attrs.update({'class' : 'form-control'})
 
+  def clean_number(self):
+    if not re.match(r'^\d+$', self.cleaned_data['number']):
+      raise forms.ValidationError("El número de cuenta solo puede contener letras o caracteres especiales.")
+    return self.cleaned_data['number']
 
 class BankAccountDestForm(BankAccountForm):
   owner = forms.CharField(required=True, label=_(u"Nombre del titular*"))
@@ -478,7 +482,7 @@ class TransactionForm(forms.ModelForm):
   class Meta:
     model = Transaction
     fields = ('operation_type', 'origin_account', 'target_account',
-              'to_exchanger', 'currency', 'amount', 'date', 'transfer_image')
+              'to_exchanger', 'currency','transfer_number', 'amount', 'date', 'transfer_image')
 
 class EditOperationForm(forms.ModelForm):
 
@@ -580,7 +584,7 @@ class ClosureTransactionForm(forms.Form):
                                             queryset=ExchangerAccepts.objects.all().order_by('exchanger'),
                                                  group_by_field='exchanger')
     DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
-    date = forms.DateField(label = "Fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
+    date2 = forms.DateField(label = "Fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
     amount = forms.DecimalField(required=False, label="Monto total")
     transfer_image = forms.FileField(label="Imagen del comprobante", required=False)
     choices = (('O', 'Origen'), ('D', 'Destino'))
