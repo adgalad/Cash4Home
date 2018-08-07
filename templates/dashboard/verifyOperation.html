@@ -110,7 +110,7 @@
                 <br><br>
 
                 <button type="button" class="btn btn-primary" onclick="forward()">Continuar</button>
-                <a href="{% url 'cancelOperation' operation.code %}" onclick="cancelOperation()"><button type="button" class="btn btn-danger">Cancelar operación</button></a>
+                <a href="{% url 'cancelOperation' operation.code %}" onclick="return cancelOperation()"><button type="button" class="btn btn-danger">Cancelar operación</button></a>
               </div>
               <div id="stage-2" style="display: none">
                 <h3>Imagen del comprobante</h3>

@@ -1765,11 +1765,13 @@ def canChangeStatus(operation, newStatus):
   if operation.status == 'Verificado' and newStatus == 'Fondos ubicados':
     operation.status = newStatus
     return True
-  if operation.status == 'Fondos ubicados' and newStatus == 'Fondos transferidos' and operation.transactions.filter(operation_type='TD').count() > 0:
+  if operation.status == 'En reclamo' and newStatus == 'Fondos transferidos':
     operation.status = newStatus
     operation.is_active = False
     return True
-  if operation.status == 'En reclamo' and newStatus == 'Fondos transferidos':
+  allTransactions = Transaction.objects.filter(id_operation=operation, operation_type='TD', currency=operation.target_currency) 
+  totalAmount = sum([tx.amount for tx in allTransactions])
+  if totalAmount >= operation.fiat_amount * operation.exchange_rate and operation.status == 'Fondos ubicados' and newStatus == 'Fondos transferidos':
     operation.status = newStatus
     operation.is_active = False
     return True
