@@ -1697,14 +1697,14 @@ function getLocation(href) {
 };
 
 function goToPreviousPage(){
-  if (document.referrer !== ""){
-    var url = getLocation(document.referrer);
-    if (url.hostname === window.location.hostname && 
-        url.pathname !== window.location.pathname)
-    {
-      return window.location.href = document.referrer;
-    }
-  }
+  // if (document.referrer !== ""){
+  //   var url = getLocation(document.referrer);
+  //   if (url.hostname === window.location.hostname && 
+  //       url.pathname !== window.location.pathname)
+  //   {
+  //     return window.location.href = document.referrer;
+  //   }
+  // }
   return false;
 }
 
