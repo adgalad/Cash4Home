@@ -589,6 +589,7 @@ class ClosureTransactionForm(forms.Form):
     transfer_image = forms.FileField(label="Imagen del comprobante", required=False)
     choices = (('O', 'Origen'), ('D', 'Destino'))
     type_account = forms.ChoiceField(choices=choices, required=False, label="¿Aliado origen o destino?")
+    transfer_number = forms.CharField(required=False, label="Número de la transferencia")
 
     def __init__(self, *args, **kwargs):
       super(ClosureTransactionForm, self).__init__(*args, **kwargs)

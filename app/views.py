@@ -365,9 +365,9 @@ def dashboard(request):
                   for b in destiny_banks.iterator():
                     bank = b.number_account.id_bank.name
                     if (bank in banksSummary.keys()):
-                      banksSummary[bank] += b.amount
+                      banksSummary[bank] += b.amount*actual_op.exchange_rate
                     else:
-                      banksSummary[bank] = b.amount
+                      banksSummary[bank] = b.amount*actual_op.exchange_rate
                 actual_op.save()
               else:
                 msg = "No se puede cambiar el status a %s" % new_status
@@ -391,13 +391,14 @@ def dashboard(request):
         formClosure = ClosureTransactionForm(request.POST, request.FILES)
 
         if (formClosure.is_valid()): #Check the modal
-          date = formClosure.cleaned_data['date']
+          date = formClosure.cleaned_data['date2']
           transfer_image = request.FILES['transfer_image']
           type_account = formClosure.cleaned_data['type_account']
           exchanger_accepts = formClosure.cleaned_data['exchanger']
           exchanger = exchanger_accepts.exchanger
           currency = exchanger_accepts.currency
           amount = formClosure.cleaned_data['amount']
+          transfer_number = formClosure.cleaned_data['transfer_number']
 
           POST_END = request.POST.copy()
 
@@ -435,7 +436,8 @@ def dashboard(request):
                                                       origin_account=origin_account,
                                                       to_exchanger=exchanger,
                                                       currency=currency,
-                                                      amount=actual_op.fiat_amount
+                                                      amount=actual_op.fiat_amount,
+                                                      transfer_number=transfer_number
                                                       ).save()
 
                       #exchanger_accepts.amount_acc += actual_op.fiat_amount
@@ -478,7 +480,8 @@ def dashboard(request):
                                                     origin_account=origin_account,
                                                     to_exchanger=exchanger,
                                                     currency=currency,
-                                                    amount=actual_op.fiat_amount
+                                                    amount=actual_op.fiat_amount,
+                                                    transfer_number=transfer_number
                                                     ).save()
 
                     #exchanger_accepts.amount_acc += actual_op.fiat_amount
@@ -490,9 +493,6 @@ def dashboard(request):
                 exchanger_accepts.amount_acc += amount
                 exchanger_accepts.save()
                 messages.error(request, "Las transacciones fueron creadas exitosamente", extra_tags="alert-success")
-
-        else:
-          print("HOLA")
         
         return redirect('dashboard')
 
