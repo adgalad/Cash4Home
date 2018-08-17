@@ -683,11 +683,11 @@ def createOperation(request):
       if ok and strInRrat:
         rate   = rates[str(fromCurrency) + "/" + str(toCurrency)]
         bank   = fromAccount.id_account.id_bank
-        allies = bank.allies.all()
+        allies = bank.allies.filter(groups__name__in=['Aliado-1'])
 
         if allies.count() == 0:
           for cst in fromAccount.id_account.id_bank.canSendTo.all():
-            allies = cst.target_bank.allies.all()
+            allies = cst.target_bank.allies.filter(groups__name__in=['Aliado-1'])
             if allies.count() > 0:
               break
         cst = fromAccount.id_account.id_bank.canSendTo.all().values_list('target_bank', flat=True)

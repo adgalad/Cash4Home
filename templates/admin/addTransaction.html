@@ -18,7 +18,7 @@
           <div class="text-center admin_content">
             <h3>Crear transacción</h3>
           </div>
-          <form method="post" enctype=multipart/form-data>
+          <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {% for message in messages %}
               <section class="table-view {{message.tags}}">

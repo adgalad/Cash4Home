@@ -119,7 +119,7 @@ class BankAccountForm(forms.Form):
 
   def clean_number(self):
     if not re.match(r'^\d+$', self.cleaned_data['number']):
-      raise forms.ValidationError("El número de cuenta solo puede contener letras o caracteres especiales.")
+      raise forms.ValidationError("El número de cuenta no puede contener letras o caracteres especiales.")
     return self.cleaned_data['number']
 
 class BankAccountDestForm(BankAccountForm):
