@@ -11,7 +11,9 @@ def lookup(dict, index):
 def currency(value):
     try:
         v = float(value)
-        return '{:,.2f}'.format(v)
+        strValue = '{:,.2f}'.format(v)
+        
+        return strValue if strValue != "0.00" else crypto(value)
     except:
         pass    
         
@@ -21,7 +23,8 @@ def currency(value):
 def crypto(value):
     try:
         v = float(value)
-        return '{:,.8f}'.format(v)
+        strValue = '{:,.8f}'.format(v)
+        return strValue if strValue != "0.00000000" else str(value)
     except:
         pass
         
