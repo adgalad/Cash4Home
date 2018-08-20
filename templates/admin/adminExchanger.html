@@ -45,7 +45,14 @@
                     <tr>
                       <td>{{ e.exchanger.name }}</td>
                       <td>{{ e.currency.name }}</td>
-                      <td>{{ e.amount_acc }} {{e.currency.code}}</td>  
+                      <td>
+                        {% if e.currency.currency_type == "FIAT" %}
+                          {{ e.amount_acc | currency }} 
+                        {% else %}
+                          {{ e.amount_acc | crypto }} 
+                        {% endif %}
+                        {{e.currency.code}}
+                      </td>  
                       {% if e.exchanger.is_active %}
                         <td>Activo</td>
                       {% else %}
