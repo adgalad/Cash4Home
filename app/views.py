@@ -672,7 +672,7 @@ def createOperation(request):
 
       fromCurrency = fromAccount.id_account.id_currency
       toCurrency = form1.cleaned_data['currency']
-      strInRrat = (str(fromCurrency) + "/" + str(toCurrency)) in rates
+      strInRrat = (str(toCurrency) + "/" + str(fromCurrency)) in rates
       
       '''
         Apartir de aqui, se hace la busqueda del aliado que se asociara con la nueva operacion
@@ -681,7 +681,7 @@ def createOperation(request):
         De no encontrar, se arroja un error.
       '''
       if ok and strInRrat:
-        rate   = rates[str(fromCurrency) + "/" + str(toCurrency)]
+        rate   = rates[str(toCurrency) + "/" + str(fromCurrency)]
         bank   = fromAccount.id_account.id_bank
         allies = bank.allies.filter(groups__name__in=['Aliado-1'])
 

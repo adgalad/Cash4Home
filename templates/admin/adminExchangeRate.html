@@ -45,7 +45,14 @@
                     <tr>
                       <td>{{ r.origin_currency.code }}</td>
                       <td>{{ r.target_currency.code }}</td>
-                      <td>{{ r.rate }} {{ r.target_currency.code }}</td>  
+                      <td>
+                        {% if r.origin_currency.currency_type == "FIAT" %}
+                          {{ r.rate | currency }} 
+                        {% else %}
+                          {{ r.rate | crypto }} 
+                        {% endif %}
+                        {{ r.origin_currency.code }}
+                      </td>  
                       <td>{{ r.date }}</td>
                       <td>
                         <a  href="{% url 'editExchangeRate' r.id %}"><i alt="Editar tasa" class="fa fa-edit"></i></a>
