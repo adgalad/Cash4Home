@@ -17,35 +17,35 @@ class PriceRetriever:
   def ask(self):
     # print(requests.get('https://localbitcoins.com//bitcoinaverage/ticker-all-currencies/').content)
     try:
-        self.localbitcoins = json.loads(requests.get('https://localbitcoins.com/bitcoinaverage/ticker-all-currencies/', timeout=2).content.decode('utf-8'))
+        self.localbitcoins = json.loads(requests.get('https://localbitcoins.com/bitcoinaverage/ticker-all-currencies/', timeout=10).content.decode('utf-8'))
     except:
         self.localbitcoins = None
     
     try:
-        self.gemini = json.loads(requests.get('https://api.gemini.com/v1/pubticker/btcusd', timeout=2).content.decode('utf-8'))
+        self.gemini = json.loads(requests.get('https://api.gemini.com/v1/pubticker/btcusd', timeout=10).content.decode('utf-8'))
     except:
         self.gemini = None
     
 
     try:
-        self.bitinka = json.loads(requests.get('https://www.bitinka.com/api/apinka/ticker?format=json', timeout=2).content.decode('utf-8'))
+        self.bitinka = json.loads(requests.get('https://www.bitinka.com/api/apinka/ticker?format=json', timeout=10).content.decode('utf-8'))
     except:
         self.bitinka = None
     
     
     
     try:
-        self.ripio = json.loads(requests.get('https://www.ripio.com/api/v1/rates/', timeout=2).content.decode('utf-8'))
+        self.ripio = json.loads(requests.get('https://www.ripio.com/api/v1/rates/', timeout=10).content.decode('utf-8'))
     except:
         self.ripio = None
     
     try:
-        self.cexio = json.loads(requests.get('https://cex.io/api/ticker/BTC/USD', timeout=2).content.decode('utf-8'))
+        self.cexio = json.loads(requests.get('https://cex.io/api/ticker/BTC/USD', timeout=10).content.decode('utf-8'))
     except:
         self.cexio = None
     
     try:
-        self.coinbase = json.loads(requests.get('https://api.coinbase.com/v2/exchange-rates?currency=BTC', timeout=2).content.decode('utf-8'))
+        self.coinbase = json.loads(requests.get('https://api.coinbase.com/v2/exchange-rates?currency=BTC', timeout=10).content.decode('utf-8'))
     except:
         self.coinbase = None
 
