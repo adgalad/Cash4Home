@@ -7,34 +7,47 @@ import sys
 ## Pair: BTCUSD, USDBTC, DASHUSD, etc
 class PriceRetriever:
   def __init__(self):
-    self.localbitcoins = {}
-    self.gemini = {}
-    self.bitinka = {}
-    self.ripio = {}
+    self.localbitcoins = None
+    self.gemini = None
+    self.bitinka = None
+    self.ripio = None
+    self.cexio = None
+    self.coinbase = None
 
   def ask(self):
     # print(requests.get('https://localbitcoins.com//bitcoinaverage/ticker-all-currencies/').content)
     try:
-        self.localbitcoins = json.loads(requests.get('https://localbitcoins.com/bitcoinaverage/ticker-all-currencies/').content.decode('utf-8'))
+        self.localbitcoins = json.loads(requests.get('https://localbitcoins.com/bitcoinaverage/ticker-all-currencies/', timeout=2).content.decode('utf-8'))
     except:
         self.localbitcoins = None
     
     try:
-        self.gemini = json.loads(requests.get('https://api.gemini.com/v1/pubticker/btcusd').content.decode('utf-8'))
+        self.gemini = json.loads(requests.get('https://api.gemini.com/v1/pubticker/btcusd', timeout=2).content.decode('utf-8'))
     except:
         self.gemini = None
     
 
     try:
-        self.bitinka = json.loads(requests.get('https://www.bitinka.com/api/apinka/ticker?format=json').content.decode('utf-8'))
+        self.bitinka = json.loads(requests.get('https://www.bitinka.com/api/apinka/ticker?format=json', timeout=2).content.decode('utf-8'))
     except:
         self.bitinka = None
     
-
+    
+    
     try:
-        self.ripio = json.loads(requests.get('https://www.ripio.com/api/v1/rates/').content.decode('utf-8'))
+        self.ripio = json.loads(requests.get('https://www.ripio.com/api/v1/rates/', timeout=2).content.decode('utf-8'))
     except:
         self.ripio = None
+    
+    try:
+        self.cexio = json.loads(requests.get('https://cex.io/api/ticker/BTC/USD', timeout=2).content.decode('utf-8'))
+    except:
+        self.cexio = None
+    
+    try:
+        self.coinbase = json.loads(requests.get('https://api.coinbase.com/v2/exchange-rates?currency=BTC', timeout=2).content.decode('utf-8'))
+    except:
+        self.coinbase = None
 
   def avg(self, symbol, prices):
     count = 0
@@ -70,12 +83,22 @@ class PriceRetriever:
         prices['PEN']['prices']['Bitinka'] = float(self.bitinka['PEN']['ask'])
 
     if self.ripio:
-        prices['USD']['prices']['Ripio (Venta)']  = float(self.ripio['rates']['USD_SELL'])
-        prices['USD']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['USD_BUY'])
-        prices['ARS']['prices']['Ripio (Venta)']  = float(self.ripio['rates']['ARS_SELL'])
-        prices['ARS']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['ARS_BUY'])
-        prices['PEN']['prices']['Ripio (Venta)']  = float(self.ripio['rates']['PEN_SELL'])
-        prices['PEN']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['PEN_BUY'])
+        prices['USD']['prices']['Ripio']  = float(self.ripio['rates']['USD_SELL'])
+        # prices['USD']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['USD_BUY'])
+        prices['ARS']['prices']['Ripio']  = float(self.ripio['rates']['ARS_SELL'])
+        # prices['ARS']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['ARS_BUY'])
+        prices['PEN']['prices']['Ripio']  = float(self.ripio['rates']['PEN_SELL'])
+        # prices['PEN']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['PEN_BUY'])
+
+
+
+    if self.cexio:
+        prices['USD']['prices']['Cex.io'] = float(self.cexio['ask'])
+
+    if self.coinbase:
+        prices['USD']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['USD'])
+        prices['ARS']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['ARS'])
+        prices['PEN']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['PEN'])
 
     prices['USD']['avg'] = self.avg('USD', prices)
     prices['VEF']['avg'] = self.avg('VEF', prices)

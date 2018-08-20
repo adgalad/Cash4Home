@@ -17,6 +17,7 @@ def currency(value):
         
     return value
 
+@register.filter(name='crypto')
 def crypto(value):
     try:
         v = float(value)

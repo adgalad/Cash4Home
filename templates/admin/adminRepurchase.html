@@ -57,9 +57,23 @@
                       <td>{{ r.date }}</td>
                       <td>{{ r.origin_currency.code }}</td>
                       <td>{{ r.target_currency.code }}</td>  
-                      <td>{{ r.rate }} {{ r.target_currency.code }}</td>  
+                      <td>
+                        {% if r.target_currency.currency_type == "Crypto" %}
+                          {{ r.rate | crypto }}
+                        {% else %}
+                          {{ r.rate | currency }}
+                        {% endif %}
+                        {{ r.target_currency.code }}
+                      </td>  
                       <td>{{ r.exchanger.name }}</td>
-                      <td>{{ r.amount }}{{ r.target_currency.code }}</td>
+                      <td>
+                        {% if r.target_currency.currency_type == "Crypto" %}
+                          {{ r.amount | crypto }}
+                        {% else %}
+                          {{ r.amount | currency }}
+                        {% endif %}
+                        {{ r.target_currency.code }}
+                      </td>
                       <td>
                         <a href="{% url 'viewRepurchase' r.id %}">
                           <i class="fa fa-search"></i>Ver
