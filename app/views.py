@@ -2254,7 +2254,7 @@ def addRepurchase(request, _currency_id):
                   new_repurchase.save()
                   firstSelected = False
 
-                totalRepurchase += operation.fiat_amount/Decimal(rate)
+                totalRepurchase += operation.fiat_amount*Decimal(rate)
                 new_cameFrom = RepurchaseCameFrom(id_repurchase=new_repurchase,id_operation=operation)
                 new_cameFrom.save()
 
