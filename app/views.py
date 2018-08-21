@@ -672,16 +672,15 @@ def createOperation(request):
 
       fromCurrency = fromAccount.id_account.id_currency
       toCurrency = form1.cleaned_data['currency']
-      strInRrat = (str(toCurrency) + "/" + str(fromCurrency)) in rates
-      
+      strInRate = (str(fromCurrency) + "/" + str(toCurrency)) in rates      
       '''
         Apartir de aqui, se hace la busqueda del aliado que se asociara con la nueva operacion
         Primero se buscan aliados asociado al banco origen
         Luego, se intenta viendo los bancos a los cuales "puede enviar" el banco origen
         De no encontrar, se arroja un error.
       '''
-      if ok and strInRrat:
-        rate   = rates[str(toCurrency) + "/" + str(fromCurrency)]
+      if ok and strInRate:
+        rate   = rates[str(fromCurrency) + "/" + str(toCurrency)]
         bank   = fromAccount.id_account.id_bank
         allies = bank.allies.filter(groups__name__in=['Aliado-1'])
 
@@ -832,7 +831,7 @@ def createOperation(request):
                           )  
         else:
           messages.error(request, 'No se pudo crear la operación, ya que no hay aliados disponibles en este momento. Por favor, intente mas tarde.', extra_tags="alert-error")  
-      elif not strInRrat:
+      elif not strInRate:
         messages.error(request, 'Lo sentimos, no es posible crear una operacion de %s a %s en este momento.'%(str(fromCurrency),str(toCurrency)), extra_tags="alert-error")
       else:
         messages.error(request, 'No se pudo crear la operación. Revise los datos ingresados.', extra_tags="alert-error")
