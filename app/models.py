@@ -351,7 +351,7 @@ class Operation(models.Model):
 
     def _save(self, fromCountry, toCountry, date, *args, **kwargs):
         
-        self.code = "MT-%s-%s-%s-%s"%(fromCountry, toCountry, date.strftime("%d%m%Y"), Operation.objects.all().count())
+        self.code = "MT-%s-%s-%s-%s"%(fromCountry, toCountry, date.strftime("%d%m%Y"), Operation.objects.all().count()%1000)
         self.save(*args, **kwargs)
         return self.code
 
