@@ -196,8 +196,12 @@ def dashboard(request):
       tmpEndOperations = Operation.objects.filter(is_active=False).order_by('date')
     # El operador ve todas las operaciones relacionadas con su pais
     elif request.user.groups.filter(name='Operador').exists():
-      operations = Operation.objects.filter(Q(transactions__origin_account__id_bank__country__name=request.user.country.name) | 
-                                            Q(transactions__target_account__id_bank__country__name=request.user.country.name))
+      user = request.user
+      operations = Operation.objects.filter(
+            Q(id_allie_origin=user) | Q(id_allie_target=user) |
+            Q(transactions__origin_account__id_bank__country__name=request.user.country.name) | 
+            Q(transactions__target_account__id_bank__country__name=request.user.country.name)
+          )
       tmpActOperations = operations.filter(is_active=True).order_by('date')
       tmpEndOperations = operations.filter(is_active=False).order_by('date')
     # El usuario coordinador puede ver sus operaciones y la de sus coordinados
