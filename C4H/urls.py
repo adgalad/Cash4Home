@@ -47,6 +47,7 @@ urlpatterns = [
 
     url(r'^accounts$', views.accounts, name='accounts'),
     url(r'^account/new$', views.createAccount, name='createAccount'),
+    url(r'^account/edit/(?P<pk>.+)$', views.editAccountDetails, name='editAccountDetails'),
 
     url(r'^operation/new$', views.createOperation, name='createOperation'),
     url(r'^operation/verify/(?P<_operation_id>.+)$', views.verifyOperation, name='verifyOperation'),

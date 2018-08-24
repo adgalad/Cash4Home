@@ -69,16 +69,22 @@
                     <th class="column-title">Número de cuenta </th>
                     <th class="column-title">Titular</th>
                     <th class="column-title">Email</th>
+                    <th class="column-title">Editar</th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {% for acc in dest %}
                   <tr class="even pointer">
-                    <td class=" ">{{ acc.id_account.id_bank }}</td>
-                    <td class=" ">{{ acc.id_account.number }}</i></td>
-                    <td class=" ">{{ acc.owner }}</td>
-                    <td class=" ">{{ acc.email }}</td>
+                    <td>{{ acc.id_account.id_bank }}</td>
+                    <td>{{ acc.id_account.number }}</i></td>
+                    <td>{{ acc.owner }}</td>
+                    <td>{{ acc.email }}</td>
+                    <td>
+                      <a href="{% url 'editAccountDetails' acc.id %}">
+                        <i class="fa fa-edit"></i> 
+                      </a>
+                    </td>
                   </tr>
                   {% endfor %}
                 </tbody>
