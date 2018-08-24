@@ -194,7 +194,12 @@ def dashboard(request):
     if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
       tmpActOperations = Operation.objects.filter(is_active=True).order_by('date')
       tmpEndOperations = Operation.objects.filter(is_active=False).order_by('date')
-    
+    # El operador ve todas las operaciones relacionadas con su pais
+    elif request.user.groups.filter(name='Operador').exists():
+      operations = Operation.objects.filter(Q(transactions__origin_account__id_bank__country__name=request.user.country.name) | 
+                                            Q(transactions__target_account__id_bank__country__name=request.user.country.name))
+      tmpActOperations = operations.filter(is_active=True).order_by('date')
+      tmpEndOperations = operations.filter(is_active=False).order_by('date')
     # El usuario coordinador puede ver sus operaciones y la de sus coordinados
     elif request.user.has_perm('coordinate_operation'):
       ids = request.user.coordinatesUsers.all().values_list('id', flat=True) + [request.user.id]
@@ -815,7 +820,7 @@ def createOperation(request):
                     'registration/base_email.html',
                     {
                         'message': message,
-                        'tittle':  'Sea ha creado la operación exitosamente.',
+                        'title':  'Sea ha creado la operación exitosamente.',
                         'url': DEFAULT_DOMAIN,
                     }
                 )
@@ -1102,7 +1107,7 @@ def sendEmailValidation(user):
           'registration/base_email.html',
           {
               'message': message,
-              'tittle':  'Bienvenido, ' + user.get_full_name(),
+              'title':  'Bienvenido, ' + user.get_full_name(),
               'url': DEFAULT_DOMAIN,
           }
       )
@@ -1585,7 +1590,7 @@ def sendEmailUserVerification(user):
           'registration/base_email.html',
           {
               'message': message,
-              'tittle': "¡%s, hemos verificado tu cuenta!"%user.get_short_name(),
+              'title': "¡%s, hemos verificado tu cuenta!"%user.get_short_name(),
               'url': DEFAULT_DOMAIN,
           }
       )
@@ -1808,7 +1813,7 @@ def sendEmailOperationFinished(operation):
           'registration/base_email.html',
           {
               'message': message,
-              'tittle': "Su operación ha sido finalizada ",
+              'title': "Su operación ha sido finalizada ",
               'url': DEFAULT_DOMAIN,
           }
       )
