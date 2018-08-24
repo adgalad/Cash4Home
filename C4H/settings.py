@@ -146,8 +146,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-DATE_FORMAT = 'd/M/Y'
-DATETIME_FORMAT = 'd/M/Y H:i'
+DATE_FORMAT = 'Y/m/d'
+DATETIME_FORMAT = 'Y/m/d H:i'
 TIME_FORMAT = 'H:i'
 
 
