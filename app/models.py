@@ -194,7 +194,7 @@ class ExchangeRate(models.Model):
 
     
     def __str__(self):
-        return str(self.target_currency) + "/" + str(self.origin_currency)
+        return str(self.origin_currency) + "/" + str(self.target_currency)
 
     class Meta:
         default_permissions = ()
