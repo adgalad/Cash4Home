@@ -57,7 +57,7 @@ class SignUpForm(UserCreationForm):
 
   def clean_id_number(self):
     id_number = self.cleaned_data['id_number']
-    if not re.match(r'[0-9]+', id_number):
+    if not re.match(r'^[0-9]+$', id_number):
       raise forms.ValidationError('El número de identificación no puede contener letras o signos de puntuación.')
     return id_number
 
@@ -122,21 +122,28 @@ class BankAccountForm(forms.Form):
       raise forms.ValidationError("El número de cuenta no puede contener letras o caracteres especiales.")
     return self.cleaned_data['number']
 
-class BankAccountDestForm(BankAccountForm):
+class AccountBelongsToForm(forms.Form):
   owner = forms.CharField(required=True, label=_(u"Nombre del titular*"))
   id_number = forms.CharField(max_length=30, required=True, label=_(u'Número de identificación*'))
   email = forms.EmailField(required=True, label=_(u"Email del titular*"))
   alias = forms.CharField(required=False, label=_(u"Alias"))
-  
+
   def clean_id_number(self):
+
     id_number = self.cleaned_data['id_number']
-    if not re.match(r'[0-9]+', id_number):
+    print("AQUIIIII", id_number, bool(re.match(r'^[0-9]+$', id_number)))
+    if not re.match(r'^[0-9]+$', id_number):
       raise forms.ValidationError('El número de identificación no puede contener letras o signos de puntuación.')
     return id_number
   
   def __init__(self, *args, **kwargs):
-    super(BankAccountDestForm, self).__init__(*args, **kwargs)
+    super(AccountBelongsToForm, self).__init__(*args, **kwargs)
     self.fields['id_number'].widget.attrs.update({'placeholder':'Ej 12345678'})
+    for i in self.fields:
+      self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
+class BankAccountDestForm(AccountBelongsToForm, BankAccountForm):
+  pass
 
 class FromAccountForm(forms.Form):
   account = forms.ModelChoiceField(queryset=None,label="Cuenta origen", required=True)
@@ -358,7 +365,7 @@ class NewUserForm(forms.ModelForm):
 
   def clean_id_number(self):
     id_number = self.cleaned_data['id_number']
-    if not re.match(r'[0-9]+', id_number):
+    if not re.match(r'^[0-9]+$', id_number):
       raise forms.ValidationError('El número de identificación no puede contener letras o signos de puntuación.')
     return id_number
 
@@ -389,7 +396,7 @@ class NewThirdAccountAssociatedForm(forms.Form):
 
   def clean_id_number(self):
     id_number = self.cleaned_data['id_number']
-    if not re.match(r'[0-9]+', id_number):
+    if not re.match(r'^[0-9]+$', id_number):
       raise forms.ValidationError('El número de identificación no puede contener letras o signos de puntuación.')
     return id_number
 

@@ -1025,7 +1025,30 @@ def createAccount(request):
       form.fields['bank'].queryset = Bank.objects.all().exclude(country="Venezuela").order_by('country')
   return render(request, 'dashboard/createAccount.html', {"form": form, 'own':own})
 
+def editAccountDetails(request, pk):
+  try:
+    acc = AccountBelongsTo.objects.get(pk=pk)
+  except Exception as e:
+    raise PermissionDenied
 
+  if request.method == "POST":
+    form = AccountBelongsToForm(request.POST)
+    if form.is_valid():
+      acc.owner = form.cleaned_data['owner']
+      acc.email = form.cleaned_data['email']
+      acc.id_number = form.cleaned_data['id_number']
+      acc.alias = form.cleaned_data['alias']
+      acc.save()
+      messages.error(request, 'Se modificaron los datos exitosamente.')
+    else:
+      return render(request, 'dashboard/editAccount.html', {"form": form})
+  form = AccountBelongsToForm(initial={
+      'owner': acc.owner,
+      'id_number': acc.id_number,
+      'email': acc.email,
+      'alias': acc.alias
+    })
+  return render(request, 'dashboard/editAccount.html', {"form": form})
 
 def password_reset(request):
   if request.method == "POST":

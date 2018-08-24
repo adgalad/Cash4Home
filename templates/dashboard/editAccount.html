@@ -1,0 +1,130 @@
+{% extends "base_dashboard.html"%}
+
+{% block title %} Añadir cuenta bancaria {% endblock title %}
+
+
+{% block stylesheets %}
+  {{ block.super }}
+  <style>
+    /* Tooltip container */
+    .tooltipaba {
+        position: relative;
+        display: inline-block;
+        border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+    }
+
+    /* Tooltip text */
+    .tooltipaba .tooltiptext {
+        visibility: hidden;
+        width: 500px;
+        background-color: white;
+        border: gray solid 1px;
+        padding: 5px 0;
+        border-radius: 6px;
+     
+        /* Position the tooltip text - see examples below! */
+        position: absolute;
+        z-index: 1;
+    }
+
+    /* Show the tooltip text when you mouse over the tooltip container */
+    .tooltipaba:hover .tooltiptext {
+        visibility: visible;
+    }
+  </style>
+{% endblock stylesheets %}
+
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+          <h3>Añadir una cuenta de banco</h3>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+        <div class="x_panel">
+          <div class="x_content">
+            {% if own %}
+              <h4>Cuenta origen</h4>
+              <p>Introduzca los datos de su cuenta, desde la cual quiere enviar dinero para remesas.</p>
+            {% else %}
+              <h4>Cuenta destino</h4>
+              <p>Introduzca los datos de la cuenta de su familiar, amigo o propia a la cual quiere enviar dinero en Venezuela.</p>
+            {% endif %}
+            {% for message in messages %}
+              <br>
+              <div class="alert alert-success">
+                {{ message }}
+              </div>
+            {% endfor %}
+            <form class="form-horizontal form-label-left" method="post" style="margin-left: 2%; max-width: 500px;">
+              {% csrf_token %}
+
+              <div class="form-group has-feedback">
+                <label>
+                  {{ form.owner.label}} 
+                </label> 
+                {{ form.owner }}  
+                {% for error in form.owner.errors %}
+                  <p style="color: red">{{ error }}</p>
+                {% endfor %}
+                
+                <label>
+                  {{ form.id_number.label}} 
+                </label> 
+                {{ form.id_number }}  
+                {% for error in form.id_number.errors %}
+                  <p style="color: red">{{ error }}</p>
+                {% endfor %}
+                
+                <label>
+                  {{ form.email.label}} 
+                </label> 
+                {{ form.email }}  
+                {% for error in form.email.errors %}
+                  <p style="color: red">{{ error }}</p>
+                {% endfor %}
+                
+                <label>
+                  {{ form.alias.label}} 
+                </label> 
+                {{ form.alias }}  
+                {% for error in form.alias.errors %}
+                  <p style="color: red">{{ error }}</p>
+                {% endfor %}
+              </div>
+              <br>
+              
+
+
+              <a class="btn btn-primary" href="{% url 'accounts' %}" onclick="return !goToPreviousPage()"><i class="fa fa-chevron"></i>Volver</a>
+              <button class="btn btn-primary submit" type="submit">Realizar cambios</button>
+            </form>
+          </div>
+        </div>
+    </div>
+  </div>
+
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super}}
+  <!-- jQuery Smart Wizard -->
+  <script src="/static/vendors/jQuery-Smart-Wizard/js/jquery.smartWizard.js"></script>
+  <script type="text/javascript">
+    const updateABAField = function(){
+      country = $('option[value="'+$('#id_bank').val()+'"]').parent()[0].label
+      if (country !== undefined){
+        if (country == "Estados Unidos"){
+          $('#id_router').prop('disabled', false)
+        } else {
+          $('#id_router').prop('disabled', true)
+        }
+      }
+    }
+
+    $('#id_bank').change(updateABAField)
+  </script>
+{% endblock javascripts %}
