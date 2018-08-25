@@ -81,14 +81,14 @@
                       {% else %}
                         <td>{{ values.1 }} {{ values.0.currency.code }}</td>
                       {% endif %}
-                      <td>{{ values.4}}</td> <!-- Total operaciones enviadas -->
+                      <td>{{ values.4 | currency }}</td> <!-- Total operaciones enviadas -->
                       {% if not values.3 %} <!-- Dinero enviado -->
                         <td>0 {{ values.0.currency.code }}</td>
                       {% else %}
                         <td>{{ values.3 }} {{ values.0.currency.code }}</td>
                       {% endif %}
-                      <td>{{ values.5 }}</td> <!-- Diferencia -->
-                      <td>{{ values.0.status }}</td> <!-- Estado del cierre -->
+                      <td>{{ values.5 | currency }}</td> <!-- Diferencia -->
+                      <td>{{ values.0.status | currency }}</td> <!-- Estado del cierre -->
                       <td>
                         <a href="{% url 'detailClosure' values.0.id %}">
                           <i class="fa fa-search"></i>
