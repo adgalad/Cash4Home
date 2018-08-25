@@ -681,8 +681,7 @@ def createOperation(request):
 
       fromCurrency = fromAccount.id_account.id_currency
       toCurrency = form1.cleaned_data['currency']
-      strInRate = (str(fromCurrency) + "/" + str(toCurrency)) in rates
-      
+      strInRate = (str(fromCurrency) + "/" + str(toCurrency)) in rates      
       '''
         Apartir de aqui, se hace la busqueda del aliado que se asociara con la nueva operacion
         Primero se buscan aliados asociado al banco origen
