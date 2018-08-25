@@ -85,7 +85,7 @@
                       {% if not values.3 %} <!-- Dinero enviado -->
                         <td>0 {{ values.0.currency.code }}</td>
                       {% else %}
-                        <td>{{ values.3 }} {{ values.0.currency.code | currency }}</td>
+                        <td>{{ values.3 | currency }} {{ values.0.currency.code }}</td>
                       {% endif %}
                       <td>{{ values.5 | currency }}</td> <!-- Diferencia -->
                       <td>{{ values.0.status }}</td> <!-- Estado del cierre -->
