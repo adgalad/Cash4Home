@@ -61,7 +61,7 @@
                   <b>Cantidad total enviada por el aliado</b>
                 </div>
                 <div class="col-md-3 col-sm-3 col-xs-12">
-                  {{ closure.final_amount }} {{ closure.currency.code }}
+                  {{ closure.final_amount | currency }} {{ closure.currency.code }}
                 </div>
                 <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
                   <b>Estado actual</b>
