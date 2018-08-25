@@ -77,18 +77,18 @@
                       <td>{{ values.0.date }}</td> <!-- Fecha -->
                       <td>{{ values.2 }}</td>  <!-- Total operaciones recibidas -->
                       {% if not values.1 %} <!-- Dinero recibido -->
-                        <td>0 {{ values.0.currency.code }}</td>
+                        <td>0.00 {{ values.0.currency.code }}</td>
                       {% else %}
-                        <td>{{ values.1 }} {{ values.0.currency.code }}</td>
+                        <td>{{ values.1 | currency }} {{ values.0.currency.code }}</td>
                       {% endif %}
-                      <td>{{ values.4 | currency }}</td> <!-- Total operaciones enviadas -->
+                      <td>{{ values.4 }}</td> <!-- Total operaciones enviadas -->
                       {% if not values.3 %} <!-- Dinero enviado -->
                         <td>0 {{ values.0.currency.code }}</td>
                       {% else %}
-                        <td>{{ values.3 }} {{ values.0.currency.code }}</td>
+                        <td>{{ values.3 }} {{ values.0.currency.code | currency }}</td>
                       {% endif %}
                       <td>{{ values.5 | currency }}</td> <!-- Diferencia -->
-                      <td>{{ values.0.status | currency }}</td> <!-- Estado del cierre -->
+                      <td>{{ values.0.status }}</td> <!-- Estado del cierre -->
                       <td>
                         <a href="{% url 'detailClosure' values.0.id %}">
                           <i class="fa fa-search"></i>
