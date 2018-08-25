@@ -192,8 +192,8 @@ def dashboard(request):
   else:
     # Si es usuario tiene el permiso 'operation_all' o admin, puede ver todas las operaciones
     if request.user.has_perm('dashboard.operations_all') or (request.user.is_superuser):
-      tmpActOperations = Operation.objects.filter(is_active=True).order_by('date')
-      tmpEndOperations = Operation.objects.filter(is_active=False).order_by('date')
+      tmpActOperations = Operation.objects.filter(is_active=True).order_by('-date')
+      tmpEndOperations = Operation.objects.filter(is_active=False).order_by('-date')
     # El operador ve todas las operaciones relacionadas con su pais
     elif request.user.groups.filter(name='Operador').exists():
       user = request.user
@@ -2404,7 +2404,10 @@ def summaryByAlly(request):
           total_sent = Decimal(0)
           aux_sent = {}
           aux_sent['total_sent'] = Decimal(0)
-        diff = aux_received['total_received'] - aux_sent['total_sent']
+        if aux_received['total_received'] and aux_sent['total_sent']:
+          diff = aux_received['total_received'] - aux_sent['total_sent']
+        else:
+          diff = 0
         closure_table[str(ally.id)+c.date.strftime("%d%m%Y")] = [c, aux_received['total_received'], total_received, aux_sent['total_sent'], total_sent, diff]
         general_received += total_received
         general_sent += total_sent
