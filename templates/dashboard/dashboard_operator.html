@@ -112,6 +112,29 @@
                                 {% endfor %}
                               </tbody>
                             </table>
+                            {% if key != "VEF" %}
+                            <table class="table precio" id="t-usd">
+                              <thead>
+                                <tr> 
+                                  <th> Tasa Calculada</th> 
+                                  <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for exchanger, price in value.prices.items %}
+                                      <tr>
+                                        <td>
+                                          {{ exchanger }}
+                                        </td>
+                                        <td>
+                                          {{prices  | lookup:'VEF' | lookup:'prices' | lookup:'Localbitcoins' | div:price | currency}}
+                                        </td>
+                                      </tr>        
+                                {% endfor %}
+                                
+                              </tbody>
+                            </table>
+                            {% endif %}
                           </div>
                         </div>
                       </div>

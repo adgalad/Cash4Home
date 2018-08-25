@@ -45,6 +45,11 @@ class PriceRetriever:
         self.cexio = None
     
     try:
+        self.binance = json.loads(requests.get('https://api.binance.com/api/v1/ticker/price?symbol=BTCUSDT', timeout=10).content.decode('utf-8'))
+    except:
+        self.binance = None
+
+    try:
         self.coinbase = json.loads(requests.get('https://api.coinbase.com/v2/exchange-rates?currency=BTC', timeout=10).content.decode('utf-8'))
     except:
         self.coinbase = None
@@ -61,12 +66,14 @@ class PriceRetriever:
     return average/count
 
   def getPriceInformation(self):
-    prices = {
-                'USD': { 'prices':{}, 'name':'', 'avg': 0 },
-                'VEF': { 'prices':{}, 'name':'', 'avg': 0 },
-                'ARS': { 'prices':{}, 'name':'', 'avg': 0 },
-                'PEN': { 'prices':{}, 'name':'', 'avg': 0 },
-            }
+    file = open(os.path.join('./staticfiles', "BTCPrice.json"), "r")
+    prices = json.loads(file.read())
+    # prices = {
+    #             'USD': { 'prices':{}, 'name':'', 'avg': 0 },
+    #             'VEF': { 'prices':{}, 'name':'', 'avg': 0 },
+    #             'ARS': { 'prices':{}, 'name':'', 'avg': 0 },
+    #             'PEN': { 'prices':{}, 'name':'', 'avg': 0 },
+    #         }
 
     if self.localbitcoins:
         prices['USD']['prices']['Localbitcoins'] = float(self.localbitcoins["USD"]["avg_12h"])
@@ -87,18 +94,19 @@ class PriceRetriever:
         # prices['USD']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['USD_BUY'])
         prices['ARS']['prices']['Ripio']  = float(self.ripio['rates']['ARS_SELL'])
         # prices['ARS']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['ARS_BUY'])
-        prices['PEN']['prices']['Ripio']  = float(self.ripio['rates']['PEN_SELL'])
+        # prices['PEN']['prices']['Ripio']  = float(self.ripio['rates']['PEN_SELL'])
         # prices['PEN']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['PEN_BUY'])
 
-
+    if self.binance:
+        prices['USD']['prices']['Binance']  = float(self.binance['price'])
 
     if self.cexio:
         prices['USD']['prices']['Cex.io'] = float(self.cexio['ask'])
 
     if self.coinbase:
         prices['USD']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['USD'])
-        prices['ARS']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['ARS'])
-        prices['PEN']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['PEN'])
+        # prices['ARS']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['ARS'])
+        # prices['PEN']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['PEN'])
 
     prices['USD']['avg'] = self.avg('USD', prices)
     prices['VEF']['avg'] = self.avg('VEF', prices)
@@ -121,6 +129,7 @@ class UpdateBTCPrice():
     def __init__(self):
         self.BTCPrice = PriceRetriever()
     
+
     def do(self):
         try:
             self.BTCPrice.ask()
@@ -130,7 +139,7 @@ class UpdateBTCPrice():
             file.close()
 
         except Exception as e:
-            print(e)
+            print(">>", e)
 
         
         
