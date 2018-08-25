@@ -1,7 +1,9 @@
 # Created by https://www.gitignore.io
 
 *.sqlite3
-
+db/*
+staticfiles/*
+app/migrations/*
 ### OSX ###
 .DS_Store
 .AppleDouble
