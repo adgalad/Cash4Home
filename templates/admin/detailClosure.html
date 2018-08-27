@@ -85,6 +85,7 @@
                           <th class="column-title">Cant. enviada</th>
                           <th class="column-title">Fecha Creación</th>
                           <th class="column-title">Estado</th>
+                          <th class="column-title">Devuelto</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -101,6 +102,13 @@
                               {% else %}
                                 {{ op.status }}
                               {% endif %}
+                            </td>
+                            <td>
+                                {% if op.ally_pay_back %}
+                                  <i class="fa fa-check green"></i>
+                                {% else %}
+                                    <i class="fa fa-times red"></i>
+                                {% endif %}
                             </td>
                           </tr>
                         {% endfor %}

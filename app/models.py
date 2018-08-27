@@ -323,6 +323,7 @@ class Operation(models.Model):
                       ('Faltan recaudos', 'Faltan recaudos'),
                       ('Por verificar', 'Por verificar'), 
                       ('Verificado', 'Verificado'),
+                      ('Publicado', 'Publicado'),
                       ('Fondos ubicados', 'Fondos ubicados'),
                       ('Fondos transferidos', 'Fondos transferidos'),
                       ('En reclamo', 'En reclamo'))
@@ -453,7 +454,7 @@ class OperationStateChange(models.Model):
     # The primary key is the django id
     date = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User)
-    status_choices = (('Faltan recaudos', 'Faltan recaudos'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'),
+    status_choices = (('Faltan recaudos', 'Faltan recaudos'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Publicado', 'Publicado'),
                       ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'), ('En reclamo', 'En reclamo'))
     original_status = models.CharField(choices=status_choices, max_length=20)
     new_status = models.CharField(choices=status_choices, max_length=20)

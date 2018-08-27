@@ -335,9 +335,11 @@
                   <a class="btn btn-primary" href="{% url 'operationHistory' operation.code %}"><i class="fa fa-book"></i>&nbsp Historial</a>
                 {% endif %}
                 {% if perms.admin.cancel_operation and operation.is_active or request.user.is_superuser %}
-                  <a class="btn btn-danger"  href="{% url 'cancelOperation' operation.code %}" >
-                    <i class="fa fa-times"></i>&nbsp Cancelar Operación
-                  </a>
+                  {% if operation.status != "Fondos transferidos" %}
+                    <a class="btn btn-danger"  href="{% url 'cancelOperation' operation.code %}" >
+                      <i class="fa fa-times"></i>&nbsp Cancelar Operación
+                    </a>
+                  {% endif %}
                 {% endif %}
               </div>
             </div>

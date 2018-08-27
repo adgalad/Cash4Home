@@ -437,6 +437,7 @@ class ChangeOperationStatusForm(forms.Form):
   status_choices = (('Faltan recaudos', 'Faltan recaudos'),
                     ('Por verificar', 'Por verificar'),
                     ('Verificado', 'Verificado'),
+                    ('Publicado', 'Publicado'),
                     ('Fondos ubicados', 'Fondos ubicados'),
                     ('Fondos transferidos', 'Fondos transferidos'))
   status = forms.ChoiceField(required=True, choices=status_choices, label="Status de la operación")
@@ -574,7 +575,7 @@ class OperationBulkForm(forms.Form):
       self.fields['selected'].widget.attrs.update({'class' : 'flat'})
 
 class StateChangeBulkForm(forms.Form):
-    choices = (('Verificado', 'Verificado'), ('Fondos ubicados', 'Fondos ubicados'))
+    choices = (('Verificado', 'Verificado'), ('Publicado', 'Publicado'))
     action = forms.ChoiceField(choices=choices, required=False)
     crypto_used = GroupedModelChoiceField(required=False, label="Criptomoneda utilizada", 
                                             queryset=ExchangerAccepts.objects.filter(currency__currency_type='Crypto').order_by('exchanger'),

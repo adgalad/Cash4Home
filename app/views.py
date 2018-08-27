@@ -2388,7 +2388,7 @@ def summaryByAlly(request):
     general_received = 0
     general_sent = 0
     for ally in allies.iterator():
-      op_involved = Operation.objects.filter(id_allie_origin=ally)
+      op_involved = Operation.objects.filter(id_allie_origin=ally).exclude(status="Cancelada")
       closures = BoxClosure.objects.filter(ally=ally)
       #currencies = op_involved.values_list('origin_currency', flat=True).distinct()
       #for c in currencies:
@@ -2404,10 +2404,7 @@ def summaryByAlly(request):
           total_sent = Decimal(0)
           aux_sent = {}
           aux_sent['total_sent'] = Decimal(0)
-        if aux_received['total_received'] and aux_sent['total_sent']:
-          diff = aux_received['total_received'] - aux_sent['total_sent']
-        else:
-          diff = 0
+        diff = aux_received['total_received'] - aux_sent['total_sent']
         closure_table[str(ally.id)+c.date.strftime("%d%m%Y")] = [c, aux_received['total_received'], total_received, aux_sent['total_sent'], total_sent, diff]
         general_received += total_received
         general_sent += total_sent
