@@ -112,7 +112,7 @@
                                 {% endfor %}
                               </tbody>
                             </table>
-                            {% if key != "VEF" %}
+                            {% if key != "VES" %}
                             <table class="table precio" id="t-usd">
                               <thead>
                                 <tr> 
@@ -127,7 +127,7 @@
                                           {{ exchanger }}
                                         </td>
                                         <td>
-                                          {{prices  | lookup:'VEF' | lookup:'prices' | lookup:'Localbitcoins' | div:price | currency}}
+                                          {{prices  | lookup:'VES' | lookup:'prices' | lookup:'Localbitcoins' | div:price | currency}}
                                         </td>
                                       </tr>        
                                 {% endfor %}

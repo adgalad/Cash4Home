@@ -559,21 +559,21 @@ summary = function () {
     amount = fromCurrency + ' ' + currencyf(total)
     net = fromCurrency + ' ' + currencyf(total * (1 - fee))
     __rate = currencyf(_rate) + ' ' + fromCurrency + '/' + toCurrency
-    vef = toCurrency + ' ' + currencyf(total * (1 - fee) * _rate)
+    ves = toCurrency + ' ' + currencyf(total * (1 - fee) * _rate)
     amountIn = 'Total en ' + toCurrency
 
     $('#fee').html(_fee)
     $('#amount').html(amount)
     $('#net').html(net)
     $('#rate').html(__rate)
-    $('#vef').html(vef)
+    $('#ves').html(ves)
     $('#amountIn').html(amountIn)
 
     $('#fee2').html(_fee)
     $('#amount2').html(amount)
     $('#net2').html(net)
     $('#rate2').html(__rate)
-    $('#vef2').html(vef)
+    $('#ves2').html(ves)
     $('#amountIn2').html(amountIn)
 
     $('#td-from').html(fromAccs[parseInt($('#id_account').val())]['name'])

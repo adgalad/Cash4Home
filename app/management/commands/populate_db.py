@@ -199,7 +199,7 @@ class Command(BaseCommand):
         Currency(name="Peso chileno",    code="CLP", currency_type="FIAT").save()
         Currency(name="Guaraní",         code="PYG", currency_type="FIAT").save()
         Currency(name="Peso uruguayo",   code="UYU", currency_type="FIAT").save()
-        Currency(name="Bolívar",         code="VEF", currency_type="FIAT").save()
+        Currency(name="Bolívar",         code="VES", currency_type="FIAT").save()
         
 
         Currency(name="Bitcoin",  code="BTC",  currency_type="Crypto").save()
