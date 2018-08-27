@@ -69,7 +69,9 @@ class PriceRetriever:
     try:
         file = open(os.path.join('./staticfiles', "BTCPrice.json"), "r")
     except Exception as e:
-        file = open(os.path.join('./staticfiles', "BTCPrice.json"), "r+")
+        open(os.path.join('./staticfiles', "BTCPrice.json"), "w").close()
+
+        file = open(os.path.join('./staticfiles', "BTCPrice.json"), "r")
     try:
         prices = json.loads(file.read())
     except Exception as e:
