@@ -70,13 +70,12 @@ class PriceRetriever:
     try:
         prices = json.loads(file.read())
     except Exception as e:
-        prices = {}
-    # prices = {
-    #             'USD': { 'prices':{}, 'name':'', 'avg': 0 },
-    #             'VES': { 'prices':{}, 'name':'', 'avg': 0 },
-    #             'ARS': { 'prices':{}, 'name':'', 'avg': 0 },
-    #             'PEN': { 'prices':{}, 'name':'', 'avg': 0 },
-    #         }
+        prices = {
+                    'USD': { 'prices':{}, 'name':'', 'avg': 0 },
+                    'VES': { 'prices':{}, 'name':'', 'avg': 0 },
+                    'ARS': { 'prices':{}, 'name':'', 'avg': 0 },
+                    'PEN': { 'prices':{}, 'name':'', 'avg': 0 },
+                }
 
     if self.localbitcoins:
         prices['USD']['prices']['Localbitcoins'] = float(self.localbitcoins["USD"]["rates"]['last'])
