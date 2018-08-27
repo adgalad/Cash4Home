@@ -70,16 +70,16 @@ class PriceRetriever:
     prices = json.loads(file.read())
     # prices = {
     #             'USD': { 'prices':{}, 'name':'', 'avg': 0 },
-    #             'VEF': { 'prices':{}, 'name':'', 'avg': 0 },
+    #             'VES': { 'prices':{}, 'name':'', 'avg': 0 },
     #             'ARS': { 'prices':{}, 'name':'', 'avg': 0 },
     #             'PEN': { 'prices':{}, 'name':'', 'avg': 0 },
     #         }
 
     if self.localbitcoins:
-        prices['USD']['prices']['Localbitcoins'] = float(self.localbitcoins["USD"]["avg_12h"])
-        prices['VEF']['prices']['Localbitcoins'] = float(self.localbitcoins['VEF']['avg_12h'])
-        prices['ARS']['prices']['Localbitcoins'] = float(self.localbitcoins['ARS']['avg_12h'])
-        prices['PEN']['prices']['Localbitcoins'] = float(self.localbitcoins['PEN']['avg_12h'])
+        prices['USD']['prices']['Localbitcoins'] = float(self.localbitcoins["USD"]["rates"]['last'])
+        prices['VES']['prices']['Localbitcoins'] = float(self.localbitcoins['VES']['rates']['last'])
+        prices['ARS']['prices']['Localbitcoins'] = float(self.localbitcoins['ARS']['rates']['last'])
+        prices['PEN']['prices']['Localbitcoins'] = float(self.localbitcoins['PEN']['rates']['last'])
     
     if self.gemini:
         prices['USD']['prices']['Gemini'] = float(self.gemini['ask'])
@@ -92,10 +92,10 @@ class PriceRetriever:
     if self.ripio:
         prices['USD']['prices']['Ripio']  = float(self.ripio['rates']['USD_SELL'])
         # prices['USD']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['USD_BUY'])
-        prices['ARS']['prices']['Ripio']  = float(self.ripio['rates']['ARS_SELL'])
-        # prices['ARS']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['ARS_BUY'])
+        # prices['ARS']['prices']['Ripio']  = float(self.ripio['rates']['ARS_SELL'])
+        prices['ARS']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['ARS_BUY'])
         # prices['PEN']['prices']['Ripio']  = float(self.ripio['rates']['PEN_SELL'])
-        # prices['PEN']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['PEN_BUY'])
+        prices['PEN']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['PEN_BUY'])
 
     if self.binance:
         prices['USD']['prices']['Binance']  = float(self.binance['price'])
@@ -105,19 +105,19 @@ class PriceRetriever:
 
     if self.coinbase:
         prices['USD']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['USD'])
-        # prices['ARS']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['ARS'])
-        # prices['PEN']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['PEN'])
+        prices['ARS']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['ARS'])
+        prices['PEN']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['PEN'])
 
     prices['USD']['avg'] = self.avg('USD', prices)
-    prices['VEF']['avg'] = self.avg('VEF', prices)
+    prices['VES']['avg'] = self.avg('VES', prices)
     prices['ARS']['avg'] = self.avg('ARS', prices)
     prices['PEN']['avg'] = self.avg('PEN', prices)
 
     prices['USD']['symbol'] = '$'
-    prices['VEF']['symbol'] = 'Bs.'
+    prices['VES']['symbol'] = 'Bs.'
     prices['ARS']['symbol'] = '$'
     prices['PEN']['symbol'] = '$'
-    
+    file.close()
     return prices
 
 
@@ -132,9 +132,10 @@ class UpdateBTCPrice():
 
     def do(self):
         try:
+            file = open(os.path.join('./staticfiles', "BTCPrice.json"), "w")
             self.BTCPrice.ask()
             info = json.dumps(self.BTCPrice.getPriceInformation())
-            file = open(os.path.join('./staticfiles', "BTCPrice.json"), "w")
+            
             file.write(info)
             file.close()
 

@@ -1185,7 +1185,7 @@ def signup(request):
       form = AuthenticationForm()
       msg = 'Te hemos enviado un correo de confirmación.'
       messages.error(request, msg, extra_tags="safe alert-warning")
-      return render(request, 'registration/login.html', {'form': form})
+      return redirect('login')
   else:
     form = SignUpForm()
   return render(request, 'registration/signup.html', {'form': form})
