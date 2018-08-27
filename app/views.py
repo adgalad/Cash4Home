@@ -298,9 +298,9 @@ def dashboard(request):
       nTransactions += i.transactions.filter(operation_type="TD").count()
     
     # Operaciones pendientes
-    totalOpen = tmpActOperations.count()
+    totalOpen = tmpActOperations.exclude(status="En reclamo").count()
     # Operaciones terminadas
-    totalEnded = tmpEndOperations.count()
+    totalEnded = tmpEndOperations.exclude(status="Cancelada").count()
     # Operaciones en reclamo
     totalClaim = tmpActOperations.filter(status="En reclamo").count()
 
@@ -1181,7 +1181,7 @@ def signup(request):
       client_group = Group.objects.get(name='Cliente') 
       client_group.user_set.add(user)
       login_auth(request, user)
-      #sendEmailValidation(user)
+      sendEmailValidation(user)
       form = AuthenticationForm()
       msg = 'Te hemos enviado un correo de confirmación.'
       messages.error(request, msg, extra_tags="safe alert-warning")
