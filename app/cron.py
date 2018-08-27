@@ -66,7 +66,10 @@ class PriceRetriever:
     return average/count
 
   def getPriceInformation(self):
-    file = open(os.path.join('./staticfiles', "BTCPrice.json"), "r")
+    try:
+        file = open(os.path.join('./staticfiles', "BTCPrice.json"), "r")
+    except Exception as e:
+        file = open(os.path.join('./staticfiles', "BTCPrice.json"), "r+")
     try:
         prices = json.loads(file.read())
     except Exception as e:
@@ -134,10 +137,10 @@ class UpdateBTCPrice():
 
     def do(self):
         try:
-            file = open(os.path.join('./staticfiles', "BTCPrice.json"), "w")
+            
             self.BTCPrice.ask()
             info = json.dumps(self.BTCPrice.getPriceInformation())
-            
+            file = open(os.path.join('./staticfiles', "BTCPrice.json"), "w")
             file.write(info)
             file.close()
 
