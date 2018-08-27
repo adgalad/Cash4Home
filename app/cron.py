@@ -67,7 +67,10 @@ class PriceRetriever:
 
   def getPriceInformation(self):
     file = open(os.path.join('./staticfiles', "BTCPrice.json"), "r")
-    prices = json.loads(file.read())
+    try:
+        prices = json.loads(file.read())
+    except Exception as e:
+        prices = {}
     # prices = {
     #             'USD': { 'prices':{}, 'name':'', 'avg': 0 },
     #             'VES': { 'prices':{}, 'name':'', 'avg': 0 },
