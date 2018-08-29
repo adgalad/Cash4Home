@@ -2390,8 +2390,7 @@ def summaryByAlly(request):
     for ally in allies.iterator():
       op_involved = Operation.objects.filter(id_allie_origin=ally).exclude(status="Cancelada")
       closures = BoxClosure.objects.filter(ally=ally)
-      #currencies = op_involved.values_list('origin_currency', flat=True).distinct()
-      #for c in currencies:
+
       for c in closures.iterator():
         op_closure = op_involved.filter(closure=c)
         total_received = op_closure.count()
@@ -2404,7 +2403,10 @@ def summaryByAlly(request):
           total_sent = Decimal(0)
           aux_sent = {}
           aux_sent['total_sent'] = Decimal(0)
-        diff = aux_received['total_received'] - aux_sent['total_sent']
+        if (total_received == 0):
+          diff =  (-1)*aux_sent['total_sent']
+        else:
+          diff = aux_received['total_received'] - aux_sent['total_sent']
         closure_table[str(ally.id)+c.date.strftime("%d%m%Y")] = [c, aux_received['total_received'], total_received, aux_sent['total_sent'], total_sent, diff]
         general_received += total_received
         general_sent += total_sent
@@ -2418,7 +2420,7 @@ def detailClosure(request,_closure_id):
   except:
     raise Http404
 
-  operations = closure.box_closure.all()
+  operations = closure.box_closure.exclude(status="Cancelada")
 
   return render(request, 'admin/detailClosure.html', {'closure': closure, 'operations': operations})
 
