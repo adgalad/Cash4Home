@@ -12,7 +12,6 @@
  */
 
 checkFields = function(){ 
-        console.log("HOLA");
         $('button[type="submit"]').prop('disabled', $("#id_date").val() == "" || ($("#id_rate").val()=="") || ($("#id_currency").val()==""))
     }
 $("#id_date").change(checkFields)

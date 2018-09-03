@@ -480,6 +480,11 @@ class TransactionForm(forms.ModelForm):
                                   )
   DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
   date = forms.DateField(label = "Fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
+  crypto_used = GroupedModelChoiceField(required=True, label="Criptomoneda utilizada", 
+                                            queryset=ExchangerAccepts.objects.filter(currency__currency_type='Crypto').order_by('exchanger'),
+                                                 group_by_field='exchanger')
+  rate = forms.DecimalField(required=True, label="Tasa de cambio" , min_value=0)
+
   def __init__(self, *args, **kwargs):
     super(TransactionForm, self).__init__(*args, **kwargs)
     for i in self.fields:
@@ -512,6 +517,7 @@ class NewRepurchaseOpForm(forms.Form):
   DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
 
   date = forms.DateField(label = "Fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
+  bank = forms.CharField(label="Banco asociado", required=False)
 
   def __init__(self, *args, **kwargs):
     super(NewRepurchaseOpForm, self).__init__(*args, **kwargs)
@@ -520,6 +526,7 @@ class NewRepurchaseOpForm(forms.Form):
     self.fields['operation'].widget.attrs.update({'readonly': 'readonly'})
     self.fields['amount'].widget.attrs.update({'readonly': 'readonly'})
     self.fields['date'].widget.attrs.update({'readonly': 'readonly'})
+    self.fields['bank'].widget.attrs.update({'readonly': 'readonly'})
     self.fields['selected'].widget.attrs.update({'class' : 'flat'})
 
 class NewRepurchaseForm(forms.Form):
@@ -577,10 +584,10 @@ class OperationBulkForm(forms.Form):
 class StateChangeBulkForm(forms.Form):
     choices = (('Verificado', 'Verificado'), ('Publicado', 'Publicado'))
     action = forms.ChoiceField(choices=choices, required=False)
-    crypto_used = GroupedModelChoiceField(required=False, label="Criptomoneda utilizada", 
-                                            queryset=ExchangerAccepts.objects.filter(currency__currency_type='Crypto').order_by('exchanger'),
-                                                 group_by_field='exchanger')
-    rate = forms.DecimalField(required=False, label="Tasa de cambio" , min_value=0)
+    #crypto_used = GroupedModelChoiceField(required=False, label="Criptomoneda utilizada", 
+    #                                        queryset=ExchangerAccepts.objects.filter(currency__currency_type='Crypto').order_by('exchanger'),
+    #                                             group_by_field='exchanger')
+    #rate = forms.DecimalField(required=False, label="Tasa de cambio" , min_value=0)
 
     def __init__(self, *args, **kwargs):
       super(StateChangeBulkForm, self).__init__(*args, **kwargs)

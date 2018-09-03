@@ -376,17 +376,4 @@
       modal.style.display = "none";
     }
   </script>
-  <script type="text/javascript">
-    $("#id_status").change(function(){
-      if ($("#id_status").val()=='Fondos ubicados'){
-        $("#aditionalFields").show();
-        document.getElementById("id_crypto_used").required = true;
-        document.getElementById("id_rate").required = true;
-      } else {
-        $("#aditionalFields").hide();
-        document.getElementById("id_crypto_used").required = false;
-        document.getElementById("id_rate").required = false;
-      }
-    });
-  </script>
 {% endblock javascripts %}

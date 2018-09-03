@@ -337,11 +337,12 @@ def dashboard(request):
           firstCurrency = None
           totalAmount = Decimal(0)
 
-          if (new_status == 'Fondos ubicados'):
-            crypto_used = formChoice.cleaned_data['crypto_used']
-            rate = formChoice.cleaned_data['rate']
-          else:
-            banksSummary = {}
+          #if (new_status == 'Fondos ubicados'):
+            #crypto_used = formChoice.cleaned_data['crypto_used']
+            #rate = formChoice.cleaned_data['rate']
+          #else:
+            #banksSummary = {}
+          banksSummary = {}
 
           # Recorro la primera vez para asegurar que todas las monedas sean iguales
           if not(checkCurrency(formset,True)):
@@ -2246,8 +2247,9 @@ def addRepurchase(request, _currency_id):
       raise Http404
 
     existing_rep = RepurchaseCameFrom.objects.values_list('id_operation',flat=True)
-    available_op = Operation.objects.filter(origin_currency=origin_currency, status="Fondos transferidos").exclude(code__in=existing_rep).values_list('code', 'fiat_amount', 'date')
-    initialForm = [{'operation': op[0], 'amount': op[1], 'date': op[2].strftime("%d/%m/%Y"), 'selected': False} for op in available_op]
+    available_op = Operation.objects.filter(origin_currency=origin_currency, status="Fondos transferidos").exclude(code__in=existing_rep).values_list('code', 'fiat_amount', 'date', 'id_account__id_bank__name')
+    initialForm = [{'operation': op[0], 'amount': op[1], \
+                      'date': op[2].strftime("%d/%m/%Y"), 'selected': False, 'bank': op[3]} for op in available_op]
 
     if (request.method == 'POST'):
         POST = request.POST.copy()

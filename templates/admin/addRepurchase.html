@@ -71,21 +71,30 @@
                     <div id="step-1">
                       <br>
                       <p>Seleccione las operaciones incluídas en la recompra</p>
-                      <table id="datatable" class="table table-striped table-bordered dt-responsive" cellspacing="0" width="100%">
+                      <table id="datatable" class="table table-striped table-bordered dt-responsive bulk_action" cellspacing="0" width="100%">
                         <thead>
                           <tr>
-                            <th>Seleccionar</th>
-                            <th>Código de operación</th>
-                            <th>Cantidad moneda origen</th>
-                            <th>Fecha de operación</th>
+                            <!--<th>Seleccionar</th>-->
+                            <th class="no-order">
+                              <input type="checkbox" id="check-all" class="flat">
+                            </th>
+                            <th class="colum-title">Código de operación</th>
+                            <th class="colum-title">Cantidad moneda origen</th>
+                            <th class="colum-title">Fecha de operación</th>
+                            <th class="colum-title">Banco</th>
                           </tr>
                         </thead>
                         <tbody>
                           {% for form in formOp %}
                             <tr>
-                              {% for field in form %}
+                              <td>{{form.selected}}</td>
+                              <td>{{form.operation}}</td>
+                              <td>{{form.amount}}</td>
+                              <td>{{form.date}}</td>
+                              <td>{{form.bank}}</td>
+                              <!--{% for field in form %}
                                   <td>{{ field }}</td>
-                              {% endfor %}
+                              {% endfor %}-->
                             </tr>
                           {% endfor %}
                         </tbody>

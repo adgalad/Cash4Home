@@ -317,8 +317,8 @@ class BoxClosureHistory(models.Model):
 class Operation(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True)
     fiat_amount = models.DecimalField(max_digits=30, decimal_places=15)
-    crypto_rate = models.DecimalField(blank=True, null=True, max_digits=30, decimal_places=15)
-    crypto_used = models.ForeignKey(Currency, related_name='crypto_used', blank=True, null=True)
+    #crypto_rate = models.DecimalField(blank=True, null=True, max_digits=30, decimal_places=15)
+    #crypto_used = models.ForeignKey(Currency, related_name='crypto_used', blank=True, null=True)
     status_choices = (('Cancelada', 'Cancelada'),
                       ('Faltan recaudos', 'Faltan recaudos'),
                       ('Por verificar', 'Por verificar'), 
@@ -395,6 +395,8 @@ class Transaction(models.Model):
     amount         = models.FloatField(verbose_name="Monto")
     currency       = models.ForeignKey(Currency, verbose_name="Moneda")
     transfer_number = models.CharField(max_length=64, null=True, verbose_name="Número de la transferencia")
+    crypto_rate = models.DecimalField(blank=True, null=True, max_digits=30, decimal_places=15)
+    crypto_used = models.ForeignKey(Currency, related_name='crypto_used', blank=True, null=True)
 
     @property
     def image_url(self):
