@@ -328,7 +328,7 @@ class Operation(models.Model):
                       ('Fondos transferidos', 'Fondos transferidos'),
                       ('En reclamo', 'En reclamo'))
     status = models.CharField(choices=status_choices, max_length=20)
-    exchanger = models.ForeignKey(Exchanger, blank=True, null=True)
+    #exchanger = models.ForeignKey(Exchanger, blank=True, null=True)
     date = models.DateTimeField()
     expiration = models.DateTimeField()
     id_client = models.ForeignKey(User, related_name="user_client")
@@ -395,8 +395,10 @@ class Transaction(models.Model):
     amount         = models.FloatField(verbose_name="Monto")
     currency       = models.ForeignKey(Currency, verbose_name="Moneda")
     transfer_number = models.CharField(max_length=64, null=True, verbose_name="Número de la transferencia")
+    # Para llevar registro del dinero vendido para obtener el fiat
     crypto_rate = models.DecimalField(blank=True, null=True, max_digits=30, decimal_places=15)
     crypto_used = models.ForeignKey(Currency, related_name='crypto_used', blank=True, null=True)
+    exchanger = models.ForeignKey(Exchanger, blank=True, null=True, verbose_name="Exchanger de la venta", related_name="sell_exchanger")
 
     @property
     def image_url(self):

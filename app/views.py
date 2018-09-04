@@ -363,21 +363,15 @@ def dashboard(request):
                                      original_status=actual_op.status).save()
                 actual_op.status = new_status
 
-                if (new_status == 'Fondos ubicados'):
-                  actual_op.crypto_rate = rate
-                  actual_op.exchanger = crypto_used.exchanger
-                  actual_op.crypto_used = crypto_used.currency
+                #  totalAmount += actual_op.fiat_amount*actual_op.exchange_rate
 
-                  totalAmount += actual_op.fiat_amount*actual_op.exchange_rate
-
-                else:
-                  destiny_banks = OperationGoesTo.objects.filter(operation_code=actual_op.code)
-                  for b in destiny_banks.iterator():
-                    bank = b.number_account.id_bank.name
-                    if (bank in banksSummary.keys()):
-                      banksSummary[bank] += b.amount*actual_op.exchange_rate
-                    else:
-                      banksSummary[bank] = b.amount*actual_op.exchange_rate
+                destiny_banks = OperationGoesTo.objects.filter(operation_code=actual_op.code)
+                for b in destiny_banks.iterator():
+                  bank = b.number_account.id_bank.name
+                  if (bank in banksSummary.keys()):
+                    banksSummary[bank] += b.amount*actual_op.exchange_rate
+                  else:
+                    banksSummary[bank] = b.amount*actual_op.exchange_rate
                 actual_op.save()
               else:
                 msg = "No se puede cambiar el status a %s" % new_status
@@ -386,10 +380,6 @@ def dashboard(request):
                                                                               'totalOpen': totalOpen, 'totalEnded': totalEnded, 'monthForm': monthForm,
                                                                               'dateForm': dateForm, 'filter':filter, 'hasFilter': hasFilter,
                                                                               'form': formset, 'isAllie': False, 'totalClaim': totalClaim, 'formChoice': formChoice})
-
-          if (new_status == 'Fondos ubicados'):
-            crypto_used.amount_acc -= totalAmount/rate
-            crypto_used.save()
 
           messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
           if (new_status == 'Verificado'):
@@ -450,8 +440,6 @@ def dashboard(request):
                                                       transfer_number=transfer_number
                                                       ).save()
 
-                      #exchanger_accepts.amount_acc += actual_op.fiat_amount
-                      #exchanger_accepts.save()
                       actual_op.ally_pay_back = True
                       actual_op.save()
                   else:
@@ -494,8 +482,6 @@ def dashboard(request):
                                                     transfer_number=transfer_number
                                                     ).save()
 
-                    #exchanger_accepts.amount_acc += actual_op.fiat_amount
-                    #exchanger_accepts.save()
                     actual_op.ally_pay_back = True
                     actual_op.save()
 
@@ -1864,9 +1850,6 @@ def claimOperation(request, _operation_id):
   operation.save()
   return render(request, 'dashboard/claimConfirmation.html')
 
-
-
-
 def operationDetailDashboard(request, _operation_id):
     try:
       operation = Operation.objects.get(code=_operation_id)
@@ -1898,14 +1881,6 @@ def operationDetailDashboard(request, _operation_id):
                                new_status=status).save()
           if status == "Fondos transferidos":
             sendEmailOperationFinished(operation)
-          elif status == "Fondos ubicados":
-            crypto_used = form.cleaned_data['crypto_used']
-            rate = form.cleaned_data['rate']
-
-            operation.crypto_rate = rate
-            operation.exchanger = crypto_used.exchanger
-            operation.crypto_used = crypto_used.currency
-            operation.save()
         else:
           msg = "No se puede cambiar el status a %s" % status
           messages.error(request, msg, extra_tags="alert-warning")  
@@ -1933,7 +1908,8 @@ def operationAddTransaction(request, _operation_id):
         if (operation.closure.status == 'Activo'):
           type = form.cleaned_data['operation_type']
           file = request.FILES['transfer_image']
-          if type in ['TD', 'TO']:
+
+          if type in 'TO':
             Transaction(id_operation   = operation,
                         operation_type = type,
                         transfer_image = file,
@@ -1942,6 +1918,25 @@ def operationAddTransaction(request, _operation_id):
                         date           = form.cleaned_data['date'],
                         amount         = form.cleaned_data['amount'],
                         currency       = form.cleaned_data['currency']).save() 
+
+          elif type == 'TD':
+            crypto_used = form.cleaned_data['crypto_used'].currency
+            exchanger = form.cleaned_data['crypto_used'].exchanger
+            rate = form.cleaned_data['rate']
+
+            Transaction(id_operation   = operation,
+                        operation_type = type,
+                        transfer_image = file,
+                        origin_account = form.cleaned_data['origin_account'],
+                        target_account = form.cleaned_data['target_account'],
+                        date           = form.cleaned_data['date'],
+                        amount         = form.cleaned_data['amount'],
+                        currency       = form.cleaned_data['currency'],
+                        crypto_rate    = rate,
+                        crypto_used    = crypto_used,
+                        exchanger      = exchanger).save() 
+
+            #Falta actualizar el monto en el exchanger
 
             # Sacamos todas las transacciones destino y sumamos sus montos
             allTransactions = Transaction.objects.filter(id_operation=operation, operation_type='TD', currency=operation.target_currency) 

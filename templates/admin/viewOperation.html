@@ -214,7 +214,7 @@
                 <div class="clearfix"></div>
               </div>
 
-              <table class="table table-striped bulk_action">
+              <table class="table table-striped bulk_action" id="datatable-buttons">
                 <thead>
                   <tr class="headings">
                     <th class="column-title">Código</th>
@@ -224,6 +224,8 @@
                     <th class="column-title">Monto</th>
                     <th class="column-title">Fecha</th>
                     <th class="column-title">Imagen</th>
+                    <th class="none">Crypto</th>
+                    <th class="none">Tasa Crypto</th>
                   </tr>
                 </thead>
 
@@ -261,6 +263,13 @@
                           <i class="fa fa-image"></i>
                         </a>
                       </td>
+                      {% if tx.crypto_used %}
+                        <td>{{tx.crypto_used.code}}</td>
+                        <td>{{tx.crypto_rate | currency}} {{tx.currency}}</td>
+                      {% else %}
+                        <td>N/A</td>
+                        <td>N/A</td>
+                      {% endif %}
                     </tr>
                   {% endfor %}
                 </tbody>
