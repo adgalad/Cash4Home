@@ -1920,8 +1920,9 @@ def operationAddTransaction(request, _operation_id):
                         currency       = form.cleaned_data['currency']).save() 
 
           elif type == 'TD':
-            crypto_used = form.cleaned_data['crypto_used'].currency
-            exchanger = form.cleaned_data['crypto_used'].exchanger
+            exchangerAccepts = form.cleaned_data['crypto_used']
+            cryptoUsed = exchangerAccepts.currency
+            exchanger = exchangerAccepts.exchanger
             rate = form.cleaned_data['rate']
 
             Transaction(id_operation   = operation,
@@ -1933,10 +1934,12 @@ def operationAddTransaction(request, _operation_id):
                         amount         = form.cleaned_data['amount'],
                         currency       = form.cleaned_data['currency'],
                         crypto_rate    = rate,
-                        crypto_used    = crypto_used,
+                        crypto_used    = cryptoUsed,
                         exchanger      = exchanger).save() 
 
             #Falta actualizar el monto en el exchanger
+            exchangerAccepts.amount_acc -= operation.fiat_amount/rate
+            exchangerAccepts.save()
 
             # Sacamos todas las transacciones destino y sumamos sus montos
             allTransactions = Transaction.objects.filter(id_operation=operation, operation_type='TD', currency=operation.target_currency) 
@@ -2242,9 +2245,10 @@ def addRepurchase(request, _currency_id):
       raise Http404
 
     existing_rep = RepurchaseCameFrom.objects.values_list('id_operation',flat=True)
-    available_op = Operation.objects.filter(origin_currency=origin_currency, status="Fondos transferidos").exclude(code__in=existing_rep).values_list('code', 'fiat_amount', 'date', 'id_account__id_bank__name')
+    available_op = Operation.objects.filter(origin_currency=origin_currency, status="Fondos transferidos").exclude(code__in=existing_rep).values_list('code', 'fiat_amount', 'date', 'id_account__id_bank__name', 'ally_pay_back')
     initialForm = [{'operation': op[0], 'amount': op[1], \
-                      'date': op[2].strftime("%d/%m/%Y"), 'selected': False, 'bank': op[3]} for op in available_op]
+                      'date': op[2].strftime("%d/%m/%Y"), 'selected': False, 'bank': op[3], \
+                      'payback': op[4]} for op in available_op]
 
     if (request.method == 'POST'):
         POST = request.POST.copy()

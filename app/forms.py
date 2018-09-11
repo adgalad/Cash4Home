@@ -518,6 +518,7 @@ class NewRepurchaseOpForm(forms.Form):
 
   date = forms.DateField(label = "Fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
   bank = forms.CharField(label="Banco asociado", required=False)
+  payback = forms.BooleanField(label="Devuelto", required=False)
 
   def __init__(self, *args, **kwargs):
     super(NewRepurchaseOpForm, self).__init__(*args, **kwargs)
@@ -527,6 +528,7 @@ class NewRepurchaseOpForm(forms.Form):
     self.fields['amount'].widget.attrs.update({'readonly': 'readonly'})
     self.fields['date'].widget.attrs.update({'readonly': 'readonly'})
     self.fields['bank'].widget.attrs.update({'readonly': 'readonly'})
+    self.fields['payback'].widget.attrs.update({'readonly': 'readonly'})
     self.fields['selected'].widget.attrs.update({'class' : 'flat'})
 
 class NewRepurchaseForm(forms.Form):

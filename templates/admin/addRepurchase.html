@@ -82,6 +82,7 @@
                             <th class="colum-title">Cantidad moneda origen</th>
                             <th class="colum-title">Fecha de operación</th>
                             <th class="colum-title">Banco</th>
+                            <th class="colum-title">Devuelto</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -92,6 +93,13 @@
                               <td>{{form.amount}}</td>
                               <td>{{form.date}}</td>
                               <td>{{form.bank}}</td>
+                              <td>
+                                {% if form.payback %}
+                                  <i class="fa fa-check green"></i>
+                                {% else %}
+                                    <i class="fa fa-times red"></i>
+                                {% endif %}
+                              </td>
                               <!--{% for field in form %}
                                   <td>{{ field }}</td>
                               {% endfor %}-->
@@ -102,6 +110,7 @@
                     </div>
                     <div id="step-2">
                       <br>
+                      <p>Total de la recompra en origen: </p><p id="cantidadTotal"></p>
                       <p>Ingrese los datos asociados a la recompra</p>
                       {% for field in formRep %}
                         {{ field.label_tag }}
