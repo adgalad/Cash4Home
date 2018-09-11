@@ -179,7 +179,7 @@ class ToAccountForm(forms.Form):
 class NewCurrencyForm(forms.Form):
 
   code = forms.CharField(max_length=10, required=True, label="Código", 
-                        widget = forms.TextInput(attrs={'style': 'width:100%;', 'placeholder': 'VEF, USD, BTC...'})) # VEF, USD, BTC
+                        widget = forms.TextInput(attrs={'style': 'width:100%;', 'placeholder': 'VES, USD, BTC...'})) # VES, USD, BTC
   name = forms.CharField(max_length=50, required=True, label="Nombre",
                           widget = forms.TextInput(attrs={'style': 'width:100%;', 'placeholder': 'Bolívar, Dólar, Bitcoin...'}))
   choices = (('FIAT', 'FIAT'), ('Crypto', 'Crypto'))
@@ -194,7 +194,7 @@ class NewCurrencyForm(forms.Form):
 class EditCurrencyForm(forms.Form):
 
   code = forms.CharField(max_length=10, required=True, label="Código", 
-                        widget = forms.TextInput(attrs={'style': 'width:100%;', 'placeholder': 'VEF, USD, BTC...', 'readonly':'readonly'})) # VEF, USD, BTC
+                        widget = forms.TextInput(attrs={'style': 'width:100%;', 'placeholder': 'VES, USD, BTC...', 'readonly':'readonly'})) # VES, USD, BTC
   name = forms.CharField(max_length=50, required=True, label="Nombre",
                           widget = forms.TextInput(attrs={'style': 'width:100%;', 'placeholder': 'Bolívar, Dólar, Bitcoin...'}))
   choices = (('FIAT', 'FIAT'), ('Crypto', 'Crypto'))

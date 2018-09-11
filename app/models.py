@@ -173,7 +173,7 @@ class Holiday(models.Model):
         default_permissions = ()
 
 class Currency(models.Model):
-    code = models.CharField(max_length=10, primary_key=True, unique=True) # VEF, USD, BTC
+    code = models.CharField(max_length=10, primary_key=True, unique=True) # VES, USD, BTC
     name = models.CharField(max_length=50)
     choices = (('FIAT', 'FIAT'), ('Crypto', 'Crypto'))
     currency_type = models.CharField(choices=choices, max_length=7)

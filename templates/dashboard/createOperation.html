@@ -165,8 +165,8 @@
                         </tr>
 
                         <tr class="bottom">
-                          <td><b id="amountIn">Total en VEF:</b></td>
-                          <td id="vef"></td>
+                          <td><b id="amountIn">Total en VES:</b></td>
+                          <td id="ves"></td>
                         </tr>
 
 
@@ -222,8 +222,8 @@
                         </tr>
 
                         <tr class="bottom">
-                          <td><b id="amountIn2">Total en VEF:</b></td>
-                          <td id="vef2"></td>
+                          <td><b id="amountIn2">Total en VES:</b></td>
+                          <td id="ves2"></td>
                         </tr>
 
 
@@ -250,7 +250,7 @@
     const toAccs = JSON.parse('{{ toAccs | safe }}')
     const fromAccs = JSON.parse('{{ fromAccs | safe }}')
     const rate = JSON.parse('{{ rate | safe }}')
-    // $('#id_currency').val('VEF').hide()
+    // $('#id_currency').val('VES').hide()
     $( document ).ready(function() {
         changeCurrency()
     });
