@@ -115,6 +115,13 @@
                   <a href="{% url 'adminExchanger' %}">Ver exchangers</a>
                 </li>
               {% endif %}
+          </ul>
+        </li>
+        {% endif %}
+
+        {% if perms.admin.view_repurchase or perms.admin.edit_repurchase or perms.admin.add_repurchase %}
+        <li><a><i class="fa fa-shopping-cart"></i> Recompras <span class="fa fa-chevron-down"></span></a>
+          <ul class="nav child_menu">
               {% if perms.admin.add_repurchase%}
                 <li>
                   <a href="{% url 'addRepurchaseGeneral' %}">Agregar recompra</a>

@@ -12,7 +12,6 @@
  */
 
 checkFields = function(){ 
-        console.log("HOLA");
         $('button[type="submit"]').prop('disabled', $("#id_date").val() == "" || ($("#id_rate").val()=="") || ($("#id_currency").val()==""))
     }
 $("#id_date").change(checkFields)
@@ -31,7 +30,7 @@ function SmartWizard(target, options) {
     this.elmStepContainer = $('<div></div>').addClass("stepContainer");
     this.loader = $('<div>Loading</div>').addClass("loader");
     this.buttons = {
-        next: $('<button class="btn btn-primary" type="button">' + options.labelNext + '</button>').addClass('buttonNext'),
+        next: $('<button class="btn btn-primary" type="button" onclick="calcularMonto()">' + options.labelNext + '</button>').addClass('buttonNext'),
         previous: $('<button class="btn btn-primary" type="button">' + options.labelPrevious + '</button>').addClass('buttonPrevious'),
         finish: $('<button class="btn submit" type="submit">' + options.labelFinish + '</button>').addClass('buttonFinish')
     }
@@ -460,7 +459,15 @@ $.fn.smartWizard = function(method) {
   }
 })(jQuery);
 
+function calcularMonto() {
+    var montoTotal = 0;
+    $("input:checked").each(function(){
+        var nombre = this.id.split('-selected')[0];
+        var valor = $("#" + nombre + "-amount").val()
+        montoTotal = montoTotal + parseFloat(valor);
 
-
+    });
+    $("#cantidadTotal").text(montoTotal);
+}
 
 

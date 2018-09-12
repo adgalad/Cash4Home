@@ -317,17 +317,18 @@ class BoxClosureHistory(models.Model):
 class Operation(models.Model):
     code = models.CharField(max_length=100, primary_key=True, unique=True)
     fiat_amount = models.DecimalField(max_digits=30, decimal_places=15)
-    crypto_rate = models.DecimalField(blank=True, null=True, max_digits=30, decimal_places=15)
-    crypto_used = models.ForeignKey(Currency, related_name='crypto_used', blank=True, null=True)
+    #crypto_rate = models.DecimalField(blank=True, null=True, max_digits=30, decimal_places=15)
+    #crypto_used = models.ForeignKey(Currency, related_name='crypto_used', blank=True, null=True)
     status_choices = (('Cancelada', 'Cancelada'),
                       ('Faltan recaudos', 'Faltan recaudos'),
                       ('Por verificar', 'Por verificar'), 
                       ('Verificado', 'Verificado'),
+                      ('Publicado', 'Publicado'),
                       ('Fondos ubicados', 'Fondos ubicados'),
                       ('Fondos transferidos', 'Fondos transferidos'),
                       ('En reclamo', 'En reclamo'))
     status = models.CharField(choices=status_choices, max_length=20)
-    exchanger = models.ForeignKey(Exchanger, blank=True, null=True)
+    #exchanger = models.ForeignKey(Exchanger, blank=True, null=True)
     date = models.DateTimeField()
     expiration = models.DateTimeField()
     id_client = models.ForeignKey(User, related_name="user_client")
@@ -394,6 +395,10 @@ class Transaction(models.Model):
     amount         = models.DecimalField(max_digits=30, decimal_places=15, default=0, verbose_name="Monto")
     currency       = models.ForeignKey(Currency, verbose_name="Moneda")
     transfer_number = models.CharField(max_length=64, null=True, verbose_name="Número de la transferencia")
+    # Para llevar registro del dinero vendido para obtener el fiat
+    crypto_rate = models.DecimalField(blank=True, null=True, max_digits=30, decimal_places=15)
+    crypto_used = models.ForeignKey(Currency, related_name='crypto_used', blank=True, null=True)
+    exchanger = models.ForeignKey(Exchanger, blank=True, null=True, verbose_name="Exchanger de la venta", related_name="sell_exchanger")
 
     def delete(self):
         self.transfer_image.delete()
@@ -457,7 +462,7 @@ class OperationStateChange(models.Model):
     # The primary key is the django id
     date = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User)
-    status_choices = (('Faltan recaudos', 'Faltan recaudos'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'),
+    status_choices = (('Faltan recaudos', 'Faltan recaudos'), ('Por verificar', 'Por verificar'), ('Verificado', 'Verificado'), ('Publicado', 'Publicado'),
                       ('Fondos ubicados', 'Fondos ubicados'), ('Fondos transferidos', 'Fondos transferidos'), ('En reclamo', 'En reclamo'))
     original_status = models.CharField(choices=status_choices, max_length=20)
     new_status = models.CharField(choices=status_choices, max_length=20)

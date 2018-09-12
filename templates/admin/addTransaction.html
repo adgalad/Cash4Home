@@ -116,16 +116,24 @@
       type = $('#id_operation_type').val()
       $('div[class="bad"]').removeClass('bad')
       if ( type == "TD") {
-        $('#div_id_to_exchanger').hide()
-        $('#div_id_transfer_number').show()
-        $('#div_id_origin_account').show()
-        $('#div_id_target_account').show()
+        $('#div_id_to_exchanger').hide();
+        $('#div_id_transfer_number').show();
+        $('#div_id_origin_account').show();
+        $('#div_id_target_account').show();
+        $("#div_id_crypto_used").show();
+        $("#div_id_rate").show();
+        document.getElementById("id_crypto_used").required = true;
+        document.getElementById("id_rate").required = true;
       }
       else if (type == "TC"){
-        $('#div_id_to_exchanger').show()
-        $('#div_id_transfer_number').hide()
-        $('#div_id_origin_account').hide()
-        $('#div_id_target_account').hide()
+        $('#div_id_to_exchanger').show();
+        $('#div_id_transfer_number').hide();
+        $('#div_id_origin_account').hide();
+        $('#div_id_target_account').hide();
+        $("#div_id_crypto_used").hide();
+        $("#div_id_rate").hide();
+        document.getElementById("id_crypto_used").required = false;
+        document.getElementById("id_rate").required = false;
       }
     }
     $('#id_amount').blur(function(){

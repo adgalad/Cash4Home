@@ -347,11 +347,12 @@ def dashboard(request):
           firstCurrency = None
           totalAmount = Decimal(0)
 
-          if (new_status == 'Fondos ubicados'):
-            crypto_used = formChoice.cleaned_data['crypto_used']
-            rate = formChoice.cleaned_data['rate']
-          else:
-            banksSummary = {}
+          #if (new_status == 'Fondos ubicados'):
+            #crypto_used = formChoice.cleaned_data['crypto_used']
+            #rate = formChoice.cleaned_data['rate']
+          #else:
+            #banksSummary = {}
+          banksSummary = {}
 
           # Recorro la primera vez para asegurar que todas las monedas sean iguales
           if not(checkCurrency(formset,True)):
@@ -372,21 +373,15 @@ def dashboard(request):
                                      original_status=actual_op.status).save()
                 actual_op.status = new_status
 
-                if (new_status == 'Fondos ubicados'):
-                  actual_op.crypto_rate = rate
-                  actual_op.exchanger = crypto_used.exchanger
-                  actual_op.crypto_used = crypto_used.currency
+                #  totalAmount += actual_op.fiat_amount*actual_op.exchange_rate
 
-                  totalAmount += actual_op.fiat_amount*actual_op.exchange_rate
-
-                else:
-                  destiny_banks = OperationGoesTo.objects.filter(operation_code=actual_op.code)
-                  for b in destiny_banks.iterator():
-                    bank = b.number_account.id_bank.name
-                    if (bank in banksSummary.keys()):
-                      banksSummary[bank] += b.amount*actual_op.exchange_rate
-                    else:
-                      banksSummary[bank] = b.amount*actual_op.exchange_rate
+                destiny_banks = OperationGoesTo.objects.filter(operation_code=actual_op.code)
+                for b in destiny_banks.iterator():
+                  bank = b.number_account.id_bank.name
+                  if (bank in banksSummary.keys()):
+                    banksSummary[bank] += b.amount*actual_op.exchange_rate
+                  else:
+                    banksSummary[bank] = b.amount*actual_op.exchange_rate
                 actual_op.save()
               else:
                 msg = "No se puede cambiar el status a %s" % new_status
@@ -395,10 +390,6 @@ def dashboard(request):
                                                                               'totalOpen': totalOpen, 'totalEnded': totalEnded, 'monthForm': monthForm,
                                                                               'rangeForm': rangeForm, 'dateForm': dateForm, 'filter':filter, 'hasFilter': hasFilter,
                                                                               'form': formset, 'isAllie': False, 'totalClaim': totalClaim, 'formChoice': formChoice})
-
-          if (new_status == 'Fondos ubicados'):
-            crypto_used.amount_acc -= totalAmount/rate
-            crypto_used.save()
 
           messages.error(request, "El cambio de estado se aplicó con éxito", extra_tags="alert-success")
           if (new_status == 'Verificado'):
@@ -459,8 +450,6 @@ def dashboard(request):
                                                       transfer_number=transfer_number
                                                       ).save()
 
-                      #exchanger_accepts.amount_acc += actual_op.fiat_amount
-                      #exchanger_accepts.save()
                       actual_op.ally_pay_back = True
                       actual_op.save()
                   else:
@@ -503,8 +492,6 @@ def dashboard(request):
                                                     transfer_number=transfer_number
                                                     ).save()
 
-                    #exchanger_accepts.amount_acc += actual_op.fiat_amount
-                    #exchanger_accepts.save()
                     actual_op.ally_pay_back = True
                     actual_op.save()
 
@@ -1873,9 +1860,6 @@ def claimOperation(request, _operation_id):
   operation.save()
   return render(request, 'dashboard/claimConfirmation.html')
 
-
-
-
 def operationDetailDashboard(request, _operation_id):
     try:
       operation = Operation.objects.get(code=_operation_id)
@@ -1908,14 +1892,6 @@ def operationDetailDashboard(request, _operation_id):
           if status == "Fondos transferidos":
 
             sendEmailOperationFinished(operation)
-          elif status == "Fondos ubicados":
-            crypto_used = form.cleaned_data['crypto_used']
-            rate = form.cleaned_data['rate']
-
-            operation.crypto_rate = rate
-            operation.exchanger = crypto_used.exchanger
-            operation.crypto_used = crypto_used.currency
-            operation.save()
         else:
           msg = "No se puede cambiar el status a %s" % status
           messages.error(request, msg, extra_tags="alert-warning")  
@@ -1943,7 +1919,8 @@ def operationAddTransaction(request, _operation_id):
         if (operation.closure.status == 'Activo'):
           type = form.cleaned_data['operation_type']
           file = request.FILES['transfer_image']
-          if type in ['TD', 'TO']:
+
+          if type in 'TO':
             Transaction(id_operation   = operation,
                         operation_type = type,
                         transfer_image = file,
@@ -1952,6 +1929,28 @@ def operationAddTransaction(request, _operation_id):
                         date           = form.cleaned_data['date'],
                         amount         = form.cleaned_data['amount'],
                         currency       = form.cleaned_data['currency']).save() 
+
+          elif type == 'TD':
+            exchangerAccepts = form.cleaned_data['crypto_used']
+            cryptoUsed = exchangerAccepts.currency
+            exchanger = exchangerAccepts.exchanger
+            rate = form.cleaned_data['rate']
+
+            Transaction(id_operation   = operation,
+                        operation_type = type,
+                        transfer_image = file,
+                        origin_account = form.cleaned_data['origin_account'],
+                        target_account = form.cleaned_data['target_account'],
+                        date           = form.cleaned_data['date'],
+                        amount         = form.cleaned_data['amount'],
+                        currency       = form.cleaned_data['currency'],
+                        crypto_rate    = rate,
+                        crypto_used    = cryptoUsed,
+                        exchanger      = exchanger).save() 
+
+            #Falta actualizar el monto en el exchanger
+            exchangerAccepts.amount_acc -= operation.fiat_amount/rate
+            exchangerAccepts.save()
 
             # Sacamos todas las transacciones destino y sumamos sus montos
             allTransactions = Transaction.objects.filter(id_operation=operation, operation_type='TD', currency=operation.target_currency) 
@@ -2269,8 +2268,10 @@ def addRepurchase(request, _currency_id):
       raise Http404
 
     existing_rep = RepurchaseCameFrom.objects.values_list('id_operation',flat=True)
-    available_op = Operation.objects.filter(origin_currency=origin_currency, status="Fondos transferidos").exclude(code__in=existing_rep).values_list('code', 'fiat_amount', 'date')
-    initialForm = [{'operation': op[0], 'amount': op[1], 'date': op[2].strftime("%d/%m/%Y"), 'selected': False} for op in available_op]
+    available_op = Operation.objects.filter(origin_currency=origin_currency, status="Fondos transferidos").exclude(code__in=existing_rep).values_list('code', 'fiat_amount', 'date', 'id_account__id_bank__name', 'ally_pay_back')
+    initialForm = [{'operation': op[0], 'amount': op[1], \
+                      'date': op[2].strftime("%d/%m/%Y"), 'selected': False, 'bank': op[3], \
+                      'payback': op[4]} for op in available_op]
 
     if (request.method == 'POST'):
         POST = request.POST.copy()
@@ -2452,10 +2453,9 @@ def summaryByAlly(request):
   general_received = 0
   general_sent = 0
   for ally in allies.iterator():
-    op_involved = Operation.objects.filter(id_allie_origin=ally)
+    op_involved = Operation.objects.filter(id_allie_origin=ally).exclude(status="Cancelada")
     closures = allClosures.filter(ally=ally)
-    #currencies = op_involved.values_list('origin_currency', flat=True).distinct()
-    #for c in currencies:
+    
     for c in closures.iterator():
       op_closure = op_involved.filter(closure=c)
       total_received = op_closure.count()
@@ -2468,10 +2468,10 @@ def summaryByAlly(request):
         total_sent = Decimal(0)
         aux_sent = {}
         aux_sent['total_sent'] = Decimal(0)
-      if aux_received['total_received'] and aux_sent['total_sent']:
-        diff = aux_received['total_received'] - aux_sent['total_sent']
+      if (total_received == 0):
+        diff =  (-1)*aux_sent['total_sent']
       else:
-        diff = 0
+        diff = aux_received['total_received'] - aux_sent['total_sent']
       closure_table[str(ally.id)+c.date.strftime("%d%m%Y")] = [c, aux_received['total_received'], total_received, aux_sent['total_sent'], total_sent, diff]
       general_received += total_received
       general_sent += total_sent
@@ -2480,6 +2480,7 @@ def summaryByAlly(request):
                                                       'monthForm': monthForm, 'rangeForm': rangeForm, 'dateForm': dateForm, 'filter':filter,
                                                       'hasFilter': hasFilter,})
 
+
 #Faltan permisos
 def detailClosure(request,_closure_id):
   try:
@@ -2487,7 +2488,7 @@ def detailClosure(request,_closure_id):
   except:
     raise Http404
 
-  operations = closure.box_closure.all()
+  operations = closure.box_closure.exclude(status="Cancelada")
 
   return render(request, 'admin/detailClosure.html', {'closure': closure, 'operations': operations})
 

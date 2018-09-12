@@ -438,6 +438,7 @@ class ChangeOperationStatusForm(forms.Form):
   status_choices = (('Faltan recaudos', 'Faltan recaudos'),
                     ('Por verificar', 'Por verificar'),
                     ('Verificado', 'Verificado'),
+                    ('Publicado', 'Publicado'),
                     ('Fondos ubicados', 'Fondos ubicados'),
                     ('Fondos transferidos', 'Fondos transferidos'))
   status = forms.ChoiceField(required=True, choices=status_choices, label="Status de la operación")
@@ -495,6 +496,10 @@ class TransactionForm(forms.ModelForm):
   transfer_image = forms.FileField(label="Imagen del comprobante", required=False)
   date = forms.DateField(label = "Fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
   amount = forms.CharField(required=True, label="Monto")
+  crypto_used = GroupedModelChoiceField(required=True, label="Criptomoneda utilizada", 
+                                            queryset=ExchangerAccepts.objects.filter(currency__currency_type='Crypto').order_by('exchanger'),
+                                                 group_by_field='exchanger')
+  rate = forms.DecimalField(required=True, label="Tasa de cambio" , min_value=0)
 
   def __init__(self, *args, **kwargs):
     super(TransactionForm, self).__init__(*args, **kwargs)
@@ -533,14 +538,18 @@ class NewRepurchaseOpForm(forms.Form):
   amount = forms.DecimalField(required=False, label="Monto", min_value=0)
   DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
   date = forms.DateField(label = "Fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
+  bank = forms.CharField(label="Banco asociado", required=False)
+  payback = forms.BooleanField(label="Devuelto", required=False)
 
   def __init__(self, *args, **kwargs):
     super(NewRepurchaseOpForm, self).__init__(*args, **kwargs)
     for i in self.fields:
       self.fields[i].widget.attrs.update({'class' : 'form-control'})
-    self.fields['operation'].widget.attrs.update({'style':'display:none','readonly': 'readonly'})
-    self.fields['amount'].widget.attrs.update({'style':'display:none','readonly': 'readonly'})
-    self.fields['date'].widget.attrs.update({'style':'display:none','readonly': 'readonly'})
+    self.fields['operation'].widget.attrs.update({'readonly': 'readonly'})
+    self.fields['amount'].widget.attrs.update({'readonly': 'readonly'})
+    self.fields['date'].widget.attrs.update({'readonly': 'readonly'})
+    self.fields['bank'].widget.attrs.update({'readonly': 'readonly'})
+    self.fields['payback'].widget.attrs.update({'readonly': 'readonly'})
     self.fields['selected'].widget.attrs.update({'class' : 'flat'})
 
 class NewRepurchaseForm(forms.Form):
@@ -606,12 +615,12 @@ class OperationBulkForm(forms.Form):
       self.fields['selected'].widget.attrs.update({'class' : 'flat'})
 
 class StateChangeBulkForm(forms.Form):
-    choices = (('Verificado', 'Verificado'), ('Fondos ubicados', 'Fondos ubicados'))
+    choices = (('Verificado', 'Verificado'), ('Publicado', 'Publicado'))
     action = forms.ChoiceField(choices=choices, required=False)
-    crypto_used = GroupedModelChoiceField(required=False, label="Criptomoneda utilizada", 
-                                            queryset=ExchangerAccepts.objects.filter(currency__currency_type='Crypto').order_by('exchanger'),
-                                                 group_by_field='exchanger')
-    rate = forms.DecimalField(required=False, label="Tasa de cambio" , min_value=0)
+    #crypto_used = GroupedModelChoiceField(required=False, label="Criptomoneda utilizada", 
+    #                                        queryset=ExchangerAccepts.objects.filter(currency__currency_type='Crypto').order_by('exchanger'),
+    #                                             group_by_field='exchanger')
+    #rate = forms.DecimalField(required=False, label="Tasa de cambio" , min_value=0)
 
     def __init__(self, *args, **kwargs):
       super(StateChangeBulkForm, self).__init__(*args, **kwargs)

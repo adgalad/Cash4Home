@@ -215,7 +215,7 @@
                 <div class="clearfix"></div>
               </div>
 
-              <table class="table table-striped bulk_action">
+              <table class="table table-striped bulk_action" id="datatable-buttons">
                 <thead>
                   <tr class="headings">
                     <th class="column-title">Código</th>
@@ -226,6 +226,8 @@
                     <th class="column-title">Fecha</th>
                     <th class="column-title">Imagen</th>
                     <th class="column-title">Eliminar</th>
+                    <th class="none">Crypto</th>
+                    <th class="none">Tasa Crypto</th>
                   </tr>
                 </thead>
 
@@ -267,6 +269,13 @@
                         <a href="{% url 'deleteTransaction' tx.code %}" onclick="return confirm('Desea elminar la transacción {{tx.code}}')">
                           <i class="fa fa-times" style="color: red"></i></td>
                         </a>
+                      {% if tx.crypto_used %}
+                        <td>{{tx.crypto_used.code}}</td>
+                        <td>{{tx.crypto_rate | currency}} {{tx.currency}}</td>
+                      {% else %}
+                        <td>N/A</td>
+                        <td>N/A</td>
+                      {% endif %}
                     </tr>
                   {% endfor %}
                 </tbody>
@@ -341,9 +350,11 @@
                   <a class="btn btn-primary" href="{% url 'operationHistory' operation.code %}"><i class="fa fa-book"></i>&nbsp Historial</a>
                 {% endif %}
                 {% if perms.admin.cancel_operation and operation.is_active or request.user.is_superuser %}
-                  <a class="btn btn-danger"  href="{% url 'cancelOperation' operation.code %}" >
-                    <i class="fa fa-times"></i>&nbsp Cancelar Operación
-                  </a>
+                  {% if operation.status != "Fondos transferidos" %}
+                    <a class="btn btn-danger"  href="{% url 'cancelOperation' operation.code %}" >
+                      <i class="fa fa-times"></i>&nbsp Cancelar Operación
+                    </a>
+                  {% endif %}
                 {% endif %}
               </div>
             </div>
@@ -390,18 +401,5 @@
       $("#iframe01").hide()
       modalIframe.src = "";
     }
-  </script>
-  <script type="text/javascript">
-    $("#id_status").change(function(){
-      if ($("#id_status").val()=='Fondos ubicados'){
-        $("#aditionalFields").show();
-        document.getElementById("id_crypto_used").required = true;
-        document.getElementById("id_rate").required = true;
-      } else {
-        $("#aditionalFields").hide();
-        document.getElementById("id_crypto_used").required = false;
-        document.getElementById("id_rate").required = false;
-      }
-    });
   </script>
 {% endblock javascripts %}

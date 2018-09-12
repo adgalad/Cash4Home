@@ -71,25 +71,38 @@
                     <div id="step-1">
                       <br>
                       <p>Seleccione las operaciones incluídas en la recompra</p>
-                      <table id="datatable" class="table table-striped table-bordered dt-responsive" cellspacing="0" width="100%">
+                      <table id="datatable" class="table table-striped table-bordered dt-responsive bulk_action" cellspacing="0" width="100%">
                         <thead>
                           <tr>
-                            <th>Seleccionar</th>
-                            <th>Código de operación</th>
-                            <th>Cantidad moneda origen</th>
-                            <th>Fecha de operación</th>
+                            <!--<th>Seleccionar</th>-->
+                            <th class="no-order">
+                              <input type="checkbox" id="check-all" class="flat">
+                            </th>
+                            <th class="colum-title">Código de operación</th>
+                            <th class="colum-title">Cantidad moneda origen</th>
+                            <th class="colum-title">Fecha de operación</th>
+                            <th class="colum-title">Banco</th>
+                            <th class="colum-title">Devuelto</th>
                           </tr>
                         </thead>
                         <tbody>
                           {% for form in formOp %}
                             <tr>
-                              {% for field in form %}
-                                  {% if field.label == "Seleccionar" %}
-                                    <td>{{ field }}</td>
-                                  {% else %}
-                                    <td>{{field.value}} {{ field }}</td>
-                                  {% endif %}
-                              {% endfor %}
+                              <td>{{form.selected}}</td>
+                              <td>{{form.operation}}</td>
+                              <td>{{form.amount}}</td>
+                              <td>{{form.date}}</td>
+                              <td>{{form.bank}}</td>
+                              <td>
+                                {% if form.payback %}
+                                  <i class="fa fa-check green"></i>
+                                {% else %}
+                                    <i class="fa fa-times red"></i>
+                                {% endif %}
+                              </td>
+                              <!--{% for field in form %}
+                                  <td>{{ field }}</td>
+                              {% endfor %}-->
                             </tr>
                           {% endfor %}
                         </tbody>
@@ -97,6 +110,7 @@
                     </div>
                     <div id="step-2">
                       <br>
+                      <p>Total de la recompra en origen: </p><p id="cantidadTotal"></p>
                       <p>Ingrese los datos asociados a la recompra</p>
                       {% for field in formRep %}
                         {{ field.label_tag }}

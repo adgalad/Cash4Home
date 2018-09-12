@@ -2545,6 +2545,51 @@ function init_DataTables () {
         } ],
         responsive: true
       })
+    } 
+    if ($('table[id="datatable-pending"]').length) {
+      console.log("HOLA");
+      $('table[id="datatable-pending"]').DataTable({
+        dom: 'Bfrtip',
+        buttons: [{
+          extend: 'copy',
+          className: 'btn-sm'
+        }, {
+          extend: 'csv',
+          className: 'btn-sm'
+        }, {
+          extend: 'excel',
+          className: 'btn-sm'
+        }, {
+          extend: 'pdfHtml5',
+          className: 'btn-sm'
+        }, {
+          extend: 'print',
+          className: 'btn-sm'
+        } ],
+        responsive: true
+      })
+    } 
+    if ($('table[id="datatable-ended"]').length) {
+      $('table[id="datatable-ended"]').DataTable({
+        dom: 'Bfrtip',
+        buttons: [{
+          extend: 'copy',
+          className: 'btn-sm'
+        }, {
+          extend: 'csv',
+          className: 'btn-sm'
+        }, {
+          extend: 'excel',
+          className: 'btn-sm'
+        }, {
+          extend: 'pdfHtml5',
+          className: 'btn-sm'
+        }, {
+          extend: 'print',
+          className: 'btn-sm'
+        } ],
+        responsive: true
+      })
     }
   }
 
@@ -2564,8 +2609,8 @@ function init_DataTables () {
   })
 
   $('table[id="datatable-responsive"]').DataTable()
-  $('table[id="datatable-pending"]').DataTable()
-  $('table[id="datatable-ended"]').DataTable()
+  /*$('table[id="datatable-pending"]').DataTable()
+  $('table[id="datatable-ended"]').DataTable()*/
   
 
   $('#datatable-scroller').DataTable({

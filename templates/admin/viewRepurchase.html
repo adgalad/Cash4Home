@@ -1,4 +1,5 @@
 {% extends "base_dashboard.html" %}
+{% load mathfilters %}
 
 {% block title %} Detalles de la recompra {% endblock title %}
 
@@ -88,11 +89,44 @@
                   <b>Operaciones asociadas</b>
                 </div>
                 <div class="col-md-10 col-sm-10 col-xs-12">
-                    <p>
-                      {% for came in came_from %}
-                        {{came.id_operation.code}}, 
-                      {% endfor %}
-                    </p>
+                    <table class="table table-striped table-bordered dt-responsive" id="datatable-pending" cellspacing="0" width="100%">
+                      <thead>
+                        <tr class="headings">
+                          <th class="column-title">Código</th>
+                          <th class="column-title">Cliente</th>
+                          <th class="column-title">Cant. recibida</th>
+                          <th class="column-title">Cant. enviada</th>
+                          <th class="column-title">Fecha Creación</th>
+                          <th class="column-title">Estado</th>
+                          <th class="column-title">Devuelto</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for op in came_from %}
+                          <tr>
+                            <td>{{ op.id_operation.code }}</td>
+                            <td>{{ op.id_operation.id_client.get_full_name }}</td>
+                            <td>{{ op.id_operation.fiat_amount | currency }} {{ op.id_operation.origin_currency.code }}</td>
+                            <td>{{ op.id_operation.fiat_amount|mul:op.id_operation.exchange_rate | currency | safe}} {{op.id_operation.target_currency.code}}</td>  
+                            <td><p>{{ op.id_operation.date }}</p></td>
+                            <td>
+                              {% if op.id_operation.status == "En reclamo" %}
+                                <div style="color:red">{{ op.id_operation.status }}</div>
+                              {% else %}
+                                {{ op.id_operation.status }}
+                              {% endif %}
+                            </td>
+                            <td>
+                                {% if op.id_operation.ally_pay_back %}
+                                  <i class="fa fa-check green"></i>
+                                {% else %}
+                                    <i class="fa fa-times red"></i>
+                                {% endif %}
+                            </td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
                 </div>
                 
               </div>
