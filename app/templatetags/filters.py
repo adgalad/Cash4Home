@@ -1,6 +1,7 @@
 from django.template.defaultfilters import register
 from django.contrib.auth.models import Group
 
+epsilon = 0.00000001
 @register.filter(name='lookup')
 def lookup(dict, index):
     if index in dict:
@@ -11,6 +12,8 @@ def lookup(dict, index):
 def currency(value):
     try:
         v = float(value)
+        if v < epsilon:
+            return 0
         strValue = '{:,.2f}'.format(v)
         
         return strValue if strValue != "0.00" else crypto(value)
@@ -23,6 +26,8 @@ def currency(value):
 def crypto(value):
     try:
         v = float(value)
+        if v < epsilon:
+            return 0
         strValue = '{:,.8f}'.format(v)
         return strValue if strValue != "0.00000000" else str(value)
     except:

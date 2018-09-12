@@ -92,7 +92,7 @@
                   </div>
                   <div style="display: none;" id="step-2">
 
-                    <h3 class="StepTitle">Elige a cuáles cuentas quieres enviar el dinero</h3>
+                    <h3 class="StepTitle">Elige a cuál cuenta quieres enviar el dinero</h3>
                     <hr>
                     <div class="col-md-6 col-sm-6 col-xs-12 form-group">
                       {% for form in form2 %}
@@ -127,12 +127,12 @@
                       </div>
                       {% endfor %}
                       
-                      <button id="add" type="button" onclick="addAccountInput()" class="btn btn-round btn-primary">
+<!--                       <button id="add" type="button" onclick="addAccountInput()" class="btn btn-round btn-primary">
                         <i class="fa fa-plus"></i> Agregar
                       </button>
                       <button id="delete" type="button" onclick="deleteAccountInput()" disabled class="btn btn-round btn-primary">
                         <i class="fa fa-times"></i> Quitar
-                      </button>
+                      </button> -->
                     </div>
                     
                     <style type="text/css">
@@ -154,7 +154,7 @@
                         </tr>
                         {% endif %}
 
-                        <tr class="bottom">
+                        <tr class="bottom" style="display: none"  style="display: none">
                           <td><b>Total neto:</b></td>
                           <td id="net"></td>
                         </tr>
@@ -164,7 +164,7 @@
                           <td id="rate"></td>
                         </tr>
 
-                        <tr class="bottom">
+                        <tr class="bottom" >
                           <td><b id="amountIn">Total en VES:</b></td>
                           <td id="ves"></td>
                         </tr>
@@ -211,7 +211,7 @@
                         </tr>
                         {% endif %}
 
-                        <tr class="bottom">
+                        <tr class="bottom"  style="display: none">
                           <td><b>Total neto:</b></td>
                           <td id="net2"></td>
                         </tr>

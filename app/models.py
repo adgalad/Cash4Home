@@ -8,8 +8,8 @@ import datetime
 import random
 
 class GlobalSettings(models.Model):
-    OPERATION_TIMEOUT = models.IntegerField(default=90, verbose_name='Expiración de la operación')
-    EMAIL_VALIDATION_EXPIRATION = models.IntegerField(default=60*3, verbose_name='Expiración del email de validación')
+    OPERATION_TIMEOUT = models.IntegerField(default=90, verbose_name='Expiración de la operación (minutos)')
+    EMAIL_VALIDATION_EXPIRATION = models.IntegerField(default=60*3, verbose_name='Expiración del email de validación (minutos)')
 
 
     def get():
@@ -302,7 +302,7 @@ class BoxClosure(models.Model):
         default_permissions = ()
 
     def __str__(self):
-        return self.ally.get_full_name() + " - " + str(self.date.strftime("%d%m%Y")) + " - " + self.currency.code
+        return self.ally.get_full_name() + " - " + str(self.date.strftime("%d-%m-%Y")) + " - " + self.currency.code
 
 class BoxClosureHistory(models.Model):
     closure = models.ForeignKey(BoxClosure)
@@ -386,14 +386,18 @@ class Transaction(models.Model):
     date = models.DateField(verbose_name="Fecha")
     choices = (('TO', 'TO'), ('TD', 'TD'), ('TC', 'TC')) #TO-Transaccion origen, TD-Transaccion destino, TC-transaccion crypto
     operation_type = models.CharField(choices=choices, max_length=3, verbose_name="Tipo de transacción")
-    transfer_image = models.ImageField(upload_to=get_image_path, verbose_name="Imagen del comprobante")
+    transfer_image = models.FileField(upload_to=get_image_path, verbose_name="Imagen del comprobante")
     id_operation   = models.ForeignKey(Operation, related_name='transactions', verbose_name="Operación asociada")
     origin_account = models.ForeignKey(Account, null=True, blank=True, related_name='origin_account', verbose_name="Cuenta origen")
     target_account = models.ForeignKey(Account, null=True, blank=True, related_name='target_account', verbose_name="Cuenta destino")
     to_exchanger   = models.ForeignKey('Exchanger', null=True, blank=True, verbose_name="Exchanger")
-    amount         = models.FloatField(verbose_name="Monto")
+    amount         = models.DecimalField(max_digits=30, decimal_places=15, default=0, verbose_name="Monto")
     currency       = models.ForeignKey(Currency, verbose_name="Moneda")
     transfer_number = models.CharField(max_length=64, null=True, verbose_name="Número de la transferencia")
+
+    def delete(self):
+        self.transfer_image.delete()
+        super(Transaction, self).delete()
 
     @property
     def image_url(self):
@@ -414,7 +418,7 @@ class Repurchase(models.Model):
     exchanger = models.ForeignKey(Exchanger)
     amount = models.DecimalField(max_digits=30, decimal_places=15, default=0)
     profit = models.DecimalField(default=0, max_digits=30, decimal_places=15)
-
+ 
     class Meta:
         default_permissions = ()
 

@@ -140,6 +140,7 @@ urlpatterns = [
         views.operationHistory,
         name="operationHistory"
        ),
+    url(r'^transaction/(?P<_transaction_id>.+)/delete$', views.deleteTransaction, name="deleteTransaction"),
 
     url(r'^closure$', views.summaryByAlly, name="summaryByAlly"),
     url(r'^change/closure/(?P<_closure_id>\w+)', views.changeStatusClosure, name="changeStatusClosure"),

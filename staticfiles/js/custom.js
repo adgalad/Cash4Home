@@ -7,6 +7,36 @@
  * });
  */
 
+ currencyf = function(value){
+  if (typeof(value) == 'string'){
+    console.log('1')
+    v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
+  } else {
+    console.log('2')
+    v = parseFloat(value)  
+  }
+  console.log('>>', v)
+  if (isNaN(v)) return '0.00'
+    console.log('<<<', v.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'))
+  return v.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
+}
+
+fcurrency = function(value){
+  if (typeof(value) == 'string'){
+    v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
+  } else {
+    v = parseFloat(value)  
+  }
+  if (isNaN(v)) return 0
+  return v
+}
+
+function toCurrency(field){
+  field.attr("type", "text")
+  field.val(currencyf(field.val()))
+}
+
+
 (function ($, sr) {
     // debouncing function from John Hann
     // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
@@ -201,7 +231,7 @@ $(document).ready(function () {
 // /Switchery
 
 // iCheck
-$(document).ready(function () {
+iCheck = function () {
   if ($('input.flat')[0]) {
     $(document).ready(function () {
       $('input.flat').iCheck({
@@ -210,7 +240,8 @@ $(document).ready(function () {
       })
     })
   }
-})
+}
+$(document).ready(iCheck)
 // /iCheck
 
 // Table
@@ -237,6 +268,16 @@ $('.bulk_action input').on('ifUnchecked', function () {
   $(this).parent().parent().parent().removeClass('selected')
   countChecked()
 })
+$('.bulk_action_ended input').on('ifChecked', function () {
+  checkState = ''
+  $(this).parent().parent().parent().addClass('selected')
+  countCheckedEnded()
+})
+$('.bulk_action_ended input').on('ifUnchecked', function () {
+  checkState = ''
+  $(this).parent().parent().parent().removeClass('selected')
+  countCheckedEnded()
+})
 $('.bulk_action input#check-all').on('ifChecked', function () {
   checkState = 'all'
   countChecked()
@@ -246,23 +287,54 @@ $('.bulk_action input#check-all').on('ifUnchecked', function () {
   countChecked()
 })
 
+$('.bulk_action_ended input#check-all-ended').on('ifChecked', function () {
+  checkState = 'all'
+  countCheckedEnded()
+})
+$('.bulk_action_ended input#check-all-ended').on('ifUnchecked', function () {
+  checkState = 'none'
+  countCheckedEnded()
+})
+
 function countChecked () {
   if (checkState === 'all') {
-    $(".bulk_action input[name='table_records']").iCheck('check')
+    $(".bulk_action input:checkbox").iCheck('check')
   }
   if (checkState === 'none') {
-    $(".bulk_action input[name='table_records']").iCheck('uncheck')
+    $(".bulk_action input:checkbox").iCheck('uncheck')
   }
 
-  var checkCount = $(".bulk_action input[name='table_records']:checked").length
+  var checkCount = $(".bulk_action input:checkbox:checked").length 
 
   if (checkCount) {
     $('.column-title').hide()
     $('.bulk-actions').show()
-    $('.action-cnt').html(checkCount + ' Records Selected')
+    $('.action-cnt').html(checkCount + ' Registros seleccionados')
   } else {
     $('.column-title').show()
     $('.bulk-actions').hide()
+  }
+}
+
+function countCheckedEnded () {
+  if (checkState === 'all') {
+    $(".bulk_action_ended input:checkbox").iCheck('check')
+  }
+  if (checkState === 'none') {
+    $(".bulk_action_ended input:checkbox").iCheck('uncheck')
+  }
+
+  var checkCountEnded = $(".bulk_action_ended input:checkbox:checked").length 
+
+  console.log(checkCountEnded);
+
+  if (checkCountEnded) {
+    $('.column-title-ended').hide()
+    $('.bulk-actions-ended').show()
+    $('.action-cnt-ended').html(checkCountEnded + ' Registros seleccionados')
+  } else {
+    $('.column-title-ended').show()
+    $('.bulk-actions-ended').hide()
   }
 }
 
@@ -1656,12 +1728,14 @@ function getLocation(href) {
 };
 
 function goToPreviousPage(){
-  if (document.referrer !== ""){
-    var url = getLocation(document.referrer);
-    if (url.hostname === window.location.hostname){
-      return window.location.href = document.referrer;
-    }
-  }
+  // if (document.referrer !== ""){
+  //   var url = getLocation(document.referrer);
+  //   if (url.hostname === window.location.hostname && 
+  //       url.pathname !== window.location.pathname)
+  //   {
+  //     return window.location.href = document.referrer;
+  //   }
+  // }
   return false;
 }
 
@@ -2490,6 +2564,8 @@ function init_DataTables () {
   })
 
   $('table[id="datatable-responsive"]').DataTable()
+  $('table[id="datatable-pending"]').DataTable()
+  $('table[id="datatable-ended"]').DataTable()
   
 
   $('#datatable-scroller').DataTable({

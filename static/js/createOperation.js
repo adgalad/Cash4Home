@@ -515,25 +515,7 @@ function deleteAccountInput () {
     $('#add').prop('disabled', false)
   }
 }
-currencyf = function(value){
-  if (typeof(value) == 'string'){
-    v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
-  } else {
-    v = parseFloat(value)  
-  }
-  if (isNaN(v)) return 0
-  return v.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
-}
 
-fcurrency = function(value){
-  if (typeof(value) == 'string'){
-    v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
-  } else {
-    v = parseFloat(value)  
-  }
-  if (isNaN(v)) return 0
-  return v
-}
 
 toCurrencyf = function(field){
   for (var i = 0; i < nOptions; ++i) {
@@ -541,6 +523,8 @@ toCurrencyf = function(field){
     f.val(currencyf(f.val()))
   }
 }
+
+
 
 summary = function () {
   var total = 0

@@ -38,11 +38,50 @@
         </div>
       </div> 
 
-      <div class="row">
-        
 
+      
+      <div class="row">
         <div class="col-md-12 col-sm-12 col-xs-12">
           <div class="x_panel">
+              <div class="row">             
+                <div class="col-md-5 col-sm-8 col-xs-8"> 
+                  <form  id="filterForm" method="post">
+                    {% csrf_token %}
+                    <div class="col-md-5 col-sm-4 col-xs-4"> 
+                      <select id="filterSelect" class="form-control" onchange="changeFilter()">
+                        <option value="month">{{ monthForm.dateMY.label }}</option>
+                        <option value="date">{{ dateForm.date.label }}</option>
+                        <option value="range">{{ rangeForm.start.label }}</option>
+                      </select>
+                    </div>
+                    <div class="col-md-7 col-sm-8 col-xs-8">
+                      <input type="text" name="filter" id="filter" style="display:none">
+                      <div id="monthFilter"> {{ monthForm.dateMY }} </div>
+                      <div id="dateFilter" style="display: none"> {{ dateForm.date }} </div>
+                      <div id="rangeFilter" style="display: none"> 
+                        {{ rangeForm.start }}
+                        {{ rangeForm.end }}
+                      </div>
+                    </div>
+                  </form>
+                </div>
+                <div class="col-md-6 col-sm-4 col-xs-4"> 
+                  <button class="btn btn-primary" onclick='document.getElementById("filterForm").submit();'>
+                    <i class="fa fa-search"></i>&nbsp; Filtrar
+                  </button>
+                  {% if hasFilter %}
+                  <button class="btn btn-danger" type="submit" onclick='document.getElementById("removeFilter").submit();'>
+                      <i class="fa fa-times"></i>&nbsp; Quitar Filtro
+                  </button>  
+                  <form method="post" id="removeFilter">
+                      {% csrf_token %}
+                      <input type="text" name="filter" id="filter" style="display:none">
+
+                  </form>
+                  {% endif %}
+                </div>
+              </div>
+              <br>
             <div class="x_title">
               <h2>Lista de aliados</h2>
               <ul class="nav navbar-right panel_toolbox">
@@ -133,4 +172,65 @@
   <script src="/static/vendors/jszip/dist/jszip.min.js"></script>
   <script src="/static/vendors/pdfmake/build/pdfmake.min.js"></script>
   <script src="/static/vendors/pdfmake/build/vfs_fonts.js"></script>
+  <script type="text/javascript">
+    dateConfig = {
+      singleDatePicker: true,
+      singleClasses: 'picker_2',
+      "locale": {
+          "format": "DD/MM/YYYY",
+          "separator": " - ",
+          "applyLabel": "Aplicar",
+          "cancelLabel": "Cancelar",
+          "fromLabel": "Desde",
+          "toLabel": "Hasta",
+          "customRangeLabel": "Custom",
+          "daysOfWeek": [
+              "Do",
+              "Lu",
+              "Mar",
+              "Miér",
+              "Jue",
+              "Vi",
+              "Sa"
+          ],
+          "monthNames": [
+              "Enero",
+              "Febrero",
+              "Marzo",
+              "Abril",
+              "Mayo",
+              "Junio",
+              "Julio",
+              "Agosto",
+              "Septiembre",
+              "Octubre",
+              "Noviembre",
+              "Diciembre"
+          ],
+          "firstDay": 1
+        }
+    }
+
+    $('#id_start').daterangepicker(dateConfig, function (start, end, label) {console.log(start.toISOString(), end.toISOString(), label)})
+    $('#id_end').daterangepicker(dateConfig, function (start, end, label) {console.log(start.toISOString(), end.toISOString(), label)})
+    function changeFilter(){
+      const value = $('#filterSelect').val()
+      $('#filter').val(value)
+      if (value == "month"){
+        $('#monthFilter').show()
+        $('#dateFilter').hide()
+        $('#rangeFilter').hide()
+      } else if (value == "date"){
+        $('#monthFilter').hide()
+        $('#dateFilter').show()
+        $('#rangeFilter').hide()
+      } else if (value == "range"){
+        $('#monthFilter').hide()
+        $('#dateFilter').hide()
+        $('#rangeFilter').show()
+      }
+    }
+    $('#filterSelect').val("{{filter}}")
+    changeFilter();
+  </script>
 {% endblock javascripts %}

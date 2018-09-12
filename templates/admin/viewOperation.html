@@ -33,8 +33,8 @@
           <span class="close">&times;</span>
 
           <!-- Modal Content (The Image) -->
-          <img class="modal-content" id="img01">
-          <iframe class="modal-content" id="iframe01" style="height: 80%"></iframe> 
+          <img class="modal-content" id="img01" style=" display: none">
+          <iframe class="modal-content" id="iframe01" style="height: 80%; display: none"></iframe> 
 
           <!-- Modal Caption (Image Text) -->
           <div id="caption"></div>
@@ -166,7 +166,7 @@
                   <b>Tasa de cambio</b>
                 </div>
                 <div class="col-md-3 col-sm-3 col-xs-12 ">
-                  {{ operation.origin_currency }}/{{operation.target_currency}} {{ operation.exchange_rate }} 
+                  {{ operation.origin_currency }}/{{operation.target_currency}} {{ operation.exchange_rate | currency }} 
                 </div>
               </div>
 
@@ -225,6 +225,7 @@
                     <th class="column-title">Monto</th>
                     <th class="column-title">Fecha</th>
                     <th class="column-title">Imagen</th>
+                    <th class="column-title">Eliminar</th>
                   </tr>
                 </thead>
 
@@ -262,6 +263,10 @@
                           <i class="fa fa-image"></i>
                         </a>
                       </td>
+                      <td> 
+                        <a href="{% url 'deleteTransaction' tx.code %}" onclick="return confirm('Desea elminar la transacción {{tx.code}}')">
+                          <i class="fa fa-times" style="color: red"></i></td>
+                        </a>
                     </tr>
                   {% endfor %}
                 </tbody>

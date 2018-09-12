@@ -7,6 +7,36 @@
  * });
  */
 
+ currencyf = function(value){
+  if (typeof(value) == 'string'){
+    console.log('1')
+    v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
+  } else {
+    console.log('2')
+    v = parseFloat(value)  
+  }
+  console.log('>>', v)
+  if (isNaN(v)) return '0.00'
+    console.log('<<<', v.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,'))
+  return v.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
+}
+
+fcurrency = function(value){
+  if (typeof(value) == 'string'){
+    v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
+  } else {
+    v = parseFloat(value)  
+  }
+  if (isNaN(v)) return 0
+  return v
+}
+
+function toCurrency(field){
+  field.attr("type", "text")
+  field.val(currencyf(field.val()))
+}
+
+
 (function ($, sr) {
     // debouncing function from John Hann
     // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
@@ -201,7 +231,7 @@ $(document).ready(function () {
 // /Switchery
 
 // iCheck
-$(document).ready(function () {
+iCheck = function () {
   if ($('input.flat')[0]) {
     $(document).ready(function () {
       $('input.flat').iCheck({
@@ -210,7 +240,8 @@ $(document).ready(function () {
       })
     })
   }
-})
+}
+$(document).ready(iCheck)
 // /iCheck
 
 // Table

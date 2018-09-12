@@ -312,6 +312,13 @@ function SmartWizard (target, options) {
         $('#id_currency').parent().addClass('bad')
         return
       }
+      fromCurrency = fromAccs[parseInt($('#id_account').val())]['currency']
+      toCurrency = $('#id_currency').val()
+      _rate = rate[fromCurrency + '/' + toCurrency]
+      if (!_rate){
+        alert("No se pueden realizar operaciones de " + fromCurrency + " a " + toCurrency + "\nIntente mas tarde.");
+        return
+      }
       loadStep2()
       
     } else if (this.curStepIdx == 1) {
@@ -508,25 +515,7 @@ function deleteAccountInput () {
     $('#add').prop('disabled', false)
   }
 }
-currencyf = function(value){
-  if (typeof(value) == 'string'){
-    v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
-  } else {
-    v = parseFloat(value)  
-  }
-  if (isNaN(v)) return 0
-  return v.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
-}
 
-fcurrency = function(value){
-  if (typeof(value) == 'string'){
-    v = parseFloat(value.replace(/[^0-9\.-]+/g, ''))
-  } else {
-    v = parseFloat(value)  
-  }
-  if (isNaN(v)) return 0
-  return v
-}
 
 toCurrencyf = function(field){
   for (var i = 0; i < nOptions; ++i) {
@@ -534,6 +523,8 @@ toCurrencyf = function(field){
     f.val(currencyf(f.val()))
   }
 }
+
+
 
 summary = function () {
   var total = 0
@@ -552,28 +543,28 @@ summary = function () {
     amount = fromCurrency + ' ' + currencyf(total)
     net = fromCurrency + ' ' + currencyf(total * (1 - fee))
     __rate = currencyf(_rate) + ' ' + fromCurrency + '/' + toCurrency
-    vef = toCurrency + ' ' + currencyf(total * (1 - fee) * _rate)
+    ves = toCurrency + ' ' + currencyf(total * (1 - fee) * _rate)
     amountIn = 'Total en ' + toCurrency
 
     $('#fee').html(_fee)
     $('#amount').html(amount)
     $('#net').html(net)
     $('#rate').html(__rate)
-    $('#vef').html(vef)
+    $('#ves').html(ves)
     $('#amountIn').html(amountIn)
 
     $('#fee2').html(_fee)
     $('#amount2').html(amount)
     $('#net2').html(net)
     $('#rate2').html(__rate)
-    $('#vef2').html(vef)
+    $('#ves2').html(ves)
     $('#amountIn2').html(amountIn)
 
     $('#td-from').html(fromAccs[parseInt($('#id_account').val())]['name'])
 
     table = $('#toAccTable')
     table.html('')
-    for (var i = 0; i < nOptions - 1; ++i) {
+    for (var i = 0; i < nOptions; ++i) {
       var acc = toAccs[$('#id_form-' + i + '-account').val()]
       var amount = fcurrency($('#id_form-' + i + '-amount').val())
       if (!acc) continue
@@ -603,11 +594,12 @@ selectAccount = function () {
 }
 
 changeCurrency = function () {
-  
+
   for (var i = 0; i < nOptions; ++i) {
     input = $('#id_form-' + i + '-account')
     input.html('')
-    for (var j in optionsBackup) {
+    len = optionsBackup[i].length
+    for (var j =0 ; j < len ; j++) {
       input.append(optionsBackup[i][j])
     }
   }
@@ -636,12 +628,12 @@ loadStep2 = function(){
     
   }
 }
-optionsBackup[i] = $('#id_form-' + i + '-account').children()    
+for (var i = 0; i < nOptions; ++i) {
+  optionsBackup[i] = $('#id_form-' + i + '-account').children()    
+}
 $('#id_currency').change(changeCurrency)
 $('#id_account').change(summary)
 
 loadStep2()
 summary()
-
-
 

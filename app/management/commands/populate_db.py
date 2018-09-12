@@ -110,7 +110,9 @@ class Command(BaseCommand):
         
         add_transaction = Permission(name='Crear', codename='add_transaction', content_type=transaction)
         view_transaction = Permission(name='Ver', codename='view_transaction', content_type=transaction)
+        view_transaction = Permission(name='Eliminar', codename='delete_transaction', content_type=transaction)
         add_transaction.save()
+        view_transaction.save()
         view_transaction.save()
 
         add_rate  = Permission(name='Crear',  codename='add_rate',  content_type=rate)

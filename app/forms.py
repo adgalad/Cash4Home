@@ -1,4 +1,5 @@
 import re
+import decimal
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
@@ -445,6 +446,19 @@ class ChangeOperationStatusForm(forms.Form):
                                         group_by_field='exchanger')
   rate = forms.DecimalField(required=False, label="Tasa de cambio" , min_value=0)
 
+  def clean_crypto_used(self):
+    crypto = self.cleaned_data['crypto_used']
+    if self.cleaned_data['status'] == "Fondos ubicados" and crypto is None:
+      raise forms.ValidationError('Debe introducir una criptomoneda.')
+    return crypto
+
+  def clean_rate(self):
+    rate = self.cleaned_data['rate']
+    if self.cleaned_data['status'] == "Fondos ubicados" and rate is None:
+      raise forms.ValidationError('Debe introducir una criptomoneda.')
+    return rate
+
+
   def __init__(self, *args, **kwargs):
     super(ChangeOperationStatusForm, self).__init__(*args, **kwargs)
     for i in self.fields:
@@ -478,13 +492,22 @@ class TransactionForm(forms.ModelForm):
                                     widget = forms.Select(attrs={'style': 'width:100%; background-color:white'})
                                   )
   DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
+  transfer_image = forms.FileField(label="Imagen del comprobante", required=False)
   date = forms.DateField(label = "Fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
+  amount = forms.CharField(required=True, label="Monto")
+
   def __init__(self, *args, **kwargs):
     super(TransactionForm, self).__init__(*args, **kwargs)
     for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
     choices = (('TD', 'Destino'), ('TC', 'Cierre'))
     self.fields['operation_type'].choices = choices
+
+  def clean_amount(self):
+    x = float(self.cleaned_data['amount'].replace(',',''))
+    if type(x) != float:
+      raise forms.ValidationError('Introduzca un número.')
+    return decimal.Decimal(x)
 
   class Meta:
     model = Transaction
@@ -509,16 +532,15 @@ class NewRepurchaseOpForm(forms.Form):
   operation = forms.CharField(label="Código de la Operación", required=False)
   amount = forms.DecimalField(required=False, label="Monto", min_value=0)
   DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
-
   date = forms.DateField(label = "Fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
 
   def __init__(self, *args, **kwargs):
     super(NewRepurchaseOpForm, self).__init__(*args, **kwargs)
     for i in self.fields:
       self.fields[i].widget.attrs.update({'class' : 'form-control'})
-    self.fields['operation'].widget.attrs.update({'readonly': 'readonly'})
-    self.fields['amount'].widget.attrs.update({'readonly': 'readonly'})
-    self.fields['date'].widget.attrs.update({'readonly': 'readonly'})
+    self.fields['operation'].widget.attrs.update({'style':'display:none','readonly': 'readonly'})
+    self.fields['amount'].widget.attrs.update({'style':'display:none','readonly': 'readonly'})
+    self.fields['date'].widget.attrs.update({'style':'display:none','readonly': 'readonly'})
     self.fields['selected'].widget.attrs.update({'class' : 'flat'})
 
 class NewRepurchaseForm(forms.Form):
@@ -562,6 +584,16 @@ class FilterDashboardByDateForm(forms.Form):
       for i in self.fields:
         self.fields[i].widget.attrs.update({'class' : 'form-control'})
 
+class FilterDashboardByRangeForm(forms.Form):
+    DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
+    start = forms.DateField(label = "Filtrar por rango", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
+    end = forms.DateField(label = "Fecha final", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
+   
+    def __init__(self, *args, **kwargs):
+      super(FilterDashboardByRangeForm, self).__init__(*args, **kwargs)
+      for i in self.fields:
+        self.fields[i].widget.attrs.update({'class' : 'form-control'})
+
 class OperationBulkForm(forms.Form):
     selected = forms.BooleanField(label="Seleccionar", required=False)
     operation = forms.CharField(required=False)
@@ -592,11 +624,17 @@ class ClosureTransactionForm(forms.Form):
                                                  group_by_field='exchanger')
     DateInput = partial(forms.DateInput, {'class': 'datetimepicker'})
     date2 = forms.DateField(label = "Fecha", required = False, widget = DateInput(), input_formats = ['%d/%m/%Y'])
-    amount = forms.DecimalField(required=False, label="Monto total")
+    amount = amount = forms.CharField(required=True, label="Monto total")
     transfer_image = forms.FileField(label="Imagen del comprobante", required=False)
     choices = (('O', 'Origen'), ('D', 'Destino'))
     type_account = forms.ChoiceField(choices=choices, required=False, label="¿Aliado origen o destino?")
     transfer_number = forms.CharField(required=False, label="Número de la transferencia")
+
+    def clean_amount(self):
+      x = float(self.cleaned_data['amount'].replace(',',''))
+      if type(x) != float:
+        raise forms.ValidationError('Introduzca un número.')
+      return decimal.Decimal(x)
 
     def __init__(self, *args, **kwargs):
       super(ClosureTransactionForm, self).__init__(*args, **kwargs)

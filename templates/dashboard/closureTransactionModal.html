@@ -95,6 +95,10 @@
         document.getElementById("id_type_account").required = false;
         document.getElementById("id_transfer_number").required = false;
       });
+      $('#id_amount').blur(function(){
+        return toCurrency($('#id_amount'))
+      })
   </script>
+
 {% endblock javascripts %}
 

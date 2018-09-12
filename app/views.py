@@ -240,6 +240,7 @@ def dashboard(request):
     if request.method == 'POST' and 'filter' in request.POST:
       monthForm = FilterDashboardByMonthForm(request.POST)
       dateForm = FilterDashboardByDateForm(request.POST)
+      rangeForm = FilterDashboardByRangeForm(request.POST)
       
       # Si el input 'filter' es 'month', entonces se trata de un filtro por mes
       if request.POST['filter'] == "month" and monthForm.is_valid():
@@ -264,7 +265,15 @@ def dashboard(request):
         filter = "date" # Cambiamos el filtro de "month" a "date"
 
         actualOperations, endedOperations = prepareDataOperations(tmpActOperations, tmpEndOperations)
-
+      elif request.POST['filter'] == "range" and rangeForm.is_valid():
+        start = rangeForm.cleaned_data['start']
+        end = rangeForm.cleaned_data['end']
+        tmpActOperations = tmpActOperations.filter(date__month__gte=start.month, date__year__gte=start.year, date__day__gte=start.day, 
+                                                   date__month__lte=end.month, date__year__lte=end.year, date__day__lte=end.day)
+        tmpEndOperations = tmpEndOperations.filter(date__month__gte=start.month, date__year__gte=start.year, date__day__gte=start.day, 
+                                                   date__month__lte=end.month, date__year__lte=end.year, date__day__lte=end.day)
+        hasFilter = True
+        filter = "range"
     '''
       Si no tiene filtro, entonces colocamos todas las operaciones del mes 
       e inicializamos 2 nuevos forms
@@ -272,6 +281,7 @@ def dashboard(request):
     if not hasFilter:
       monthForm = FilterDashboardByMonthForm()
       dateForm = FilterDashboardByDateForm()
+      rangeForm = FilterDashboardByRangeForm()
       today = timezone.now()
       tmpActOperations = tmpActOperations.filter(date__month=today.month, date__year=today.year)
       tmpEndOperations = tmpEndOperations.filter(date__month=today.month, date__year=today.year)
@@ -349,7 +359,7 @@ def dashboard(request):
             formChoice = StateChangeBulkForm()
             return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations, 'endedO': endedOperations, 'nTransactions': nTransactions, 
                                                                           'totalOpen': totalOpen, 'totalEnded': totalEnded, 'monthForm': monthForm,
-                                                                          'dateForm': dateForm, 'filter':filter,
+                                                                          'rangeForm': rangeForm, 'dateForm': dateForm, 'filter':filter,
                                                                           'hasFilter': hasFilter, 'form': formset, 'formChoice': formChoice, 'isAllie': False})
 
           for form in formset:
@@ -383,7 +393,7 @@ def dashboard(request):
                 messages.error(request, msg, extra_tags="alert-warning")  
                 return render(request, 'dashboard/dashboard_operator.html', { 'prices': prices, 'actualO': actualOperations,'endedO': endedOperations, 'nTransactions': nTransactions, 
                                                                               'totalOpen': totalOpen, 'totalEnded': totalEnded, 'monthForm': monthForm,
-                                                                              'dateForm': dateForm, 'filter':filter, 'hasFilter': hasFilter,
+                                                                              'rangeForm': rangeForm, 'dateForm': dateForm, 'filter':filter, 'hasFilter': hasFilter,
                                                                               'form': formset, 'isAllie': False, 'totalClaim': totalClaim, 'formChoice': formChoice})
 
           if (new_status == 'Fondos ubicados'):
@@ -425,7 +435,7 @@ def dashboard(request):
                 messages.error(request, "Para realizar esta transacción debe seleccionar operaciones con la misma moneda origen", extra_tags="alert-warning")
                 return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,'endedO': endedOperations, 'nTransactions': nTransactions,  
                                                                               'totalOpen': totalOpen, 'totalEnded': totalEnded, 'monthForm': monthForm,
-                                                                              'dateForm': dateForm, 'filter':filter,
+                                                                              'rangeForm': rangeForm, 'dateForm': dateForm, 'filter':filter,
                                                                               'hasFilter': hasFilter, 'form': formset, 'formEnded': formset_ended,
                                                                               'formClosure': formClosure, 'isAllie': True, 'totalClaim': totalClaim})
               atLeastOne = False
@@ -469,7 +479,7 @@ def dashboard(request):
                 messages.error(request, "Para realizar esta transacción debe seleccionar operaciones con la misma moneda origen", extra_tags="alert-warning")
                 return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,'endedO': endedOperations, 'nTransactions': nTransactions,  
                                                                               'totalOpen': totalOpen, 'totalEnded': totalEnded, 'monthForm': monthForm,
-                                                                              'dateForm': dateForm, 'filter':filter,
+                                                                              'rangeForm': rangeForm, 'dateForm': dateForm, 'filter':filter,
                                                                               'hasFilter': hasFilter, 'form': formset, 'formEnded': formset_ended,
                                                                               'formClosure': formClosure, 'isAllie': True, 'totalClaim': totalClaim})
 
@@ -516,7 +526,7 @@ def dashboard(request):
     if (isAllie):
       return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,
                                                                     'endedO': endedOperations, 'totalOpen': totalOpen,
-                                                                    'totalEnded': totalEnded, 'dateForm': dateForm,'filter':filter,
+                                                                    'totalEnded': totalEnded, 'rangeForm': rangeForm, 'dateForm': dateForm,'filter':filter,
                                                                     'hasFilter': hasFilter, 'form': formset, 'monthForm': monthForm,
                                                                     'formChoice': formChoice, 'formEnded': formset_ended,
                                                                      'isAllie': True, 'totalClaim': totalClaim, 'nTransactions': nTransactions})
@@ -524,7 +534,7 @@ def dashboard(request):
     return render(request, 'dashboard/dashboard_operator.html', {'prices': prices, 'actualO': actualOperations,
                                                                   'endedO': endedOperations, 'nTransactions': nTransactions, 'totalOpen': totalOpen,
                                                                   'totalEnded': totalEnded, 'monthForm': monthForm,
-                                                                  'dateForm': dateForm, 'filter':filter,
+                                                                  'rangeForm': rangeForm, 'dateForm': dateForm, 'filter':filter,
                                                                   'hasFilter': hasFilter, 'form': formset,
                                                                   'formChoice': formChoice, 'isAllie': isAllie, 'totalClaim': totalClaim})
 
@@ -793,17 +803,17 @@ def createOperation(request):
             plain_message = 'Se ha creado una operación para el envio de %s %s desde su cuenta %s'%(fromCurrency, total, fromAccount.id_account) 
             
             message = '''
-              Se ha creado exitosamente una operación para el envio de:<br>
+              Se ha creado exitosamente una operación para el envío de:<br>
               <div align="center">
                 <h4><b> %s %s </b><h4>
               </div>
               <br>
               Una vez que haya transferido los fondos desde su cuenta de banco <b>%s</b>,
               deberá subir una imagen del comprobante de la transferencia con la cual nuestro
-              equipo podra verificar la operación.
+              equipo podrá verificar la operación.
               <br><br> 
               Cuando los fondos hayan caido en las cuentasa las que envió dinero,
-              se le avisara por correo electrónico que la operación fue completada.
+              se le avisará por correo electrónico que la operación fue completada.
               <br><br>
 
               <div align="center">
@@ -823,7 +833,7 @@ def createOperation(request):
                     'registration/base_email.html',
                     {
                         'message': message,
-                        'title':  'Sea ha creado la operación exitosamente.',
+                        'title':  'Se ha creado la operación exitosamente.',
                         'url': DEFAULT_DOMAIN,
                     }
                 )
@@ -1896,6 +1906,7 @@ def operationDetailDashboard(request, _operation_id):
                                original_status=original_status,
                                new_status=status).save()
           if status == "Fondos transferidos":
+
             sendEmailOperationFinished(operation)
           elif status == "Fondos ubicados":
             crypto_used = form.cleaned_data['crypto_used']
@@ -2061,6 +2072,18 @@ def operationEditDashboard(request, _operation_id):
                     'initialTo': operation.account_allie_target.id if operation.account_allie_target else ""
                   }
                 )
+
+@permission_required('admin.delete_transaction', login_url='/login/')
+def deleteTransaction(request, _transaction_id):
+  try:
+    tx = Transaction.objects.get(pk=_transaction_id)
+  except Exception as e:
+    raise PermissionDenied
+  operationCode = tx.id_operation
+  tx.delete()
+
+  messages.error(request, "Transacción eliminada exitosamente.", extra_tags="alert-success")
+  return redirect('operationDetailDashboard', _operation_id=operationCode)
 
 @permission_required('admin.edit_operation', login_url='/login/')
 def operationHistory(request, _operation_id):
@@ -2286,7 +2309,7 @@ def addRepurchase(request, _currency_id):
                   new_repurchase.save()
                   firstSelected = False
 
-                totalRepurchase += operation.fiat_amount*Decimal(rate)
+                totalRepurchase += operation.fiat_amount/Decimal(rate)
                 new_cameFrom = RepurchaseCameFrom(id_repurchase=new_repurchase,id_operation=operation)
                 new_cameFrom.save()
 
@@ -2380,39 +2403,82 @@ def globalSettings(request):
 
 #Faltan permisos
 def summaryByAlly(request):
-  if (request.method == 'POST'):
-    pass
-  else:
-    allies = User.objects.filter(groups__name='Aliado-1')
-    closure_table = {}
-    general_received = 0
-    general_sent = 0
-    for ally in allies.iterator():
-      op_involved = Operation.objects.filter(id_allie_origin=ally)
-      closures = BoxClosure.objects.filter(ally=ally)
-      #currencies = op_involved.values_list('origin_currency', flat=True).distinct()
-      #for c in currencies:
-      for c in closures.iterator():
-        op_closure = op_involved.filter(closure=c)
-        total_received = op_closure.count()
-        aux_received = op_closure.aggregate(total_received=Sum('fiat_amount'))
-        aux = op_closure.filter(ally_pay_back=True)
-        if (aux):
-          total_sent = aux.count()
-          aux_sent = aux.aggregate(total_sent=Sum('fiat_amount'))
-        else:
-          total_sent = Decimal(0)
-          aux_sent = {}
-          aux_sent['total_sent'] = Decimal(0)
-        if aux_received['total_received'] and aux_sent['total_sent']:
-          diff = aux_received['total_received'] - aux_sent['total_sent']
-        else:
-          diff = 0
-        closure_table[str(ally.id)+c.date.strftime("%d%m%Y")] = [c, aux_received['total_received'], total_received, aux_sent['total_sent'], total_sent, diff]
-        general_received += total_received
-        general_sent += total_sent
+  hasFilter = False
+  filter = "month"
+  if request.method == 'POST' and 'filter' in request.POST:
+    monthForm = FilterDashboardByMonthForm(request.POST)
+    dateForm = FilterDashboardByDateForm(request.POST)
+    rangeForm = FilterDashboardByRangeForm(request.POST)
 
-  return render(request, 'admin/summaryByAlly.html', {'closure_table': closure_table, 'general_received': general_received, 'general_sent': general_sent})
+    # Si el input 'filter' es 'month', entonces se trata de un filtro por mes
+    if request.POST['filter'] == "month" and monthForm.is_valid():
+        year = int(request.POST['dateMY_year'])
+        month = int(request.POST['dateMY_month'])
+        if year and month:
+          hasFilter = True
+          allClosures = BoxClosure.objects.filter(date__month=month,date__year=year)
+          
+    # Por el contrario, si es 'date', entonces es un filtro de fecha
+    elif request.POST['filter'] == "date" and dateForm.is_valid():
+      date = dateForm.cleaned_data['date']
+      # Como el campo date de la operacion es un datetime, hay que tomar solo dia, mes y año
+      # ya que toma en cuenta las horas, minutos, etc
+      day, month, year = (date.day, date.month, date.year)
+      allClosures = BoxClosure.objects.filter(date__day=day, date__month=month, date__year=year)
+      
+      hasFilter = True
+      filter = "date" # Cambiamos el filtro de "month" a "date"
+    elif request.POST['filter'] == "range" and rangeForm.is_valid():
+      start = rangeForm.cleaned_data['start']
+      end = rangeForm.cleaned_data['end']
+      allClosures = BoxClosure.objects.filter(date__month__gte=start.month, date__year__gte=start.year, date__day__gte=start.day, 
+                                              date__month__lte=end.month, date__year__lte=end.year, date__day__lte=end.day)
+      hasFilter = True
+      filter = "range"
+
+  if not hasFilter:
+    '''
+      Si no tiene filtro, entonces colocamos todas las operaciones del mes 
+      e inicializamos 3 nuevos forms
+    '''   
+    monthForm = FilterDashboardByMonthForm()
+    dateForm = FilterDashboardByDateForm()
+    rangeForm = FilterDashboardByRangeForm()
+    today = timezone.now()
+    allClosures = BoxClosure.objects.filter(date__month=today.month, date__year=today.year)
+
+  allies = User.objects.filter(groups__name='Aliado-1')
+  closure_table = {}
+  general_received = 0
+  general_sent = 0
+  for ally in allies.iterator():
+    op_involved = Operation.objects.filter(id_allie_origin=ally)
+    closures = allClosures.filter(ally=ally)
+    #currencies = op_involved.values_list('origin_currency', flat=True).distinct()
+    #for c in currencies:
+    for c in closures.iterator():
+      op_closure = op_involved.filter(closure=c)
+      total_received = op_closure.count()
+      aux_received = op_closure.aggregate(total_received=Sum('fiat_amount'))
+      aux = op_closure.filter(ally_pay_back=True)
+      if (aux):
+        total_sent = aux.count()
+        aux_sent = aux.aggregate(total_sent=Sum('fiat_amount'))
+      else:
+        total_sent = Decimal(0)
+        aux_sent = {}
+        aux_sent['total_sent'] = Decimal(0)
+      if aux_received['total_received'] and aux_sent['total_sent']:
+        diff = aux_received['total_received'] - aux_sent['total_sent']
+      else:
+        diff = 0
+      closure_table[str(ally.id)+c.date.strftime("%d%m%Y")] = [c, aux_received['total_received'], total_received, aux_sent['total_sent'], total_sent, diff]
+      general_received += total_received
+      general_sent += total_sent
+
+  return render(request, 'admin/summaryByAlly.html', {'closure_table': closure_table, 'general_received': general_received, 'general_sent': general_sent,
+                                                      'monthForm': monthForm, 'rangeForm': rangeForm, 'dateForm': dateForm, 'filter':filter,
+                                                      'hasFilter': hasFilter,})
 
 #Faltan permisos
 def detailClosure(request,_closure_id):

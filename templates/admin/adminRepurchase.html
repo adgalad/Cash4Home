@@ -57,7 +57,7 @@
                       <td>{{ r.date }}</td>
                       <td>{{ r.origin_currency.code }}</td>
                       <td>{{ r.target_currency.code }}</td>  
-                      <td>{{ r.rate | currency }} {{ r.target_currency.code }}</td>  
+                      <td>{{ r.rate | currency }} {{ r.origin_currency.code }}</td>  
                       <td>{{ r.exchanger.name }}</td>
                       <td>{{ r.amount | crypto }} {{ r.target_currency.code }}</td>
                       <td>

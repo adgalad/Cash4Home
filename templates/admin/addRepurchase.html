@@ -84,7 +84,11 @@
                           {% for form in formOp %}
                             <tr>
                               {% for field in form %}
-                                  <td>{{ field }}</td>
+                                  {% if field.label == "Seleccionar" %}
+                                    <td>{{ field }}</td>
+                                  {% else %}
+                                    <td>{{field.value}} {{ field }}</td>
+                                  {% endif %}
                               {% endfor %}
                             </tr>
                           {% endfor %}
@@ -130,4 +134,12 @@
   <script src="/static/vendors/pdfmake/build/pdfmake.min.js"></script>
   <script src="/static/vendors/pdfmake/build/vfs_fonts.js"></script>
   <script type="text/javascript" src="/static/js/addRepurchase.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function () {
+      window.setInterval(function(){
+        iCheck()
+      }, 500);
+    })
+    
+  </script>
 {% endblock javascripts %}
