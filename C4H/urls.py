@@ -147,7 +147,10 @@ urlpatterns = [
     url(r'^detail/closure/(?P<_closure_id>\w+)', views.detailClosure, name="detailClosure"),
     url(r'^history/closure/$', views.historyClosure, name="historyClosure"),
     
-] + static(MEDIA_URL, document_root=MEDIA_ROOT) + static(STATIC_URL, document_root=STATIC_ROOT)
+] 
+
+urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT) 
+urlpatterns += static(STATIC_URL, document_root=STATIC_ROOT)
 
 handler404 = views.handler404
 handler403 = views.handler403
