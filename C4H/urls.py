@@ -19,7 +19,7 @@ from django.contrib.auth import views as auth_views
 from django.conf.urls.static import static
 
 from app import views
-from C4H.settings import MEDIA_URL, MEDIA_ROOT
+from C4H.settings import MEDIA_URL, MEDIA_ROOT, STATIC_URL, STATIC_ROOT
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -147,7 +147,7 @@ urlpatterns = [
     url(r'^detail/closure/(?P<_closure_id>\w+)', views.detailClosure, name="detailClosure"),
     url(r'^history/closure/$', views.historyClosure, name="historyClosure"),
     
-] + static(MEDIA_URL, document_root=MEDIA_ROOT)
+] + static(MEDIA_URL, document_root=MEDIA_ROOT) + static(STATIC_URL, document_root=STATIC_ROOT)
 
 handler404 = views.handler404
 handler403 = views.handler403
