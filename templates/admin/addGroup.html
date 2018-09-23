@@ -1,11 +1,12 @@
 {% extends "base_dashboard.html" %}
+{% load staticfiles %}
 {% load i18n %}
 
 {% block title %} Agregar grupo {% endblock title %}
 
 {% block stylesheets %}
   {{ block.super }}
-  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-multiselect.css">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap-multiselect.css' %}">
 {% endblock stylesheets %}
 
 {% block content %}
@@ -44,7 +45,7 @@
 
 {% block javascripts %}
   {{ block.super}}
-  <script src="/static/js/bootstrap-multiselect.js"></script>
+  <script src="{% static 'js/bootstrap-multiselect.js' %}"></script>
   <script type="text/javascript">
       $(document).ready(function() {
           $('#id_permissions').multiselect({

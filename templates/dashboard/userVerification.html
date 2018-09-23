@@ -1,10 +1,11 @@
 {% extends "base_dashboard.html" %}
+{% load staticfiles %}
 
 {% block title %} Verificar Usuario {% endblock title %}
 
 {% block stylesheets %}
   {{ block.super }}
-  <link href="/static/css/dragndrop.css" rel="stylesheet">
+  <link href="{% static 'css/dragndrop.css' %}" rel="stylesheet">
   <style type="text/css"> 
     .stepContainer {
       height: 100% !important;
@@ -79,7 +80,7 @@
                           <div class="col-md-3 col-sm-3 col-xs-3 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
                             <div style="display: table-cell; vertical-align: middle;">
                               <div style="display: flex; align-items: center; justify-content: center;">
-                                <img width="100%" class="imageUpload" id="img_file1" src="/static/images/service_placeholder.png" alt="your image"/>
+                                <img width="100%" class="imageUpload" id="img_file1" src="{% static 'images/service_placeholder.png' %}" alt="your image"/>
                               </div>
                             </div>
                           </div>
@@ -98,7 +99,7 @@
                           <a href="#" onclick="getAcceptedExtension('file2')">
                               <div style="display: table-cell; vertical-align: middle;">
                                 <div style="display: flex; align-items: center; justify-content: center;">
-                                  <img width="100%" class="imageUpload" id="img_file2" src="/static/images/id_placeholder.png" alt="your image"/>
+                                  <img width="100%" class="imageUpload" id="img_file2" src="{% static 'images/id_placeholder.png' %}" alt="your image"/>
                                 </div>
                               </div>
                           </a>
@@ -110,7 +111,7 @@
                           <a href="#" onclick="getAcceptedExtension('file3')">
                               <div style="display: table-cell; vertical-align: middle;">
                                 <div style="display: flex; align-items: center; justify-content: center;">
-                                  <img width="100%" class="imageUpload" id="img_file3" src="/static/images/id_placeholder.png" alt="your image"/>
+                                  <img width="100%" class="imageUpload" id="img_file3" src="{% static 'images/id_placeholder.png' %}" alt="your image"/>
                                 </div>
                               </div>
                           </a>
@@ -128,7 +129,7 @@
                           <div class="col-md-3 col-sm-3 col-xs-3 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
                             <div style="display: table-cell; vertical-align: middle;">
                               <div style="display: flex; align-items: center; justify-content: center;">
-                                <img width="100%" class="imageUpload" id="img_file4" src="/static/images/selfie_placeholder.png" alt="your image"/>
+                                <img width="100%" class="imageUpload" id="img_file4" src="{% static 'images/selfie_placeholder.png' %}" alt="your image"/>
                               </div>
                             </div>
                           </div>
@@ -160,8 +161,8 @@
       }
     })
   </script>
-  <script src="/static/js/fileupload.js"></script>
-  <script src="/static/js/userVerification.js"></script>
+  <script src="{% static 'js/fileupload.js' %}"></script>
+  <script src="{% static 'js/userVerification.js' %}"></script>
 {% endblock javascripts %}
 
 

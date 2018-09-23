@@ -70,7 +70,7 @@
                         <i style="font-size: 14px; color:blue" class="fa fa-question-circle"></i>
                         <span class="tooltiptext">
                           <p style="margin: 10px">El número ABA contiene 9 dígitos y solo aplica para banco en los Estados Unidos. Puede ser hallado en la parte inferior de un cheque de la cuenta como se indica más abajo o visitando su cuenta bancaria en línea.</p>
-                          <img src="/static/images/check-routing-es.jpg" width="500px">
+                          <img src="{% static 'images/check-routing-es.jpg' %}" width="500px">
                         </span>
                       </div>
                     {% endif %}  
@@ -98,7 +98,7 @@
 {% block javascripts %}
   {{ block.super}}
   <!-- jQuery Smart Wizard -->
-  <script src="/static/vendors/jQuery-Smart-Wizard/js/jquery.smartWizard.js"></script>
+  <script src="{% static 'vendors/jQuery-Smart-Wizard/js/jquery.smartWizard.js' %}"></script>
   <script type="text/javascript">
     const updateABAField = function(){
       country = $('option[value="'+$('#id_bank').val()+'"]').parent()[0].label

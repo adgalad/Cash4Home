@@ -1,11 +1,12 @@
 {% extends "base_dashboard.html" %}
+{% load staticfiles %}
 {% load mathfilters %}
 
 {% block title %} Editar operación{% endblock title %}
 
 {% block stylesheets %}
   {{ block.super }}
-  <link href="/static/css/imageModal.css" rel="stylesheet">
+  <link href="{% static 'css/imageModal.css' %}" rel="stylesheet">
 {% endblock stylesheets %}
 
 {% block content %}

@@ -1,11 +1,12 @@
 {% extends "base_dashboard.html" %}
+{% load staticfiles %}
 {% load i18n %}
 
 {% block title %} Agregar usuario {% endblock title %}
 
 {% block stylesheets %}
   {{ block.super }}
-  <link href="/static/css/bootstrap-multiselect.css" rel="stylesheet">
+  <link href="{% static 'css/bootstrap-multiselect.css' %}" rel="stylesheet">
 {% endblock stylesheets %}
 
 {% block content %}
@@ -47,7 +48,7 @@
 {% block javascripts %}
   {{ block.super}}
   <!-- jQuery Smart Wizard -->
-  <script src="/static/js/bootstrap-multiselect.js"></script>
+  <script src="{% static 'js/bootstrap-multiselect.js' %}"></script>
   <script type="text/javascript">
       $(document).ready(function() {
           $('#id_coordinatesUsers').multiselect({

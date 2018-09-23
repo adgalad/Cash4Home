@@ -1,10 +1,11 @@
 {% extends "base_dashboard.html" %}
+{% load staticfiles %}
 
 {% block title %} Cancelar operación {% endblock title %}
 
 {% block stylesheets %}
   {{ block.super }}
-  <link href="/static/css/dragndrop.css" rel="stylesheet">
+  <link href="{% static 'css/dragndrop.css' %}" rel="stylesheet">
 
 {% endblock stylesheets %}
 
@@ -55,5 +56,5 @@
 
 {% block javascripts %}
   {{ block.super }}
-  <script src="/static/js/fileupload.js"></script>
+  <script src="{% static 'js/fileupload.js' %}"></script>
 {% endblock javascripts %}

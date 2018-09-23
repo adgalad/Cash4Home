@@ -112,7 +112,7 @@
 {% block javascripts %}
   {{ block.super}}
   <!-- jQuery Smart Wizard -->
-  <script src="/static/vendors/jQuery-Smart-Wizard/js/jquery.smartWizard.js"></script>
+  <script src="{% static 'vendors/jQuery-Smart-Wizard/js/jquery.smartWizard.js' %}"></script>
   <script type="text/javascript">
     const updateABAField = function(){
       country = $('option[value="'+$('#id_bank').val()+'"]').parent()[0].label
