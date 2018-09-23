@@ -15,7 +15,7 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-DEFAULT_DOMAIN = 'http://cash4home.io/'
+DEFAULT_DOMAIN = 'http://wwww.cash4home.io/'
 #DEFAULT_DOMAIN = 'http://0.0.0.0:8000/'
 
 # Quick-start development settings - unsuitable for production
@@ -28,7 +28,7 @@ PASSWORD_DB = os.environ['PASSWORD_DB']
 NAME_DB = os.environ.get('NAME_DB','cashhom2_db')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 

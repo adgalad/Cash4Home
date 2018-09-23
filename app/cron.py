@@ -67,11 +67,11 @@ class PriceRetriever:
 
   def getPriceInformation(self):
     try:
-        file = open(os.path.join('./staticfiles', "BTCPrice.json"), "r")
+        file = open(os.path.join('./static', "BTCPrice.json"), "r")
     except Exception as e:
-        open(os.path.join('./staticfiles', "BTCPrice.json"), "w").close()
+        open(os.path.join('./static', "BTCPrice.json"), "w").close()
 
-        file = open(os.path.join('./staticfiles', "BTCPrice.json"), "r")
+        file = open(os.path.join('./static', "BTCPrice.json"), "r")
     try:
         prices = json.loads(file.read())
     except Exception as e:
@@ -90,11 +90,11 @@ class PriceRetriever:
     
     if self.gemini:
         prices['USD']['prices']['Gemini'] = float(self.gemini['ask'])
-    
+
     if self.bitinka:
-        prices['USD']['prices']['Bitinka'] = float(self.bitinka['USD']['ask'])
-        prices['ARS']['prices']['Bitinka'] = float(self.bitinka['ARS']['ask'])
-        prices['PEN']['prices']['Bitinka'] = float(self.bitinka['PEN']['ask'])
+        prices['USD']['prices']['Bitinka'] = float(self.bitinka['USD'][0]['ask'])
+        prices['ARS']['prices']['Bitinka'] = float(self.bitinka['ARS'][0]['ask'])
+        prices['PEN']['prices']['Bitinka'] = float(self.bitinka['PEN'][0]['ask'])
 
     if self.ripio:
         prices['USD']['prices']['Ripio']  = float(self.ripio['rates']['USD_SELL'])
@@ -142,7 +142,7 @@ class UpdateBTCPrice():
             
             self.BTCPrice.ask()
             info = json.dumps(self.BTCPrice.getPriceInformation())
-            file = open(os.path.join('./staticfiles', "BTCPrice.json"), "w")
+            file = open(os.path.join('./static', "BTCPrice.json"), "w")
             file.write(info)
             file.close()
 
@@ -153,7 +153,7 @@ class UpdateBTCPrice():
         
 
 x = UpdateBTCPrice()
-
+# x.do()
 while(True):
     x.do()
     time.sleep(x.RUN_EVERY_SECS)
