@@ -2330,8 +2330,7 @@ def addRepurchase(request, _currency_id):
           messages.error(request, msg, extra_tags="alert-success")
           return redirect('adminRepurchase')
         else:
-          print(formset.errors)
-          print(formRep.errors)
+          pass
     else:
         OperationFormSet = formset_factory(NewRepurchaseOpForm, extra=0)
         formset = OperationFormSet(initial=initialForm)

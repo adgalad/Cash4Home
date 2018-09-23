@@ -147,7 +147,7 @@ class UpdateBTCPrice():
             file.close()
 
         except Exception as e:
-            print(">>", e)
+            pass
 
         
         

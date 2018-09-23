@@ -132,7 +132,6 @@ class AccountBelongsToForm(forms.Form):
   def clean_id_number(self):
 
     id_number = self.cleaned_data['id_number']
-    print("AQUIIIII", id_number, bool(re.match(r'^[0-9]+$', id_number)))
     if not re.match(r'^[0-9]+$', id_number):
       raise forms.ValidationError('El número de identificación no puede contener letras o signos de puntuación.')
     return id_number
@@ -157,8 +156,6 @@ class FromAccountForm(forms.Form):
 
   def setQueryset(self, queryset):
     self.fields['account'].queryset = queryset
-    for i in self.fields:
-      print(i)
     return self
 
 class ToAccountForm(forms.Form):
