@@ -1,5 +1,14 @@
 # Created by https://www.gitignore.io
 
+
+# a2 Hosting virtualenv and python app
+tmp/
+3.6/
+public/
+passenger_wsgi.py
+
+
+
 *.sqlite3
 db/*
 staticfiles/*
