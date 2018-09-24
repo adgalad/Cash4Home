@@ -1,3 +1,5 @@
+{% load staticfiles %}
+
 <div class="nav_menu" style="height: 55px;">
   <nav>
     <div class="nav toggle">
@@ -11,8 +13,10 @@
           <span class=" fa fa-angle-down"></span>
         </a>
         <ul class="dropdown-menu dropdown-usermenu pull-right">
-          <li><a href="{% url 'help' %'}">Ayuda</a></li>
-          <li><a href="{% url 'logout' %'}"><i class="fa fa-sign-out pull-right"></i> Cerrar Sesión</a></li>
+
+          <li><a href="{% url 'help' %}">Ayuda</a></li>
+          <li><a href="{% url 'logout' %}"><i class="fa fa-sign-out pull-right"></i> Cerrar Sesión</a></li>
+
         </ul>
       </li>
     </ul>

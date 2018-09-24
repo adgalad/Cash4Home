@@ -139,7 +139,7 @@ def checkCurrency(formset, isTarget):
         return False
   return True
 
-@login_required(login_url="/login/")
+@login_required(login_url="/v1/login/")
 def closureTransactionModal(request):
   formClosure = ClosureTransactionForm()
   return render(request, 'dashboard/closureTransactionModal.html', {'formClosure':formClosure}) 
@@ -168,7 +168,7 @@ def prepareDataOperations(tmpActual, tmpEnded):
 def summaryBanks(request):
   pass
 
-@login_required(login_url="/login/")
+@login_required(login_url="/v1/login/")
 def dashboard(request):
   '''
     View del dashboard, tanto para usuarios clientes, como para staff y aliados
@@ -529,7 +529,7 @@ def company(request):
   return render(request, 'company.html')
 
 
-@login_required(login_url="/login/")
+@login_required(login_url="/v1/login/")
 def profile(request):
   if request.method == 'POST':
     emailForm = ChangeEmailForm(request.POST)
@@ -555,13 +555,13 @@ def profile(request):
         update_session_auth_hash(request, passwordForm.user)
         messages.error(request, "Se cambió la contraseña exitosamente.", extra_tags="alert-success")
       else:
-        messages.error(request, "No se ha podido cambiar la contraseña.", extra_tags="alert-warning")
+        messages.error(request, "Debe colocar su contraseña actual y una nueva contraseña alfanumérica de al menos 8 caracteres y una mayúscula.", extra_tags="alert-warning")
     else:
       messages.error(request, "Un error ha ocurrido. Intente nuevamente.", extra_tags="alert-error")
 
   return render(request, 'dashboard/profile.html')
 
-@login_required(login_url="/login/")
+@login_required(login_url="/v1/login/")
 def userVerification(request):
   if request.user.canVerify:
     if request.method == 'POST':
@@ -593,7 +593,7 @@ def userVerification(request):
   else:
     return redirect(reverse('dashboard'))
 
-@login_required(login_url="/login/")
+@login_required(login_url="/v1/login/")
 def createOperation(request):
   if not request.user.verified:
     messages.error(request, 'Usted no puede realizar envíos de dinero hasta que su cuenta no haya sido verificada.',
@@ -790,17 +790,16 @@ def createOperation(request):
             plain_message = 'Se ha creado una operación para el envio de %s %s desde su cuenta %s'%(fromCurrency, total, fromAccount.id_account) 
             
             message = '''
-              Se ha creado exitosamente una operación para el envío de:<br>
+              Se ha creado exitosamente una operación <b>%s</b> para el envío de:<br>
               <div align="center">
                 <h4><b> %s %s </b><h4>
               </div>
               <br>
               Una vez que haya transferido los fondos desde su cuenta de banco <b>%s</b>,
-              deberá subir una imagen del comprobante de la transferencia con la cual nuestro
+              deberá subir una imagen tipo de archivo jpg o png del comprobante de la transferencia con la cual nuestro
               equipo podrá verificar la operación.
               <br><br> 
-              Cuando los fondos hayan caido en las cuentasa las que envió dinero,
-              se le avisará por correo electrónico que la operación fue completada.
+              Le avisaremos por correo electrónico una vez que los fondos se hayan enviado a la cuenta de destino.
               <br><br>
 
               <div align="center">
@@ -814,7 +813,7 @@ def createOperation(request):
               <br><br>
               Sinceramente,<br>
               Equipo de soporte de Cash4Home
-            '''%(fromCurrency, total, fromAccount.id_account, DEFAULT_DOMAIN+'operation/pending?operation=' + operation.code)
+            '''%(operation.code, fromCurrency, total, fromAccount.id_account, DEFAULT_DOMAIN+'operation/pending?operation=' + operation.code)
 
             html_message = loader.render_to_string(
                     'registration/base_email.html',
@@ -864,7 +863,7 @@ def createOperation(request):
                 'fromAccs': str(json.dumps(fromAccs)),
                 "fee": str(fee)})
 
-@login_required(login_url="/login/")
+@login_required(login_url="/v1/login/")
 def pendingOperations(request):
   operations = Operation.objects.filter(id_client=request.user).exclude(status='Cancelada')
   for i in operations:
@@ -873,7 +872,7 @@ def pendingOperations(request):
   complete = operations.filter(status="Fondos transferidos")
   return render(request, 'dashboard/pendingOperations.html', {'pendingOperations':pending, 'completeOperations':complete}) 
 
-@login_required(login_url="/login/")
+@login_required(login_url="/v1/login/")
 def operationModal(request, _operation_id):
   try: operation = Operation.objects.get(code=_operation_id, id_client=request.user.id)
   except: raise PermissionDenied
@@ -884,7 +883,7 @@ def operationModal(request, _operation_id):
     return
 
 
-@login_required(login_url="/login/")
+@login_required(login_url="/v1/login/")
 def cancelOperation(request, _operation_id):
   admin = request.user.has_perm('admin.cancel_operation')
   try: 
@@ -902,7 +901,7 @@ def cancelOperation(request, _operation_id):
   else:
     raise PermissionDenied
 
-@login_required(login_url="/login/")
+@login_required(login_url="/v1/login/")
 def verifyOperation(request, _operation_id):
   msg = ""
   
@@ -941,7 +940,7 @@ def verifyOperation(request, _operation_id):
 
 
 
-@login_required(login_url="/login/")
+@login_required(login_url="/v1/login/")
 def accounts(request):
 
   abt = AccountBelongsTo.objects.filter(id_client=request.user.id)
@@ -955,7 +954,7 @@ def accounts(request):
   
   return render(request, 'dashboard/accounts.html', {'origin':origin, 'dest':dest})
 
-@login_required(login_url="/login/")
+@login_required(login_url="/v1/login/")
 def createAccount(request):
   own = request.GET.get('own')
 

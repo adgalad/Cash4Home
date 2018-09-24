@@ -82,38 +82,59 @@ class PriceRetriever:
                     'PEN': { 'prices':{}, 'name':'', 'avg': 0 },
                 }
 
-    if self.localbitcoins:
-        prices['USD']['prices']['Localbitcoins'] = float(self.localbitcoins["USD"]["rates"]['last'])
-        prices['VES']['prices']['Localbitcoins'] = float(self.localbitcoins['VES']['rates']['last'])
-        prices['ARS']['prices']['Localbitcoins'] = float(self.localbitcoins['ARS']['rates']['last'])
-        prices['PEN']['prices']['Localbitcoins'] = float(self.localbitcoins['PEN']['rates']['last'])
+    try:
+        if self.localbitcoins:
+            prices['USD']['prices']['Localbitcoins'] = float(self.localbitcoins["USD"]["rates"]['last'])
+            prices['VES']['prices']['Localbitcoins'] = float(self.localbitcoins['VES']['rates']['last'])
+            prices['ARS']['prices']['Localbitcoins'] = float(self.localbitcoins['ARS']['rates']['last'])
+            prices['PEN']['prices']['Localbitcoins'] = float(self.localbitcoins['PEN']['rates']['last'])
+    except Exception as e:
+    pass        
     
-    if self.gemini:
-        prices['USD']['prices']['Gemini'] = float(self.gemini['ask'])
-
-    if self.bitinka:
-        prices['USD']['prices']['Bitinka'] = float(self.bitinka['USD'][0]['ask'])
-        prices['ARS']['prices']['Bitinka'] = float(self.bitinka['ARS'][0]['ask'])
-        prices['PEN']['prices']['Bitinka'] = float(self.bitinka['PEN'][0]['ask'])
-
-    if self.ripio:
-        prices['USD']['prices']['Ripio']  = float(self.ripio['rates']['USD_SELL'])
-        # prices['USD']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['USD_BUY'])
-        # prices['ARS']['prices']['Ripio']  = float(self.ripio['rates']['ARS_SELL'])
-        prices['ARS']['prices']['Ripio'] = float(self.ripio['rates']['ARS_BUY'])
-        # prices['PEN']['prices']['Ripio']  = float(self.ripio['rates']['PEN_SELL'])
-        prices['PEN']['prices']['Ripio'] = float(self.ripio['rates']['PEN_BUY'])
-
-    if self.binance:
-        prices['USD']['prices']['Binance']  = float(self.binance['price'])
-
-    if self.cexio:
-        prices['USD']['prices']['Cex.io'] = float(self.cexio['ask'])
-
-    if self.coinbase:
-        prices['USD']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['USD'])
-        prices['ARS']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['ARS'])
-        prices['PEN']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['PEN'])
+    try:
+        if self.gemini:
+            prices['USD']['prices']['Gemini'] = float(self.gemini['ask'])
+    except Exception as e:
+        pass
+    
+    try:
+        if self.bitinka:
+            prices['USD']['prices']['Bitinka'] = float(self.bitinka['USD'][0]['ask'])
+            prices['ARS']['prices']['Bitinka'] = float(self.bitinka['ARS'][0]['ask'])
+            prices['PEN']['prices']['Bitinka'] = float(self.bitinka['PEN'][0]['ask'])
+    except Exception as e:
+        pass
+    
+    try:
+        if self.ripio:
+            prices['USD']['prices']['Ripio']  = float(self.ripio['rates']['USD_SELL'])
+            # prices['USD']['prices']['Ripio (Compra)'] = float(self.ripio['rates']['USD_BUY'])
+            # prices['ARS']['prices']['Ripio']  = float(self.ripio['rates']['ARS_SELL'])
+            prices['ARS']['prices']['Ripio'] = float(self.ripio['rates']['ARS_BUY'])
+            # prices['PEN']['prices']['Ripio']  = float(self.ripio['rates']['PEN_SELL'])
+            prices['PEN']['prices']['Ripio'] = float(self.ripio['rates']['PEN_BUY'])
+    except Exception as e:
+        pass
+    
+    try:
+        if self.binance:
+            prices['USD']['prices']['Binance']  = float(self.binance['price'])
+    except Exception as e:
+        pass
+    
+    try:
+        if self.cexio:
+            prices['USD']['prices']['Cex.io'] = float(self.cexio['ask'])
+    except Exception as e:
+        pass
+    
+    try:
+        if self.coinbase:
+            prices['USD']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['USD'])
+            prices['ARS']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['ARS'])
+            prices['PEN']['prices']['Coinbase'] = float(self.coinbase['data']['rates']['PEN'])
+    except Exception as e:
+        pass
 
     prices['USD']['avg'] = self.avg('USD', prices)
     prices['VES']['avg'] = self.avg('VES', prices)
@@ -131,7 +152,7 @@ class PriceRetriever:
 
 
 class UpdateBTCPrice():
-    RUN_EVERY_SECS = 2
+    RUN_EVERY_SECS = 10
 
     def __init__(self):
         self.BTCPrice = PriceRetriever()

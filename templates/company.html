@@ -1,4 +1,5 @@
 {% extends "base_index.html" %}
+{% load staticfiles %}
 {% block content %}
 <style type="text/css">
   .column {
@@ -30,7 +31,7 @@
         </p>
       </div>
       <div class="column" align="center">
-        <img src="/static/images/logo.png" width="350px">
+        <img src="{% static 'images/logo.png' %}" width="350px">
       </div>
     </div>
   </div>
