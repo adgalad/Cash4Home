@@ -45,9 +45,9 @@
       <ul class="nav side-menu">
         <li><a><i class="fa fa-bank"></i> Cuentas bancarias <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
-            <li><a href="/accounts">Ver cuentas</a></li>
-            <li><a href="/account/new?own=1">Añadir cuenta origen</a></li>
-            <li><a href="/account/new?own=0">Añadir cuenta destino</a></li>
+            <li><a href="{% url 'accounts' %}">Ver cuentas</a></li>
+            <li><a href="{% url 'createAccount' %}?own=1">Añadir cuenta origen</a></li>
+            <li><a href="{% url 'createAccount' %}?own=0">Añadir cuenta destino</a></li>
           </ul>
         </li>
       </ul>
