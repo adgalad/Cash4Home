@@ -24,7 +24,7 @@ from C4H.settings import MEDIA_URL, MEDIA_ROOT, STATIC_URL, STATIC_ROOT
 urlpatterns = [
     url(r'^v1/admin/', admin.site.urls),
     url(r'^v1/signup/$', views.signup, name='signup'),
-    url(r'^v1/login/', views.login, name='login'),
+    url(r'^v1/login/', views.login, name='login'), # No poner $ al final
     url(r'^v1/logout/$', views.logout, name='logout'),
 
 
@@ -46,7 +46,7 @@ urlpatterns = [
     url(r'^v1/emailVerification$', views.resendEmailVerification, name="resendEmailVerification"),
     url(r'^v1/activateEmail/(?P<token>.+)$', views.activateEmail, name="activateEmail"),
 
-    url(r'^v1/accounts$', views.accounts, name='accounts'),
+    url(r'^v1/accounts', views.accounts, name='accounts'), # No poner $ al final
     url(r'^v1/account/new$', views.createAccount, name='createAccount'),
     url(r'^v1/account/edit/(?P<pk>.+)$', views.editAccountDetails, name='editAccountDetails'),
 
