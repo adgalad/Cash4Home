@@ -1,0 +1,98 @@
+{% load staticfiles %}
+<!DOCTYPE HTML>
+<!--
+	Industrious by TEMPLATED
+	templated.co @templatedco
+	Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
+-->
+<html>
+	<head>
+		<title>AgroCognitive - Tu asistente en el campo</title>
+
+		{% block style %}
+			<link rel="stylesheet" href="{% static 'landingpage/css/main.css' %}" />
+		{% endblock style %}
+
+		<meta name="description" content="Proyecto en desarrollo sobre agricultura de precisión con inteligencia artificial y analíticas avanzadas para el diagnóstico de cultivos">
+		<meta name="keywords" content="Agriculture,agricultura,AI,IA,drone,ibm,watson,dash,venezuela,analíticas,analytics">
+		<link rel="author" href="https://github.com/adgalad"/>
+		<link rel="canonical" href="https://www.cash4home.io"/>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		
+		<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+
+		<!-- Facebook -->
+		<meta property="og:url" content="https://www.cash4home.io/">
+		<meta property="og:image" content="https://www.cash4home.io/static/images/favicon/logo-300x300.png">
+		<meta property="og:image:width" content="300">
+		<meta property="og:image:height" content="300">
+		<meta property="og:description" content="Cash4Home.">
+		<meta property="og:title" content="Cash4Home">
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="Cash4Home">
+		<meta property="og:see_also" content="https://www.cash4home.io/">
+
+		<!-- Google + -->
+		<meta itemprop="name" content="Cash4Home">
+		<meta itemprop="description" content="Proyecto en desarrollo sobre agricultura de precisión con inteligencia artificial y analíticas avanzadas para el diagnóstico de cultivos">
+		<meta itemprop="image" content="https://www.cash4home.io/static/images/favicon/logo-300x300.png">
+
+		<!-- Twitter -->
+		<meta name="twitter:card" content="summary">
+		<meta name="twitter:url" content="https://www.cash4home.io/">
+		<meta name="twitter:title" content="Cash4Home">
+		<meta name="twitter:description" content="Proyecto en desarrollo sobre agricultura de precisión con inteligencia artificial y analíticas avanzadas para el diagnóstico de cultivos">
+		<meta name="twitter:creator" content="@agrocognitive">
+		<meta name="twitter:site" content="@agrocognitive">
+		<meta name="twitter:image" content="https://www.cash4home.io/static/images/favicon/logo-300x300.png">
+
+		<!-- Mac -->
+		<meta name="apple-mobile-web-app-title" content="Cash4Home"> <!-- New in iOS6 -->
+		<meta name='apple-mobile-web-app-capable' content='yes'>
+		<meta name='apple-touch-fullscreen' content='yes'>
+		<meta name='apple-mobile-web-app-status-bar-style' content='black'>
+		<meta name='format-detection' content='telephone=no'>
+
+		<link rel="mask-icon" href="{% static 'images/favicon/safari-pinned-tab.svg'" color="#8ead1b">
+		<link rel="apple-touch-icon-precomposed" sizes="57x57" href="{% static 'images/favicon/apple-touch-icon-57x57.png' %}" />
+		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="{% static 'images/favicon/apple-touch-icon-114x114.png' %}" />
+		<link rel="apple-touch-icon-precomposed" sizes="72x72" href="{% static 'images/favicon/apple-touch-icon-72x72.png' %}" />
+		<link rel="apple-touch-icon-precomposed" sizes="144x144" href="{% static 'images/favicon/apple-touch-icon-144x144.png' %}" />
+		<link rel="apple-touch-icon-precomposed" sizes="60x60" href="{% static 'images/favicon/apple-touch-icon-60x60.png' %}" />
+		<link rel="apple-touch-icon-precomposed" sizes="120x120" href="{% static 'images/favicon/apple-touch-icon-120x120.png' %}" />
+		<link rel="apple-touch-icon-precomposed" sizes="76x76" href="{% static 'images/favicon/apple-touch-icon-76x76.png' %}" />
+		<link rel="apple-touch-icon-precomposed" sizes="152x152" href="{% static 'images/favicon/apple-touch-icon-152x152.png' %}" />
+		<link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/favicon/apple-touch-icon-196x196.png' %}">
+
+		<!-- Favicon -->
+		<link rel="icon" type="image/png" href="{% static 'images/favicon/favicon-196x196.png' %}" sizes="196x196" />
+		<link rel="icon" type="image/png" href="{% static 'images/favicon/favicon-96x96.png' %}" sizes="96x96" />
+		<link rel="icon" type="image/png" href="{% static 'images/favicon/favicon-32x32.png' %}" sizes="32x32" />
+		<link rel="icon" type="image/png" href="{% static 'images/favicon/favicon-16x16.png' %}" sizes="16x16" />
+		<link rel="icon" type="image/png" href="{% static 'images/favicon/favicon-128.png' %}" sizes="128x128" />
+		#d15805
+		<!-- Windows -->
+		<meta name="application-name" content="Cash4Home"/>
+		<meta name="msapplication-TileColor" content="#FFFFFF" />
+		<meta name="msapplication-TileImage" content="https://www.cash4home.io/static/images/favicon/mstile-144x144.png" />
+		<meta name="msapplication-square70x70logo" content="https://www.cash4home.io/static/images/favicon/mstile-70x70.png" />
+		<meta name="msapplication-square150x150logo" content="https://www.cash4home.io/static/images/favicon/mstile-150x150.png" />
+		<meta name="msapplication-wide310x150logo" content="https://www.cash4home.io/static/images/favicon/mstile-310x150.png" />
+		<meta name="msapplication-square310x310logo" content="https://www.cash4home.io/static/images/favicon/mstile-310x310.png" />
+	</head>
+	<body class="is-preload">
+
+		{% block content %}
+
+		{% endblock content %}
+
+		{% block script %}
+			<script src="{% static 'landingpage/js/jquery.min.js' %}"></script>
+			<script src="{% static 'landingpage/js/browser.min.js' %}"></script>
+			<script src="{% static 'landingpage/js/breakpoints.min.js' %}"></script>
+			<script src="{% static 'landingpage/js/util.js' %}"></script>
+			<script src="{% static 'landingpage/js/main.js' %}"></script>
+		{% endblock script %}
+	</body>
+</html>
