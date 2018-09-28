@@ -119,7 +119,7 @@ def activateEmail(request, token):
 
 
 def home(request):
-  return render(request, 'index.html')
+  return render(request, 'landingpage/index.html')
 
 
 
