@@ -139,7 +139,7 @@ def checkCurrency(formset, isTarget):
         return False
   return True
 
-@login_required(login_url="/v1/login/")
+@login_required(login_url="/v2/login/")
 def closureTransactionModal(request):
   formClosure = ClosureTransactionForm()
   return render(request, 'dashboard/closureTransactionModal.html', {'formClosure':formClosure}) 
@@ -168,7 +168,7 @@ def prepareDataOperations(tmpActual, tmpEnded):
 def summaryBanks(request):
   pass
 
-@login_required(login_url="/v1/login/")
+@login_required(login_url="/v2/login/")
 def dashboard(request):
   '''
     View del dashboard, tanto para usuarios clientes, como para staff y aliados
@@ -529,7 +529,7 @@ def company(request):
   return render(request, 'company.html')
 
 
-@login_required(login_url="/v1/login/")
+@login_required(login_url="/v2/login/")
 def profile(request):
   if request.method == 'POST':
     emailForm = ChangeEmailForm(request.POST)
@@ -561,7 +561,7 @@ def profile(request):
 
   return render(request, 'dashboard/profile.html')
 
-@login_required(login_url="/v1/login/")
+@login_required(login_url="/v2/login/")
 def userVerification(request):
   if request.user.canVerify:
     if request.method == 'POST':
@@ -593,7 +593,7 @@ def userVerification(request):
   else:
     return redirect(reverse('dashboard'))
 
-@login_required(login_url="/v1/login/")
+@login_required(login_url="/v2/login/")
 def createOperation(request):
   if not request.user.verified:
     messages.error(request, 'Usted no puede realizar envíos de dinero hasta que su cuenta no haya sido verificada.',
@@ -863,7 +863,7 @@ def createOperation(request):
                 'fromAccs': str(json.dumps(fromAccs)),
                 "fee": str(fee)})
 
-@login_required(login_url="/v1/login/")
+@login_required(login_url="/v2/login/")
 def pendingOperations(request):
   operations = Operation.objects.filter(id_client=request.user).exclude(status='Cancelada')
   for i in operations:
@@ -872,7 +872,7 @@ def pendingOperations(request):
   complete = operations.filter(status="Fondos transferidos")
   return render(request, 'dashboard/pendingOperations.html', {'pendingOperations':pending, 'completeOperations':complete}) 
 
-@login_required(login_url="/v1/login/")
+@login_required(login_url="/v2/login/")
 def operationModal(request, _operation_id):
   try: operation = Operation.objects.get(code=_operation_id, id_client=request.user.id)
   except: raise PermissionDenied
@@ -883,7 +883,7 @@ def operationModal(request, _operation_id):
     return
 
 
-@login_required(login_url="/v1/login/")
+@login_required(login_url="/v2/login/")
 def cancelOperation(request, _operation_id):
   admin = request.user.has_perm('admin.cancel_operation')
   try: 
@@ -901,7 +901,7 @@ def cancelOperation(request, _operation_id):
   else:
     raise PermissionDenied
 
-@login_required(login_url="/v1/login/")
+@login_required(login_url="/v2/login/")
 def verifyOperation(request, _operation_id):
   msg = ""
   
@@ -940,7 +940,7 @@ def verifyOperation(request, _operation_id):
 
 
 
-@login_required(login_url="/v1/login/")
+@login_required(login_url="/v2/login/")
 def accounts(request):
 
   abt = AccountBelongsTo.objects.filter(id_client=request.user.id)
@@ -954,7 +954,7 @@ def accounts(request):
   
   return render(request, 'dashboard/accounts.html', {'origin':origin, 'dest':dest})
 
-@login_required(login_url="/v1/login/")
+@login_required(login_url="/v2/login/")
 def createAccount(request):
   own = request.GET.get('own')
 
