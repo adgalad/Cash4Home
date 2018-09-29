@@ -49,22 +49,23 @@
       margin-left: 35%;
 }}
 
-
-div.dash_powered{
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  max-width:9%;
-  min-width: 80px;
-  z-index: 100;
+.green {
+  color: #9cb650;
 }
 
+.orange {
+  color: #d98935;
+}
+
+.bold {
+  font-weight: bold;
+}
 
 .btn-social{
     display: inline-block;
     width: 50px;
     height: 50px;
-    border: 2px solid #A3C534;
+    border: 2px solid #9cb650;
     border-radius: 100%;
     text-align: center;
     line-height: 45px;
@@ -80,7 +81,7 @@ div.dash_powered{
     margin-right: 30px;
     margin-top: 30px;
     font-size: 30px;
-    color: #A3C534;
+    color: #9cb650;
     background: white;
     transition: all .3s ease-in-out;
 }
@@ -89,7 +90,7 @@ div.dash_powered{
 .icon-outline:focus,
 .icon-outline:active,
 .icon-outline.active {
-    color: #f2af00;
+    color: #d98935;
     background: #fff;
 }
 
@@ -97,9 +98,9 @@ div.dash_powered{
     margin-left: 30px;
     margin-right: 30px;
     margin-top: 30px;
-    border: solid 2px #A3C534;
+    border: solid 2px #9cb650;
     font-size: 30px;
-    color: #A3C534;
+    color: #9cb650;
     background: white;
     transition: all .3s ease-in-out;
 }
@@ -108,8 +109,8 @@ div.dash_powered{
 .btn-outline:focus,
 .btn-outline:active,
 .btn-outline.active {
-    border: solid 2px #f2af00;
-    color: #f2af00;
+    border: solid 2px #d98935;
+    color: #d98935;
     background: #fff;
 }
 
@@ -1922,7 +1923,7 @@ ul.icons {
   -ms-justify-content: center;
   justify-content: center;
   background-image: url("../../images/banner.jpg");
-  background-position: center;
+  /*background-position: center;*/
   background-repeat: no-repeat;
   background-size: cover;
   border-top: 0;
@@ -2109,7 +2110,6 @@ ul.icons {
     -webkit-transition-delay: 1.25s;
     -ms-transition-delay: 1.25s;
     transition-delay: 1.25s;
-    background: #000000;
     content: '';
     display: block;
     height: 100%;
@@ -2121,7 +2121,7 @@ ul.icons {
     z-index: 1; }
   
   #banner:after {
-    background:black;
+    /*background:black;*/
     content: ' ';
     display: block;
     height: 100%;
@@ -2169,11 +2169,11 @@ ul.icons {
 
 /* CTA */
 .cta01 {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.50), rgba(0, 0, 0, 0.50)), url(../../images/cta01.jpg) !important;
+  background-image: url(../../images/cta1.jpg) !important;
 }
 
 .cta02 {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.70), rgba(0, 0, 0, 0.70)), url(../../images/cta02.jpg) !important;
+  background-image: url(../../images/cta1.jpg) !important;
 }
 
 #cta {
@@ -2538,18 +2538,18 @@ body {
   -webkit-justify-content: space-between;
   -ms-justify-content: space-between;
   justify-content: space-between;
-  background: #000000;
+  background: #ffffff;
   color: rgba(255, 255, 255, 0.5);
   cursor: default;
-  height: 4.25rem;
+  height: 6rem;
   left: 0;
-  line-height: 3.25rem;
-  position: fixed;
+  /*line-height: 3.25rem;*/
+  position: absolute;
   top: 0;
   width: 100%;
   z-index: 10001; }
   #header > .logo {
-    color: #ffffff;
+    color: #000000;
     font-size: 1rem;
     font-weight: 600;
     height: inherit;
@@ -2557,7 +2557,7 @@ body {
     padding: 0.75rem;
     text-decoration: none; }
   #header > nav > a {
-    color: inherit;
+    color: black;
     display: inline-block;
     padding: 0 0.75rem;
     text-decoration: none; }
@@ -2597,7 +2597,7 @@ body {
     padding-top: 44px; }
 
   #header {
-    height: 3.90rem;
+    height: 6rem;
     line-height: 44px; } }
 @media screen and (max-width: 480px) {
   #header {
@@ -2607,7 +2607,7 @@ body {
   -ms-flex-align: center;
   -ms-flex-pack: center;
   background-color: #000000;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 1);
   -moz-align-items: center;
   -webkit-align-items: center;
   -ms-align-items: center;
@@ -2620,7 +2620,7 @@ body {
   -webkit-justify-content: center;
   -ms-justify-content: center;
   justify-content: center;
-  background-image: linear-gradient(rgba(17, 17, 17, 0.25), rgba(17, 17, 17, 0.25)), url("../../images/banner.jpg");
+  background-image: url("../../images/banner.jpg");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;

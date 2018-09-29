@@ -7,14 +7,15 @@
 -->
 <html>
 	<head>
-		<title>AgroCognitive - Tu asistente en el campo</title>
+		<title>Cash4Home</title>
 
 		{% block style %}
 			<link rel="stylesheet" href="{% static 'landingpage/css/main.css' %}" />
+			<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 		{% endblock style %}
 
-		<meta name="description" content="Proyecto en desarrollo sobre agricultura de precisión con inteligencia artificial y analíticas avanzadas para el diagnóstico de cultivos">
-		<meta name="keywords" content="Agriculture,agricultura,AI,IA,drone,ibm,watson,dash,venezuela,analíticas,analytics">
+		<meta name="description" content="Cash4Home">
+		<meta name="keywords" content="Cash4Home">
 		<link rel="author" href="https://github.com/adgalad"/>
 		<link rel="canonical" href="https://www.cash4home.io"/>
 		<meta charset="utf-8" />
@@ -35,16 +36,16 @@
 
 		<!-- Google + -->
 		<meta itemprop="name" content="Cash4Home">
-		<meta itemprop="description" content="Proyecto en desarrollo sobre agricultura de precisión con inteligencia artificial y analíticas avanzadas para el diagnóstico de cultivos">
+		<meta itemprop="description" content="Cash4Home">
 		<meta itemprop="image" content="https://www.cash4home.io/static/images/favicon/logo-300x300.png">
 
 		<!-- Twitter -->
 		<meta name="twitter:card" content="summary">
 		<meta name="twitter:url" content="https://www.cash4home.io/">
 		<meta name="twitter:title" content="Cash4Home">
-		<meta name="twitter:description" content="Proyecto en desarrollo sobre agricultura de precisión con inteligencia artificial y analíticas avanzadas para el diagnóstico de cultivos">
-		<meta name="twitter:creator" content="@agrocognitive">
-		<meta name="twitter:site" content="@agrocognitive">
+		<meta name="twitter:description" content="Cash4Home">
+		<meta name="twitter:creator" content="@cash4home">
+		<meta name="twitter:site" content="@cash4home">
 		<meta name="twitter:image" content="https://www.cash4home.io/static/images/favicon/logo-300x300.png">
 
 		<!-- Mac -->
@@ -71,7 +72,7 @@
 		<link rel="icon" type="image/png" href="{% static 'images/favicon/favicon-32x32.png' %}" sizes="32x32" />
 		<link rel="icon" type="image/png" href="{% static 'images/favicon/favicon-16x16.png' %}" sizes="16x16" />
 		<link rel="icon" type="image/png" href="{% static 'images/favicon/favicon-128.png' %}" sizes="128x128" />
-		#d15805
+
 		<!-- Windows -->
 		<meta name="application-name" content="Cash4Home"/>
 		<meta name="msapplication-TileColor" content="#FFFFFF" />
@@ -82,7 +83,25 @@
 		<meta name="msapplication-square310x310logo" content="https://www.cash4home.io/static/images/favicon/mstile-310x310.png" />
 	</head>
 	<body class="is-preload">
+		<!-- Header -->
+		<header id="header">
+			<a class="logo" href="index.html">
+				<img src="{% static 'images/logo3.png' %}">
+			</a>
+			 <nav>
+				<a href="#menu">Menu</a>
+			</nav>
+		</header>
 
+		<!-- Nav -->
+		<nav id="menu">
+			<ul class="links">
+				<li><a href="index.html">Inicio</a></li>
+				<li><a href="elements.html">¿Quienes somos?</a></li>
+				<li><a href="generic.html">Contactenos</a></li>
+				<li><a href="generic.html"><i class="fa fas-key"></i> Ingresar</a></li>
+			</ul>
+		</nav>
 		{% block content %}
 
 		{% endblock content %}

@@ -174,10 +174,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
 
 
-
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'smarticket.suport@gmail.com'
-EMAIL_HOST_PASSWORD = 'asd123asd'
-EMAIL_PORT = 587
+EMAIL_HOST = os.environ['EMAIL_HOST']
+EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
+EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
+EMAIL_PORT = 465
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'Cash4Home. Equipo de soporte'

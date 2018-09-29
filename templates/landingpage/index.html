@@ -2,70 +2,34 @@
 {% load staticfiles %}
 
 {% block content %}
-	<div class="dash_powered">
-		<a target="_blank" href="https://www.dash.org">
-			<img src="{% static 'landingpage/img/dash.png' %}" style="width: 100%;">
-		</a>
-	</div>
-	<!-- Header -->
-		<header id="header">
-			<a class="logo" href="index.html">
-				<img src="{% static 'landingpage/img/logo.png' %}">
-			</a>
-			 <!-- <nav>
-				<a href="#menu">Menu</a>
-			</nav> -->
-		</header>
+	
 
-	<!-- Nav -->
-		<!-- <nav id="menu">
-			<ul class="links">
-				<li><a href="index.html">Home</a></li>
-				<li><a href="elements.html">Elements</a></li>
-				<li><a href="generic.html">Generic</a></li>
-			</ul>
-		</nav> -->
+	
 
 	<!-- Banner -->
 		<section id="banner">
 			<div class="inner">
-				<img src="{% static 'landingpage/img/isotipo.png">
-				<!-- <h1 class="banner_title">Agrocognitive</h1> -->
-				<p style="margin-left: 15%; margin-right: 15%"><underlined style="color:white">Proyecto en desarrollo</underlined> sobre agricultura de precisión con inteligencia artificial y analíticas avanzadas para el diagnóstico de cultivos</p>
 			</div>
-			<video autoplay loop muted playsinline src="{% static 'landingpage/img/banner.mp4' %}"></video>
+			
 		</section>
 	
 	<!-- Testimonials -->
 		<section class="wrapper">
 			<div class="inner">
-				<header class="special">
-					<h2>Conoce más sobre el proyecto</h2>
-					<p></p>
-				</header>
-				<div class="youtube-container">
-					<iframe class="youtube-video" 
-					        src="https://www.youtube.com/embed/2oZOuPQRq3o"
-					        frameborder="0"
-					        allow="autoplay; encrypted-media"
-					        allowfullscreen>
-					</iframe>
-				</div>
-
+				<!-- <header class="special"> -->
+					<h2>¡Enviar dinero para remesas nunca fue tan fácil!</h2>
+					<p>Cash4Home es una plataforma para ... Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum porttitor congue augue ut iaculis. Curabitur fringilla, nisl id maximus consequat, diam est aliquet lacus, euismod vulputate eros mi sit amet enim. Phasellus nec elementum urna, vel pretium velit. Sed consectetur dignissim purus vitae congue. Sed posuere ac augue sed condimentum. Suspendisse porta dignissim mi, a commodo quam consectetur ac. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nulla ac nibh non ex maximus mollis et vitae lorem. Nam a facilisis mi.</p>
+				<!-- </header> -->
 			</div>
 			<div style="text-align: center;">
 				<h5>
-					<a href="https://twitter.com/agrocognitive" 
+					<a href="https://twitter.com/" 
 					   target="_blank" class="btn-social btn-outline">
 						<i class="btn-icon-social fab fa-twitter"></i>
 					</a>
-					<a href="https://www.instagram.com/agrocognitive" 
+					<a href="https://www.instagram.com/" 
 					   target="_blank" class="btn-social btn-outline">
 						<i class="btn-icon-social fab fa-instagram"></i>
-					</a>
-					<a href="https://www.youtube.com/channel/UCQkIIs2O4fcKWFGNYcz5tag" 
-					   target="_blank" class="btn-social btn-outline">
-						<i class="btn-icon-social fab fa-youtube"></i>
 					</a>
 				</h5>
 			</div>
@@ -73,27 +37,18 @@
 
 
 	<!-- CTA -->
-		<section id="cta" class="cta01 wrapper">
-			<div class="inner" style="text-align: center">
+		<section id="cta" class="cta01 wrapper" style="height: 300px;">
+			<!-- <div class="inner" style="text-align: center">
 				<h2>¡Ayudanos a seguir con el desarrollo de este proyecto!</h2>
-				<p>
-					Crowdfunding Indiegogo: 
-					<a target="_blank" style="color:#f04190; text-shadow: black 2px 2px;" href="http://bit.ly/FundingAgroCognitive">
-						http://bit.ly/FundingAgroCognitive
-					</a>
-				</p>
 				
-					<p >
-						<b>AgroCognitive</b>: agricultura de precisión para el futuro. Con el uso de la inteligencia artificial,<br>los agricultores de Latinoamérica podrán contar con el análisis completo de sus cultivos,<br> para una mejor toma de decisiones y una agricultura más eficiente y sostenible.
-					</p>
-			</div>
+			</div> -->
 		</section>
 
 	<!-- Testimonials -->
 		<section class="wrapper">
 			<div class="inner">
 				<header class="special">
-					<h2>¿Qué ofrece AgroCognitive?</h2>
+					<h2>¿Por qué usar Cash4Home?</h2>
 				</header>
 				
 				<div class="highlights">
@@ -101,11 +56,13 @@
 						<div class="content">
 							<header>
 								<a  class="icon icon-outline">
-									<i class="fas fa-chart-pie"></i>
+									<i class="far fa-handshake"></i>
 									<span class="label">Icon</span>
 								</a>
-								<h3>Análisis descriptivos</h3>
-								<p>Con el uso de la tecnología Machine Learning y el reconocimiento visual, el agricultor podrá saber lo que está sucediendo en sus cultivos, si poseen alguna enfermedad, falta de riego, falta de fumigación, etc.</p>
+								<h3 class="orange bold">Confianza</h3>
+								<p>
+									Somos personas que trabajamos para personas, nuestros valores humanos y familiares nos motivan cada día para ser el aliado confiable que brinda el apoyo que tú y tus seres queridos necesitan.
+								</p>
 							</header>
 						</div>
 					</section>
@@ -113,11 +70,13 @@
 						<div class="content">
 							<header>
 								<a  class="icon icon-outline">
-									<i class="fas fa-hourglass-end"></i>
+									<i class="fas fa-hand-holding-usd"></i>
 									<span class="label">Icon</span>
 								</a>
-								<h3>Análisis predictivos</h3>
-								<p>El agricultor podrá saber cuál será la producción total de sus cultivos de manera precisa, lo que le permitirá tomar mejores decisiones antes de invertir tiempo y dinero en un cultivo que quizás ya esté perdido.</p>
+								<h3 class="orange bold">Tasas Favorables</h3>
+								<p>
+									Manejamos una buena tasa en relacion con nuestra competencia, generando así, bienestar y satisfacción de nuestros clientes.
+								</p>
 							</header>
 						</div>
 					</section>
@@ -125,11 +84,11 @@
 						<div class="content">
 							<header>
 								<a  class="icon icon-outline">
-									<i class="fas fa-notes-medical"></i>
+									<i class="fas fa-shipping-fast"></i>
 									<span class="label">Icon</span>
 								</a>
-								<h3>Análisis prescriptivos</h3>
-								<p>Lo que el agricultor debe hacer para el mantenimiento del cultivo, indicándole el área exacta a fertilizar, hidratar, fumigar, etc. Esto ayudará ahorrar tiempo, costos y proteger el medio ambiente.</p>
+								<h3 class="orange bold">Rapidez</h3>
+								<p>Entendemos la situacion y la urgencia que tienen muchos de nuestros clientes. Es por eso que nuestro servicio busca cumplir con el meor tiempo posible la transacción.</p>
 							</header>
 						</div>
 					</section>
@@ -139,24 +98,22 @@
 
 
 	<!-- CTA -->
-		<section id="cta" class="cta02 wrapper">
+		<!-- <section id="cta" class="cta02 wrapper">
 			<div class="inner">
-				<h2>Así ha sido nuestro camino</h2>
-				<img style="width:100%; margin-top:1%;margin-bottom:4%" src="{% static 'landingpage/img/timelineAgro.png' %}">
-				<h2>Aún queda mucho por recorrer</h2>
+				<p>
+					Nulla at convallis urna. Nunc eget sapien sollicitudin, viverra est nec, bibendum sapien. In quis sagittis ante. Praesent id porttitor ante. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum sagittis nisl nisl, sed commodo tortor porta nec. Duis fringilla mollis ultrices.
+				</p>
 			</div>
 
-		</section>
+		</section> -->
 
 	<!-- Highlights -->
 		<section class="wrapper">
 			<div class="inner">
 				<header class="special">
-					<h2>Conoce a nuestro equipo</h2>
+					<h2>Subscribete Ya!</h2>
 				</header>
-				<div class="highlights">
 				
-				</div>
 			</div>
 		</section>
 
@@ -165,57 +122,38 @@
 			<div class="inner">
 				<div class="content">
 					<section>
-						<h3>AgroCognitive</h3>
+						<h3>Cash4Home</h3>
 						<p>
-							AgroCognitive es un proyecto en desarrollo por ingenieros de la empresa 
-							<a href="http://smartbasegroup.com" target="_blank">
-								Smartbase Group
-							</a> 
-							que hacen vida en Venezuela. Este proyecto ha sido impulsado por la DAO de 
-							<a target="_blank" href="https://www.dash.org/">
-								Dash Digital Cash
-							</a>. Además, cuenta con los aliados estratégicos: UpDrone, Fundacaña Venezuela y Soca-Portuguesa
+							Nulla at convallis urna. Nunc eget sapien sollicitudin, viverra est nec, bibendum sapien. In quis sagittis ante. Praesent id porttitor ante. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum sagittis nisl nisl, sed commodo tortor porta nec. Duis fringilla mollis ultrices.
 						</p>
 					</section>
 					<section>
-						<h4>Links de interes</h4>
+						<!-- <h4>Links de interes</h4>
 						<ul class="alt">
 							<li><a href="http://smartbasegroup.com/">Smartbase Group</a></li>
 							<li><a href="https://www.dash.org/">Dash Digital Cash</a></li>
-						</ul>
+						</ul> -->
 					</section>
 					<section>
 						<h4>Redes sociales</h4>
 						<ul class="plain footer-social">
 							<li>
-								<a target="_blank" href="https://twitter.com/agrocognitive">
+								<a target="_blank" href="https://twitter.com/">
 									<i class="fab fa-twitter">&nbsp;</i>
 									Twitter
 								</a>
 							</li>
 							<li>
-								<a target="_blank" href="https://www.instagram.com/agrocognitive/">
+								<a target="_blank" href="https://www.instagram.com/">
 									<i class="fab fa-instagram">&nbsp;</i>
 									Instagram
-								</a>
-							</li>
-							<li>
-								<a target="_blank" href="https://www.youtube.com/channel/UCQkIIs2O4fcKWFGNYcz5tag">
-									<i class="fab fa-youtube">&nbsp;</i>
-									Youtube
-								</a>
-							</li>
-							<li>
-								<a target="_blank" href="http://bit.ly/FundingAgroCognitive">
-									<i class="fas fa-heart">&nbsp;</i>
-									Indiegogo
 								</a>
 							</li>
 						</ul>
 					</section>
 				</div>
 				<div class="copyright">
-					&copy; <a target="_blank" href="http://smartbasegroup.com">Smartbase Group</a>.
+					&copy; Cash4Home.
 				</div>
 			</div>
 		</footer>
