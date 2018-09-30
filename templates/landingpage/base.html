@@ -102,14 +102,20 @@
 						Inicio
 					</a>
 				</li>
-				<li><a href="elements.html">¿Quienes somos?</a></li>
-				<li><a href="generic.html">Contactenos</a></li>
 				<li>
 					<a href="{% url 'login' %}">
 						<i class="fas fa-sign-in-alt"></i>
 					    Ingresar
 					</a>
 				</li>
+				<li>
+					<a href="{% url 'signup' %}">
+						<i class="fas fa-user-plus"></i>
+					    Crear cuenta
+					</a>
+				</li>
+				<li><a href="elements.html">¿Quienes somos?</a></li>
+				<li><a href="generic.html">Contactenos</a></li>
 			</ul>
 		</nav>
 		{% block content %}
@@ -134,14 +140,19 @@
 									Inicio
 								</a>
 							</li>
-							<li><a href="elements.html">¿Quienes somos?</a></li>
-							<li><a href="generic.html">Contactenos</a></li>
 							<li>
 								<a href="{% url 'login' %}">
-									<i class="fas fa-sign-in-alt"></i>
 								    Ingresar
 								</a>
 							</li>
+							<li>
+								<a href="{% url 'signup' %}">
+								    Crear cuenta
+								</a>
+							</li>
+							<li><a href="elements.html">¿Quienes somos?</a></li>
+							<li><a href="generic.html">Contactenos</a></li>
+							
 						</ul>
 					</section>
 					<section>

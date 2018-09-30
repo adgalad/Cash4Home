@@ -2330,12 +2330,10 @@ ul.icons {
 
   @media screen and (min-width: 1280px) {
     #cta {
-      background-attachment: scroll;
       height:500px !important; } }
 
   @media screen and (min-width: 980px) {
     #cta {
-      background-attachment: scroll;
       height:300px; } }
 
 
