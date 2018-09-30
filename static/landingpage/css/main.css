@@ -2328,9 +2328,13 @@ ul.icons {
       height: 300px;
     } }
 
-  @media screen and (min-width: 980px) {
+  @media screen and (min-width: 1280px) {
     #cta {
       height:500px; } }
+
+  @media screen and (min-width: 980px) {
+    #cta {
+      height:300px; } }
 
 
 /* Footer */
