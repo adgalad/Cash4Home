@@ -2530,6 +2530,11 @@ body {
     z-index: -1;
     opacity: 0.15; }
 
+.logo-img {
+  margin: 5%;
+  width: 180px;
+}
+
 #header {
   -moz-align-items: center;
   -webkit-align-items: center;
