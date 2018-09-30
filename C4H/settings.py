@@ -32,7 +32,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-LOGIN_URL = "/v2/login/"
+LOGIN_URL = "/v1/login/"
 
 OPERATION_TIMEOUT = 90 # minutos
 EMAIL_VALIDATION_EXPIRATION = 60*3 # 3 horas
