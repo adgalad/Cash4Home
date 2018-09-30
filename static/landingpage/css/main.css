@@ -2324,7 +2324,7 @@ ul.icons {
     #cta {
       background-attachment: scroll; } }
 
-  @media screen and (max-width: 1280px) {
+  @media screen and (min-width: 980px) {
     #cta {
       height:500px; } }
 
