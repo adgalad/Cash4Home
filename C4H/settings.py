@@ -32,10 +32,18 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+LOGIN_URL = "/v2/login/"
 
 OPERATION_TIMEOUT = 90 # minutos
 EMAIL_VALIDATION_EXPIRATION = 60*3 # 3 horas
 # Application definition
+
+
+# Redirect to HTTPS
+SECURE_SSL_REDIRECT = True
+
+SERVER_EMAIL = os.environ['EMAIL_HOST']
+ADMINS = [('Carlos', 'carlos.25896@gmail.com'), ('Vicky', 'mvjorgemauriello@gmail.com')]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -178,5 +186,6 @@ EMAIL_HOST = os.environ['EMAIL_HOST']
 EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
 EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
 EMAIL_PORT = 465
-EMAIL_USE_TLS = True
+# EMAIL_USE_TLS = True
+EMAIL_USE_SSL = True
 DEFAULT_FROM_EMAIL = 'Cash4Home. Equipo de soporte'

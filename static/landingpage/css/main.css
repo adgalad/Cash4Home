@@ -1928,6 +1928,7 @@ ul.icons {
   background-size: cover;
   border-top: 0;
   display: -ms-flexbox;
+  margin-top:30px;
   height: 35rem !important;
   min-height: 35rem;
   overflow: hidden;
@@ -2141,7 +2142,7 @@ ul.icons {
   @media screen and (max-width: 736px) {
     #banner {
       height: auto !important;
-      min-height: 0;
+      min-height: 400px;
       padding: 4rem 2rem 4rem 2rem; }
       #banner .inner {
         width: 100%; }
@@ -2177,7 +2178,7 @@ ul.icons {
 }
 
 #cta {
-  background-color: #a3c533;
+  background-color: black;
   color: rgba(255, 255, 255, 0.75);
   background-attachment: fixed;
   background-position: bottom;
@@ -2318,10 +2319,14 @@ ul.icons {
   #cta .inner {
     position: relative;
     z-index: 3; }
+
   @media screen and (max-width: 980px) {
     #cta {
       background-attachment: scroll; } }
 
+  @media screen and (max-width: 1280px) {
+    #cta {
+      height:500px; } }
 
 
 /* Footer */

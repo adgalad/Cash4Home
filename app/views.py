@@ -27,7 +27,7 @@ from django.urls import reverse
 from app.forms import *
 from app.models import *
 from C4H.settings import (MEDIA_ROOT, STATIC_ROOT, EMAIL_HOST_USER,
-                          DEFAULT_DOMAIN, DEFAULT_FROM_EMAIL, 
+                          DEFAULT_DOMAIN, DEFAULT_FROM_EMAIL, LOGIN_URL,
                           OPERATION_TIMEOUT, EMAIL_VALIDATION_EXPIRATION)
 
 from app.encryptation import encrypt, decrypt
@@ -139,7 +139,7 @@ def checkCurrency(formset, isTarget):
         return False
   return True
 
-@login_required(login_url="/v2/login/")
+@login_required(login_url=LOGIN_URL)
 def closureTransactionModal(request):
   formClosure = ClosureTransactionForm()
   return render(request, 'dashboard/closureTransactionModal.html', {'formClosure':formClosure}) 
@@ -168,7 +168,7 @@ def prepareDataOperations(tmpActual, tmpEnded):
 def summaryBanks(request):
   pass
 
-@login_required(login_url="/v2/login/")
+@login_required(login_url=LOGIN_URL)
 def dashboard(request):
   '''
     View del dashboard, tanto para usuarios clientes, como para staff y aliados
@@ -529,7 +529,7 @@ def company(request):
   return render(request, 'company.html')
 
 
-@login_required(login_url="/v2/login/")
+@login_required(login_url=LOGIN_URL)
 def profile(request):
   if request.method == 'POST':
     emailForm = ChangeEmailForm(request.POST)
@@ -561,7 +561,7 @@ def profile(request):
 
   return render(request, 'dashboard/profile.html')
 
-@login_required(login_url="/v2/login/")
+@login_required(login_url=LOGIN_URL)
 def userVerification(request):
   if request.user.canVerify:
     if request.method == 'POST':
@@ -593,7 +593,7 @@ def userVerification(request):
   else:
     return redirect(reverse('dashboard'))
 
-@login_required(login_url="/v2/login/")
+@login_required(login_url=LOGIN_URL)
 def createOperation(request):
   if not request.user.verified:
     messages.error(request, 'Usted no puede realizar envíos de dinero hasta que su cuenta no haya sido verificada.',
@@ -813,7 +813,7 @@ def createOperation(request):
               <br><br>
               Sinceramente,<br>
               Equipo de soporte de Cash4Home
-            '''%(operation.code, fromCurrency, total, fromAccount.id_account, DEFAULT_DOMAIN+'operation/pending?operation=' + operation.code)
+            '''%(operation.code, fromCurrency, total, fromAccount.id_account, DEFAULT_DOMAIN+reverse(pendingOperations)+'?operation=' + operation.code)
 
             html_message = loader.render_to_string(
                     'registration/base_email.html',
@@ -863,7 +863,7 @@ def createOperation(request):
                 'fromAccs': str(json.dumps(fromAccs)),
                 "fee": str(fee)})
 
-@login_required(login_url="/v2/login/")
+@login_required(login_url=LOGIN_URL)
 def pendingOperations(request):
   operations = Operation.objects.filter(id_client=request.user).exclude(status='Cancelada')
   for i in operations:
@@ -872,7 +872,7 @@ def pendingOperations(request):
   complete = operations.filter(status="Fondos transferidos")
   return render(request, 'dashboard/pendingOperations.html', {'pendingOperations':pending, 'completeOperations':complete}) 
 
-@login_required(login_url="/v2/login/")
+@login_required(login_url=LOGIN_URL)
 def operationModal(request, _operation_id):
   try: operation = Operation.objects.get(code=_operation_id, id_client=request.user.id)
   except: raise PermissionDenied
@@ -883,7 +883,7 @@ def operationModal(request, _operation_id):
     return
 
 
-@login_required(login_url="/v2/login/")
+@login_required(login_url=LOGIN_URL)
 def cancelOperation(request, _operation_id):
   admin = request.user.has_perm('admin.cancel_operation')
   try: 
@@ -901,7 +901,7 @@ def cancelOperation(request, _operation_id):
   else:
     raise PermissionDenied
 
-@login_required(login_url="/v2/login/")
+@login_required(login_url=LOGIN_URL)
 def verifyOperation(request, _operation_id):
   msg = ""
   
@@ -940,7 +940,7 @@ def verifyOperation(request, _operation_id):
 
 
 
-@login_required(login_url="/v2/login/")
+@login_required(login_url=LOGIN_URL)
 def accounts(request):
 
   abt = AccountBelongsTo.objects.filter(id_client=request.user.id)
@@ -954,7 +954,7 @@ def accounts(request):
   
   return render(request, 'dashboard/accounts.html', {'origin':origin, 'dest':dest})
 
-@login_required(login_url="/v2/login/")
+@login_required(login_url=LOGIN_URL)
 def createAccount(request):
   own = request.GET.get('own')
 
@@ -991,7 +991,7 @@ def createAccount(request):
         acc = acc[0]
       if AccountBelongsTo.objects.filter(id_client=request.user.id).filter(id_account=acc.id).count() > 0:
           messages.error(request,'Esta cuenta ya se encuentra asociada', extra_tags="alert-warning")
-          return redirect("/account/new?own="+request.GET.get('own'))
+          return redirect(reverse(createAccount)+"?own="+request.GET.get('own'))
       acc.save()
 
       if own:
@@ -1113,7 +1113,7 @@ def sendEmailValidation(user):
   }
   token = encrypt(str.encode(json.dumps(token)))
 
-  link = DEFAULT_DOMAIN+"activateEmail/" + token
+  link = DEFAULT_DOMAIN + reverse('activateEmail') + token
   plain_message = 'Para validar tu correo electronico, porfavor ingresa al siguiente correo: ' + link
   
   message = '''
@@ -1154,7 +1154,7 @@ def resendEmailVerification(request):
       else:
         sendEmailValidation(user)
         messages.error(request,'Se envió la validación a su correo electrónico.', extra_tags="alert-success")
-        return redirect('/login')
+        return redirect('login')
 
     else:
       messages.error(request,'El correo electrónico que ingresó es inválido.', extra_tags="alert-warning")
@@ -1188,7 +1188,7 @@ def signup(request):
 
 
 # Admin views
-@permission_required('admin.add_currency', login_url='/login/')
+@permission_required('admin.add_currency', login_url=LOGIN_URL)
 def addCurrencies(request):
     if (request.method == 'POST'):
         form = NewCurrencyForm(request.POST)
@@ -1217,14 +1217,14 @@ def addCurrencies(request):
 
     return render(request, 'admin/addCurrency.html', {'form': form})
 
-@permission_required('admin.view_currency', login_url='/login/')
+@permission_required('admin.view_currency', login_url=LOGIN_URL)
 def adminCurrencies(request):
     if (request.method == 'GET'):
         allCurrencies = Currency.objects.all().order_by('code')
 
         return render(request, 'admin/adminCurrency.html', {'currencies': allCurrencies})
 
-@permission_required('admin.edit_currency', login_url='/login/')
+@permission_required('admin.edit_currency', login_url=LOGIN_URL)
 def editCurrencies(request, _currency_id):
     try:
         c = Currency.objects.get(code=_currency_id)
@@ -1252,7 +1252,7 @@ def editCurrencies(request, _currency_id):
 
     return render(request, 'admin/editCurrency.html', {'form': form})
 
-@permission_required('admin.add_rate', login_url='/login/')
+@permission_required('admin.add_rate', login_url=LOGIN_URL)
 def addExchangeRate(request):
 
     if (request.method == 'POST'):
@@ -1291,14 +1291,14 @@ def addExchangeRate(request):
 
     return render(request, 'admin/addExchangeRate.html', {'form': form})
 
-@permission_required('admin.view_rate', login_url='/login/')
+@permission_required('admin.view_rate', login_url=LOGIN_URL)
 def adminExchangeRate(request):
     if (request.method == 'GET'):
         allRates = ExchangeRate.objects.all()
 
         return render(request, 'admin/adminExchangeRate.html', {'rates': allRates})
 
-@permission_required('admin.edit_rate', login_url='/login/')
+@permission_required('admin.edit_rate', login_url=LOGIN_URL)
 def editExchangeRate(request, _rate_id):
     try:
         actualRate = ExchangeRate.objects.get(id=_rate_id)
@@ -1352,7 +1352,7 @@ def historyExchangeRate(request, _rate_id):
 
   return render(request, 'admin/historyExchangeRate.html', {'rate': actualRate})
 
-@permission_required('admin.add_bank', login_url='/login/')
+@permission_required('admin.add_bank', login_url=LOGIN_URL)
 def addBank(request):
     if (request.method == 'POST'):
         form = NewBankForm(request.POST)
@@ -1388,7 +1388,7 @@ def addBank(request):
     return render(request, 'admin/addBank.html', {'form': form})
 
 
-@permission_required('admin.view_bank', login_url='/login/')
+@permission_required('admin.view_bank', login_url=LOGIN_URL)
 def adminBank(request):
     if (request.method == 'GET'):
         tmp_banks = Bank.objects.all()
@@ -1405,7 +1405,7 @@ def adminBank(request):
 
         return render(request, 'admin/adminBank.html', {'banks': all_banks})
 
-@permission_required('admin.edit_bank', login_url='/login/')
+@permission_required('admin.edit_bank', login_url=LOGIN_URL)
 def editBank(request, _bank_id):
     try:
         actualBank = Bank.objects.get(swift=_bank_id)
@@ -1444,7 +1444,7 @@ def editBank(request, _bank_id):
 
     return render(request, 'admin/editBank.html', {'form': form})
 
-@permission_required('admin.add_account', login_url='/login/')
+@permission_required('admin.add_account', login_url=LOGIN_URL)
 def addAccount(request):
     if (request.method == 'POST'):
         form = NewAccountForm(request.POST)
@@ -1474,14 +1474,14 @@ def addAccount(request):
 
     return render(request, 'admin/addAccount.html', {'form': form})
 
-@permission_required('admin.view_account', login_url='/login/')
+@permission_required('admin.view_account', login_url=LOGIN_URL)
 def adminAccount(request):
     if (request.method == 'GET'):
         all_accounts = Account.objects.all()
 
         return render(request, 'admin/adminAccount.html', {'accounts': all_accounts})
 
-@permission_required('admin.edit_account', login_url='/login/')
+@permission_required('admin.edit_account', login_url=LOGIN_URL)
 def editAccount(request, _account_id):
     try:
         actualAccount = Account.objects.get(id=_account_id)
@@ -1515,7 +1515,7 @@ def editAccount(request, _account_id):
 
     return render(request, 'admin/editAccount.html', {'form': form})
 
-@permission_required('admin.add_user', login_url='/login/')
+@permission_required('admin.add_user', login_url=LOGIN_URL)
 def addUser(request):
 
     if (request.method == 'POST'):
@@ -1544,7 +1544,7 @@ def addUser(request):
 
     return render(request, 'admin/addUser.html', {'form': form})
 
-@permission_required('admin.view_user', login_url='/login/')
+@permission_required('admin.view_user', login_url=LOGIN_URL)
 def adminUser(request):
     if (request.method == 'GET'):
         all_clients = User.objects.filter(groups__name__in=['Cliente'])
@@ -1641,7 +1641,7 @@ def verifyUser(request, _user_id):
     return render(request, 'admin/viewUser.html', {'user': actualUser})
 
 
-@permission_required('admin.add_holiday', login_url='/login/')
+@permission_required('admin.add_holiday', login_url=LOGIN_URL)
 def addHoliday(request):
     if (request.method == 'POST'):
         form = NewHolidayForm(request.POST)
@@ -1669,14 +1669,14 @@ def addHoliday(request):
 
     return render(request, 'admin/addHoliday.html', {'form': form})
 
-@permission_required('admin.view_holiday', login_url='/login/')
+@permission_required('admin.view_holiday', login_url=LOGIN_URL)
 def adminHoliday(request):
     if (request.method == 'GET'):
         holidays = Holiday.objects.all()
 
         return render(request, 'admin/adminHoliday.html', {'holidays': holidays})
 
-@permission_required('admin.edit_holiday', login_url='/login/')
+@permission_required('admin.edit_holiday', login_url=LOGIN_URL)
 def editHoliday(request, _holiday_id):
     try:
         actualHoliday = Holiday.objects.get(id=_holiday_id)
@@ -1711,7 +1711,7 @@ def editHoliday(request, _holiday_id):
 
     return render(request, 'admin/editHoliday.html', {'form': form})
 
-@permission_required('admin.add_country', login_url='/login/')
+@permission_required('admin.add_country', login_url=LOGIN_URL)
 def addCountry(request):
     if (request.method == 'POST'):
         form = NewCountryForm(request.POST)
@@ -1739,14 +1739,14 @@ def addCountry(request):
 
     return render(request, 'admin/addCountry.html', {'form': form})
 
-@permission_required('admin.view_country', login_url='/login/')
+@permission_required('admin.view_country', login_url=LOGIN_URL)
 def adminCountry(request):
     if (request.method == 'GET'):
         all_countries = Country.objects.all()
 
         return render(request, 'admin/adminCountry.html', {'countries': all_countries})
 
-@permission_required('admin.edit_country', login_url='/login/')
+@permission_required('admin.edit_country', login_url=LOGIN_URL)
 def editCountry(request, _country_id):
     try:
         actualCountry = Country.objects.get(name=_country_id)
@@ -1829,7 +1829,7 @@ def sendEmailOperationFinished(operation):
     <br><br>
     Sinceramente,<br>
     Equipo de soporte de Cash4Home
-  '''%(operation.code, DEFAULT_DOMAIN+'operation/pending?operation=' + operation.code)
+  '''%(operation.code, DEFAULT_DOMAIN+reverse('pendingOperations')+'?operation=' + operation.code)
 
   html_message = loader.render_to_string(
           'registration/base_email.html',
@@ -1901,7 +1901,7 @@ def operationDetailDashboard(request, _operation_id):
       form = ChangeOperationStatusForm(initial={'status':operation.status})
     return render(request, 'admin/viewOperation.html', {'form':form, 'operation': operation, 'transactions':transactions, 'ogt': list(zip(ogt, abt))})
     
-@permission_required('admin.add_transaction', login_url='/login/')
+@permission_required('admin.add_transaction', login_url=LOGIN_URL)
 def operationAddTransaction(request, _operation_id):
     try:
       operation = Operation.objects.get(code=_operation_id)
@@ -1981,7 +1981,7 @@ def operationAddTransaction(request, _operation_id):
     return render(request, 'admin/addTransaction.html', {'form':form, 'operation':operation})
 
 
-@permission_required('admin.edit_operation', login_url='/login/')
+@permission_required('admin.edit_operation', login_url=LOGIN_URL)
 def operationEditDashboard(request, _operation_id):
   try:
     operation = Operation.objects.get(code=_operation_id)
@@ -2071,7 +2071,7 @@ def operationEditDashboard(request, _operation_id):
                   }
                 )
 
-@permission_required('admin.delete_transaction', login_url='/login/')
+@permission_required('admin.delete_transaction', login_url=LOGIN_URL)
 def deleteTransaction(request, _transaction_id):
   try:
     tx = Transaction.objects.get(pk=_transaction_id)
@@ -2083,7 +2083,7 @@ def deleteTransaction(request, _transaction_id):
   messages.error(request, "Transacción eliminada exitosamente.", extra_tags="alert-success")
   return redirect('operationDetailDashboard', _operation_id=operationCode)
 
-@permission_required('admin.edit_operation', login_url='/login/')
+@permission_required('admin.edit_operation', login_url=LOGIN_URL)
 def operationHistory(request, _operation_id):
   try:
     operation = Operation.objects.get(code=_operation_id)
@@ -2175,7 +2175,7 @@ def addUserAccount(request, _user_id, _flag):
 
     return render(request, 'admin/addUserAccount.html', {'form': form, 'u': user})
 
-@permission_required('admin.add_exchanger', login_url='/login/')
+@permission_required('admin.add_exchanger', login_url=LOGIN_URL)
 def addExchanger(request):
     if (request.method=='POST'):
         form = NewExchangerForm(request.POST)
@@ -2204,14 +2204,14 @@ def addExchanger(request):
 
     return render(request, 'admin/addExchanger.html', {'form': form})
 
-@permission_required('admin.view_exchanger', login_url='/login/')
+@permission_required('admin.view_exchanger', login_url=LOGIN_URL)
 def adminExchanger(request):
     if (request.method=='GET'):
         exchangers = ExchangerAccepts.objects.all()
 
         return render(request, 'admin/adminExchanger.html', {'exchangers': exchangers})
 
-@permission_required('admin.edit_exchanger', login_url='/login/')
+@permission_required('admin.edit_exchanger', login_url=LOGIN_URL)
 def editExchanger(request, _ex_id, _currency_id):
     try:
         actual_exchanger = Exchanger.objects.get(name=_ex_id)
@@ -2239,7 +2239,7 @@ def editExchanger(request, _ex_id, _currency_id):
     return render(request, 'admin/editExchanger.html', {'form': form})
 
 
-@permission_required('admin.add_repurchase', login_url='/login/')
+@permission_required('admin.add_repurchase', login_url=LOGIN_URL)
 def addRepurchaseGeneral(request):
     allCurrencies = Currency.objects.all().order_by('code')
     currenciesC = []
@@ -2259,7 +2259,7 @@ def addRepurchaseGeneral(request):
         form = SelectCurrencyForm(currenciesC=currenciesC)
     return render(request, 'admin/addRepurchaseGeneral.html', {'form': form})
 
-@permission_required('admin.add_repurchase', login_url='/login/')
+@permission_required('admin.add_repurchase', login_url=LOGIN_URL)
 def addRepurchase(request, _currency_id):
     try:
       origin_currency = Currency.objects.get(code=_currency_id)
@@ -2337,14 +2337,14 @@ def addRepurchase(request, _currency_id):
 
     return render(request, 'admin/addRepurchase.html', {'formOp': formset, 'formRep': formRep})
 
-@permission_required('admin.view_repurchase', login_url='/login/')
+@permission_required('admin.view_repurchase', login_url=LOGIN_URL)
 def adminRepurchase(request):
     if (request.method == 'GET'):
       all_repurchases = Repurchase.objects.all()
 
       return render(request, 'admin/adminRepurchase.html', {'repurchases': all_repurchases})
 
-@permission_required('admin.view_repurchase', login_url='/login/')
+@permission_required('admin.view_repurchase', login_url=LOGIN_URL)
 def viewRepurchase(request, _repurchase_id):
     try:
         actual_repurchase = Repurchase.objects.get(id=_repurchase_id)
@@ -2357,7 +2357,7 @@ def viewRepurchase(request, _repurchase_id):
         return render(request, 'admin/viewRepurchase.html', {'rep': actual_repurchase, 'came_from': came_from})
 
 
-@permission_required('admin.add_group', login_url='/login/')
+@permission_required('admin.add_group', login_url=LOGIN_URL)
 def addGroup(request):
   form = GroupForm()
 
@@ -2368,13 +2368,13 @@ def addGroup(request):
       messages.error(request, 'El grupo fue agregado con éxito', extra_tags="alert-success")
   return render(request, 'admin/addGroup.html', {'form': form})
 
-@permission_required('admin.view_group', login_url='/login/')
+@permission_required('admin.view_group', login_url=LOGIN_URL)
 def adminGroup(request):
     if (request.method == 'GET'):
         all_groups = Group.objects.all()
         return render(request, 'admin/adminGroup.html', {'groups': all_groups})
 
-@permission_required('admin.edit_group', login_url='/login/')
+@permission_required('admin.edit_group', login_url=LOGIN_URL)
 def editGroup(request, _group_id):
   try:
     actualGroup = Group.objects.get(id=_group_id)
@@ -2390,7 +2390,7 @@ def editGroup(request, _group_id):
       messages.error(request, 'El grupo fue editado con éxito', extra_tags="alert-success")
   return render(request, 'admin/editGroup.html', {'form': form})
 
-@permission_required('admin.edit_settings', login_url='/login/')
+@permission_required('admin.edit_settings', login_url=LOGIN_URL)
 def globalSettings(request):
   if request.method == "POST":
     form = GlobalSettingsForm(request.POST, instance=GlobalSettings.get())
@@ -2479,7 +2479,7 @@ def summaryByAlly(request):
                                                       'hasFilter': hasFilter,})
 
 
-#Faltan permisos
+@permission_required('admin.view_closure', login_url=LOGIN_URL)
 def detailClosure(request,_closure_id):
   try:
     closure = BoxClosure.objects.get(id=_closure_id)
@@ -2490,7 +2490,7 @@ def detailClosure(request,_closure_id):
 
   return render(request, 'admin/detailClosure.html', {'closure': closure, 'operations': operations})
 
-#Faltan permisos
+@permission_required('admin.edit_closure', login_url=LOGIN_URL)
 def changeStatusClosure(request, _closure_id):
   try:
     closure = BoxClosure.objects.get(id=_closure_id)
@@ -2511,7 +2511,7 @@ def changeStatusClosure(request, _closure_id):
   messages.error(request,'Se cambió el estado correctamente', extra_tags="alert-success")
   return redirect('summaryByAlly')
 
-#Faltan permisos
+@permission_required('admin.view_closure', login_url=LOGIN_URL)
 def historyClosure(request):
 
   all_closures = BoxClosureHistory.objects.all()
