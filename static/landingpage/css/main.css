@@ -453,7 +453,7 @@ button,
     button:hover:active,
     .button:hover:active {
       background-color: #d15805;
-      color: white; }
+      color: white !important; }
   input[type="submit"].primary,
   input[type="reset"].primary,
   input[type="button"].primary,
