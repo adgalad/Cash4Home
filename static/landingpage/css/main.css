@@ -452,7 +452,8 @@ button,
     input[type="button"]:hover:active,
     button:hover:active,
     .button:hover:active {
-      background-color: #d15805; }
+      background-color: #d15805;
+      color: white; }
   input[type="submit"].primary,
   input[type="reset"].primary,
   input[type="button"].primary,
