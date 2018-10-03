@@ -15,7 +15,7 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-DEFAULT_DOMAIN = 'http://wwww.cash4home.io/'
+DEFAULT_DOMAIN = 'https://www.cash4home.io/'
 #DEFAULT_DOMAIN = 'http://0.0.0.0:8000/'
 
 # Quick-start development settings - unsuitable for production
@@ -42,8 +42,7 @@ EMAIL_VALIDATION_EXPIRATION = 60*3 # 3 horas
 # Redirect to HTTPS
 SECURE_SSL_REDIRECT = True
 
-SERVER_EMAIL = os.environ['EMAIL_HOST']
-ADMINS = [('Carlos', 'carlos.25896@gmail.com'), ('Vicky', 'mvjorgemauriello@gmail.com')]
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -182,10 +181,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
 
 
+# Email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.environ['EMAIL_HOST']
 EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
 EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
 EMAIL_PORT = 465
 # EMAIL_USE_TLS = True
 EMAIL_USE_SSL = True
-DEFAULT_FROM_EMAIL = 'Cash4Home. Equipo de soporte'
+DEFAULT_FROM_EMAIL = "Soporte de Cash4Home <%s>"%os.environ['EMAIL_HOST_USER']
+SERVER_EMAIL = os.environ['EMAIL_HOST_USER']
+
+ADMINS = [('Carlos', 'carlos.25896@gmail.com'), ('Vicky', 'mvjorgemauriello@gmail.com')]

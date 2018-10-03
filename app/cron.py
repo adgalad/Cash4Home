@@ -89,7 +89,7 @@ class PriceRetriever:
             prices['ARS']['prices']['Localbitcoins'] = float(self.localbitcoins['ARS']['rates']['last'])
             prices['PEN']['prices']['Localbitcoins'] = float(self.localbitcoins['PEN']['rates']['last'])
     except Exception as e:
-    pass        
+        pass        
     
     try:
         if self.gemini:
@@ -178,3 +178,4 @@ x = UpdateBTCPrice()
 while(True):
     x.do()
     time.sleep(x.RUN_EVERY_SECS)
+
