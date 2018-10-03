@@ -7,6 +7,12 @@
 */
 /* Basic */
 
+.shadow{
+  -webkit-box-shadow: 15px 19px 23px -9px rgba(0,0,0,0.18);
+  -moz-box-shadow: 15px 19px 23px -9px rgba(0,0,0,0.18);
+  box-shadow: 15px 19px 23px -9px rgba(0,0,0,0.18);
+}
+
 .perfil {
   border-radius: 50%;
   height: 200px;
