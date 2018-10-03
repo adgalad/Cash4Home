@@ -1113,7 +1113,7 @@ def sendEmailValidation(user):
   }
   token = encrypt(str.encode(json.dumps(token)))
 
-  link = DEFAULT_DOMAIN + reverse('activateEmail') + token
+  link = DEFAULT_DOMAIN + reverse('activateEmail', kwargs={'token':token})
   plain_message = 'Para validar tu correo electronico, porfavor ingresa al siguiente correo: ' + link
   
   message = '''
