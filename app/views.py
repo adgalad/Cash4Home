@@ -742,7 +742,7 @@ def createOperation(request):
               boxClosure = boxClosure[0]
 
             operation = Operation(fiat_amount     = total,
-                                  crypto_rate     = None,
+                                  # crypto_rate     = None,
                                   status          = 'Faltan recaudos',
                                   exchanger       = None,
                                   date            = timezone.now(),
