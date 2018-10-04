@@ -744,7 +744,7 @@ def createOperation(request):
             operation = Operation(fiat_amount     = total,
                                   # crypto_rate     = None,
                                   status          = 'Faltan recaudos',
-                                  exchanger       = None,
+                                  # exchanger       = None,
                                   date            = timezone.now(),
                                   expiration      = timezone.now()+delta,
                                   id_client       = request.user,
