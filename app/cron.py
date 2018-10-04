@@ -67,11 +67,11 @@ class PriceRetriever:
 
   def getPriceInformation(self):
     try:
-        file = open(os.path.join('./static', "BTCPrice.json"), "r")
+        file = open(os.path.join('/home/cashhom2/Cash4Home/static', "BTCPrice.json"), "r")
     except Exception as e:
-        open(os.path.join('./static', "BTCPrice.json"), "w").close()
+        open(os.path.join('/home/cashhom2/Cash4Home/static', "BTCPrice.json"), "w").close()
 
-        file = open(os.path.join('./static', "BTCPrice.json"), "r")
+        file = open(os.path.join('/home/cashhom2/Cash4Home/static', "BTCPrice.json"), "r")
     try:
         prices = json.loads(file.read())
     except Exception as e:
@@ -163,7 +163,7 @@ class UpdateBTCPrice():
             
             self.BTCPrice.ask()
             info = json.dumps(self.BTCPrice.getPriceInformation())
-            file = open(os.path.join('./static', "BTCPrice.json"), "w")
+            file = open(os.path.join('/home/cashhom2/Cash4Home/static', "BTCPrice.json"), "w")
             file.write(info)
             file.close()
 
