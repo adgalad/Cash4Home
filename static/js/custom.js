@@ -231,17 +231,8 @@ $(document).ready(function () {
 // /Switchery
 
 // iCheck
-iCheck = function () {
-  if ($('input.flat')[0]) {
-    $(document).ready(function () {
-      $('input.flat').iCheck({
-        checkboxClass: 'icheckbox_flat-green',
-        radioClass: 'iradio_flat-green'
-      })
-    })
-  }
-}
-$(document).ready(iCheck)
+
+// $(document).ready(iCheck)
 // /iCheck
 
 // Table
@@ -298,13 +289,13 @@ $('.bulk_action_ended input#check-all-ended').on('ifUnchecked', function () {
 
 function countChecked () {
   if (checkState === 'all') {
-    $(".bulk_action input:checkbox").iCheck('check')
+    $(".bulk_action input.item:checkbox").iCheck('check')
   }
   if (checkState === 'none') {
-    $(".bulk_action input:checkbox").iCheck('uncheck')
+    $(".bulk_action input.item:checkbox").iCheck('uncheck')
   }
 
-  var checkCount = $(".bulk_action input:checkbox:checked").length 
+  var checkCount = $(".bulk_action input.item:checkbox:checked").length 
 
   if (checkCount) {
     $('.column-title').hide()
@@ -318,13 +309,13 @@ function countChecked () {
 
 function countCheckedEnded () {
   if (checkState === 'all') {
-    $(".bulk_action_ended input:checkbox").iCheck('check')
+    $(".bulk_action_ended input.item:checkbox").iCheck('check')
   }
   if (checkState === 'none') {
-    $(".bulk_action_ended input:checkbox").iCheck('uncheck')
+    $(".bulk_action_ended input.item:checkbox").iCheck('uncheck')
   }
 
-  var checkCountEnded = $(".bulk_action_ended input:checkbox:checked").length 
+  var checkCountEnded = $(".bulk_action_ended input.item:checkbox:checked").length 
 
   console.log(checkCountEnded);
 
@@ -2547,7 +2538,7 @@ function init_DataTables () {
       })
     } 
     if ($('table[id="datatable-pending"]').length) {
-      console.log("HOLA");
+
       $('table[id="datatable-pending"]').DataTable({
         dom: 'Bfrtip',
         buttons: [{
@@ -2602,7 +2593,8 @@ function init_DataTables () {
     }
   }())
 
-  $('#datatable').dataTable()
+  $('#datatable').DataTable()
+
 
   $('#datatable-keytable').DataTable({
     keys: true
@@ -2625,21 +2617,37 @@ function init_DataTables () {
     fixedHeader: true
   })
 
-  var $datatable = $('#datatable-checkbox')
 
-  $datatable.dataTable({
-    'order': [
-            [1, 'asc']
-    ],
-    'columnDefs': [
-            { orderable: false, targets: [0] }
-    ]
-  })
-  $datatable.on('draw.dt', function () {
-    $('checkbox input').iCheck({
+  // Para que se activen los checkbox en el dashboard almover pagina
+  var datatableEnded = $('#datatable-ended')
+
+  datatableEnded.on('page.dt', function () {
+    $('input.no-flat').removeClass('no-flat').iCheck({
       checkboxClass: 'icheckbox_flat-green'
     })
   })
+
+  var datatablePending = $('#datatable-pending')
+
+  datatablePending.on('page.dt', function () {
+    $('input.no-flat').removeClass('no-flat').iCheck({
+      checkboxClass: 'icheckbox_flat-green'
+    })
+  })
+
+  // Para que se activen los checkbox en la recompra almover pagina
+  var datatableRepurchases = $('#datatable')
+
+  datatableRepurchases.on('page.dt', function () {
+    $('input.no-flat').removeClass('no-flat').iCheck({
+      checkboxClass: 'icheckbox_flat-green'
+    })
+  })
+
+  // Inicializar los checkbox
+  $('input.no-flat').removeClass('no-flat').iCheck({
+    checkboxClass: 'icheckbox_flat-green'
+  })  
 
   TableManageButtons.init()
 };

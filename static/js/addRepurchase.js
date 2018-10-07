@@ -461,7 +461,7 @@ $.fn.smartWizard = function(method) {
 
 function calcularMonto() {
     var montoTotal = 0;
-    $("input:checked").each(function(){
+    $("input.item:checked").each(function(){
         var nombre = this.id.split('-selected')[0];
         var valor = $("#" + nombre + "-amount").val()
         montoTotal = montoTotal + parseFloat(valor);

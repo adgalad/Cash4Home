@@ -77,7 +77,7 @@
                           <tr>
                             <!--<th>Seleccionar</th>-->
                             <th class="no-order">
-                              <input type="checkbox" id="check-all" class="flat">
+                              <input type="checkbox" id="check-all" class="flat no-flat">
                             </th>
                             <th class="colum-title">Código de operación</th>
                             <th class="colum-title">Cantidad moneda origen</th>
@@ -89,7 +89,9 @@
                         <tbody>
                           {% for form in formOp %}
                             <tr>
-                              <td>{{form.selected}}</td>
+                              <td>
+                                <input type="checkbox" name="{{ form.selected.html_name }}" class="no-flat flat item" id="{{ form.selected.auto_id }}" value="{{form.selected.value}}">
+                              </td>
                               <td>{{form.operation}}</td>
                               <td>{{form.amount}}</td>
                               <td>{{form.date}}</td>
@@ -149,12 +151,5 @@
   <script src="{% static 'vendors/pdfmake/build/pdfmake.min.js' %}"></script>
   <script src="{% static 'vendors/pdfmake/build/vfs_fonts.js' %}"></script>
   <script type="text/javascript" src="{% static 'js/addRepurchase.js' %}"></script>
-  <script type="text/javascript">
-    $(document).ready(function () {
-      window.setInterval(function(){
-        iCheck()
-      }, 500);
-    })
-    
-  </script>
+  
 {% endblock javascripts %}

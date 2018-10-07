@@ -226,7 +226,7 @@
                         <tr class="headings">
                           <th class="no-order"></th>
                           <th class="no-order">
-                            <input type="checkbox" id="check-all" class="flat">
+                            <input type="checkbox" id="check-all" class="no-flat flat">
                           </th>
                           <th class="column-title">Código</th>
                           <th class="column-title">Cliente</th>
@@ -257,7 +257,10 @@
                         {% for f, op in form|zip:actualO %}
                           <tr>
                             <td></td>
-                            <td class="a-center ">{{ f.selected }} <input type="text" name="{{f.operation.html_name}}" id="{{f.operation.auto_id}}" value="{{f.operation.value}}" style="display:none"></td>
+                            <td class="a-center ">
+                              <input type="checkbox" name="{{ f.selected.html_name }}" class="no-flat flat item" id="{{ f.selected.auto_id }}" value="{{f.selected.value}}">
+                              <input type="text" name="{{f.operation.html_name}}" id="{{f.operation.auto_id}}" value="{{f.operation.value}}" style="display:none">
+                            </td>
                             <td>{{ op.0.code }}</td>
                             <td>{{ op.0.id_client.get_full_name }}</td>
                             <td>{{ op.0.fiat_amount | currency }} {{ op.0.origin_currency.code }}</td>
@@ -314,7 +317,7 @@
                     <thead>
                       <tr>
                         {% if isAllie %}
-                          <th class="no-order"><input type="checkbox" id="check-all-ended" class="flat"></th>
+                          <th class="no-order"><input type="checkbox" id="check-all-ended" class="no-flat flat"></th>
                         {% endif %}
                         <th class="column-title-ended">Código</th>
                         <th class="column-title-ended">Cliente</th>
@@ -338,7 +341,10 @@
                       {% if isAllie %}
                         {% for f, op in formEnded|zip:endedO %}
                           <tr>
-                            <td class="a-center ">{{ f.selected }} <input type="text" name="{{f.operation.html_name}}" id="{{f.operation.auto_id}}" value="{{f.operation.value}}" style="display:none"></td>
+                            <td class="a-center ">
+                              <input type="checkbox" name="{{ f.selected.html_name }}" class="no-flat flat item" id="{{ f.selected.auto_id }}" value="{{f.selected.value}}">
+                              <input type="text" name="{{f.operation.html_name}}" id="{{f.operation.auto_id}}" value="{{f.operation.value}}" style="display:none">
+                            </td>
                             <td>{{ op.0.code }}</td>
                             <td>{{ op.0.id_client.get_full_name }}</td>
                             <td>{{ op.0.fiat_amount | currency }} {{ op.0.origin_currency.code }}</td>
@@ -513,11 +519,11 @@
     }
     $('#filterSelect').val("{{filter}}")
     changeFilter();
-    $(document).ready(function () {
-      window.setInterval(function(){
-        iCheck()
-      }, 500);
-    })
+    // $(document).ready(function () {
+    //   window.setInterval(function(){
+    //     iCheck()
+    //   }, 500);
+    // })
   </script>
 {% endblock javascripts %}
 
