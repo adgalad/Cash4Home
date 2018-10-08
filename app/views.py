@@ -89,10 +89,10 @@ def activateEmail(request, token):
   try:
     decrypted = decrypt(token)
   except:
-    raise PermissionDenied
-
+    msg = 'El link al que accedio es invalido. Si aun no ha verificado su cuenta, haga <a href="' + reverse('resendEmailVerification') + '"> click aquí</a> para reenviar un nuevo link.'
+    messages.error(request, msg, extra_tags="safe alert-warning")
+    return redirect(reverse('login'))  
   info = json.loads(decrypted)
-
   if not ('operation' in info and info['operation'] == 'activateUserByEmail'):
     raise PermissionDenied
 
