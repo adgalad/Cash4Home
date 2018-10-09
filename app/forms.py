@@ -444,17 +444,17 @@ class ChangeOperationStatusForm(forms.Form):
                                         group_by_field='exchanger')
   rate = forms.DecimalField(required=False, label="Tasa de cambio" , min_value=0)
 
-  def clean_crypto_used(self):
-    crypto = self.cleaned_data['crypto_used']
-    if self.cleaned_data['status'] == "Fondos ubicados" and crypto is None:
-      raise forms.ValidationError('Debe introducir una criptomoneda.')
-    return crypto
+  # def clean_crypto_used(self):
+  #   crypto = self.cleaned_data['crypto_used']
+  #   if self.cleaned_data['status'] == "Fondos ubicados" and crypto is None:
+  #     raise forms.ValidationError('Debe introducir una criptomoneda.')
+  #   return crypto
 
-  def clean_rate(self):
-    rate = self.cleaned_data['rate']
-    if self.cleaned_data['status'] == "Fondos ubicados" and rate is None:
-      raise forms.ValidationError('Debe introducir una criptomoneda.')
-    return rate
+  # def clean_rate(self):
+  #   rate = self.cleaned_data['rate']
+  #   if self.cleaned_data['status'] == "Fondos ubicados" and rate is None:
+  #     raise forms.ValidationError('Debe introducir una criptomoneda.')
+  #   return rate
 
 
   def __init__(self, *args, **kwargs):
