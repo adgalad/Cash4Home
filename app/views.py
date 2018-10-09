@@ -373,10 +373,10 @@ def dashboard(request):
                                      original_status=actual_op.status).save()
                 actual_op.status = new_status
 
-                #  totalAmount += actual_op.fiat_amount*actual_op.exchange_rate
 
                 destiny_banks = OperationGoesTo.objects.filter(operation_code=actual_op.code)
                 for b in destiny_banks.iterator():
+
                   bank = b.number_account.id_bank.name
                   if (bank in banksSummary.keys()):
                     banksSummary[bank] += b.amount*actual_op.exchange_rate
@@ -1789,9 +1789,13 @@ def canChangeStatus(operation, newStatus):
   if operation.status == 'Por verificar' and newStatus == 'Verificado' and operation.transactions.filter(operation_type='TO').count() > 0:
     operation.status = newStatus
     return True
-  if operation.status == 'Verificado' and newStatus == 'Fondos ubicados':
+  if operation.status == 'Verificado' and newStatus == 'Publicado':
     operation.status = newStatus
     return True
+  if operation.status == 'Publicado' and newStatus == 'Fondos ubicados':
+    operation.status = newStatus
+    return True
+
   if operation.status == 'En reclamo' and newStatus == 'Fondos transferidos':
     operation.status = newStatus
     operation.is_active = False
