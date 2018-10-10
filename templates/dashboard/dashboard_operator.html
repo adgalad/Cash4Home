@@ -486,7 +486,7 @@
     $('#id_start').daterangepicker(dateConfig, function (start, end, label) {console.log(start.toISOString(), end.toISOString(), label)})
     $('#id_end').daterangepicker(dateConfig, function (start, end, label) {console.log(start.toISOString(), end.toISOString(), label)})
     function modal (url) {
-      $('#modalPending').load(url, function () {
+      $('#modalEnded').load(url, function () {
         $(this).modal('show')
         // $('#closeModal').onclick(function(){ return false })
       })
