@@ -2563,6 +2563,7 @@ function init_DataTables () {
     if ($('table[id="datatable-ended"]').length) {
       $('table[id="datatable-ended"]').DataTable({
         dom: 'Bfrtip',
+        order: [],
         buttons: [{
           extend: 'copy',
           className: 'btn-sm'
