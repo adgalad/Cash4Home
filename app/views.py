@@ -202,32 +202,32 @@ def dashboard(request):
             Q(transactions__origin_account__id_bank__country__name=request.user.country.name) | 
             Q(transactions__target_account__id_bank__country__name=request.user.country.name)
           )
-      tmpActOperations = operations.filter(is_active=True).order_by('date')
-      tmpEndOperations = operations.filter(is_active=False).order_by('date')
+      tmpActOperations = operations.filter(is_active=True).order_by('-date')
+      tmpEndOperations = operations.filter(is_active=False).order_by('-date')
     # El usuario coordinador puede ver sus operaciones y la de sus coordinados
     elif request.user.has_perm('coordinate_operation'):
       ids = request.user.coordinatesUsers.all().values_list('id', flat=True) + [request.user.id]
       tmpActOperations = Operation.objects.filter(
                             Q(is_active=True) & 
                             (Q(id_allie_origin__id__in=ids) | Q(id_allie_target__id__in=ids))
-                         ).order_by('date')
+                         ).order_by('-date')
       tmpEndOperations = Operation.objects.exclude(status="Cancelada"
                           ).filter( 
                             Q(is_active=False) &
                             (Q(id_allie_origin__id__in=ids) | Q(id_allie_target__id__in=ids))
-                          ).order_by('date')
+                          ).order_by('-date')
     
     # De otro modo, solo puede ver las operaciones relacionadas a el
     else:
       tmpActOperations = Operation.objects.filter(
                             Q(is_active=True) &
                             (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
-                          ).order_by('date')
+                          ).order_by('-date')
       tmpEndOperations = Operation.objects.exclude(status="Cancelada"
                           ).filter(
                             Q(is_active=False) &
                             (Q(id_allie_origin=request.user) | Q(id_allie_target=request.user))
-                          ).order_by('date')
+                          ).order_by('-date')
 
     # Suponemos que no tiene filtro. En caso de que sea POST y contenga el form de un filtre, cambia a True
     hasFilter = False
