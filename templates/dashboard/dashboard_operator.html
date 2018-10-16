@@ -258,7 +258,7 @@
                           <tr>
                             <td></td>
                             <td class="a-center ">
-                              <input type="checkbox" name="{{ f.selected.html_name }}" class="no-flat flat item" id="{{ f.selected.auto_id }}" value="{{f.selected.value}}">
+                              <input type="checkbox" name="{{ f.selected.html_name }}" class="no-flat flat item" id="{{ f.selected.auto_id }}">
                               <input type="text" name="{{f.operation.html_name}}" id="{{f.operation.auto_id}}" value="{{f.operation.value}}" style="display:none">
                             </td>
                             <td>{{ op.0.code }}</td>
@@ -341,7 +341,7 @@
                         {% for f, op in formEnded|zip:endedO %}
                           <tr>
                             <td class="a-center ">
-                              <input type="checkbox" name="{{ f.selected.html_name }}" class="no-flat flat item" id="{{ f.selected.auto_id }}" value="{{f.selected.value}}">
+                              <input type="checkbox" name="{{ f.selected.html_name }}" class="no-flat flat item" id="{{ f.selected.auto_id }}">
                               <input type="text" name="{{f.operation.html_name}}" id="{{f.operation.auto_id}}" value="{{f.operation.value}}" style="display:none">
                             </td>
                             <td>{{ op.0.code }}</td>
