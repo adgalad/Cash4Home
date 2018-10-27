@@ -1,0 +1,41 @@
+{% extends "base_dashboard.html" %}
+{% load staticfiles %}
+{% load i18n %}
+
+{% block title %} Editar país {% endblock title %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="row">
+        <div class="col-xs-5 col-xs-offset-3">
+          <div class="text-center admin_content">
+            <h3>Editar país</h3>
+          </div>
+          <form method="post">
+            {% csrf_token %}
+            {% for message in messages %}
+              <section class="table-view {{message.tags}}">
+                <div class="container" style="display: table-cell; text-align: center; vertical-align: middle; padding-left: 15px;">
+                    {% if 'safe' in message.tags %}
+                      {{ message | safe }}
+                    {% else %}
+                      {{ message }}
+                    {% endif %}
+                </div>
+              </section>   
+            {% endfor %} 
+            {% for field in form %}
+              {{ field.label_tag }}
+              {{ field }} 
+              <br>
+            {% endfor %}
+            <div class="text-center">
+              <br>
+              <a class="btn btn-primary" href="{% url 'adminCountry' %}" onclick="return !goToPreviousPage()"><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
+              <button class="btn btn-primary submit" type="submit">Enviar</button>
+            </div>
+          </form>
+        </div>
+    </div>
+  </div>
+{% endblock %}

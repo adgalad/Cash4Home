@@ -1,0 +1,263 @@
+{% extends "base_dashboard.html"%}
+{% load staticfiles %}
+
+{% block title %} Crear operación {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <style type="text/css"> 
+    .stepContainer {
+      height: 100% !important;
+    }
+  </style>
+{% endblock stylesheets %}
+
+{% block content %}
+  
+
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+          <h3>Crear Operación</h3>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+
+      <div class='row'>
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+
+            <div class="x_content" >
+              <form class="form-horizontal form-label-left" id="form" name="form" method="post">
+                <!-- Smart Wizard -->
+                <div id="wizard" class="form_wizard wizard_horizontal">
+                  <ul class="wizard_steps">
+                    <li>
+                      <a href="#step-1">
+                        <span class="step_no">1</span>
+                        <span class="step_descr">
+                            Paso 1<br />
+                            <small>Cuenta origen</small>
+                        </span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#step-2">
+                        <span class="step_no">2</span>
+                        <span class="step_descr">
+                            Paso 2<br />
+                            <small>Cuentas destino</small>
+                        </span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#step-3">
+                        <span class="step_no">3</span>
+                        <span class="step_descr">
+                            Paso 3<br />
+                            <small>Confirmación</small>
+                        </span>
+                      </a>
+                    </li>
+                  </ul>
+                  
+                  {% csrf_token %}
+
+                  <div id="step-1" style="padding-bottom: 80px;">
+                    {% for message in messages %}
+                      <div class="alert {{ message.tags }}">
+                        {{ message }}
+                      </div>
+                    {% endfor %}
+                    <h4>¿Desde cuál de tus cuentas quieres enviar dinero?</h4>
+                    <br>
+
+                    <div class="col-md-12 col-sm-12 col-xs-12">
+                      <div class="col-md-4 col-sm-5 col-xs-12">
+                        {{form1.account}}<br>
+                      </div>
+                      <div class="col-md-4 col-sm-3 col-xs-12">
+                        <h5><a href="{% url 'accounts' %}"><b><i class="fa fa-plus"></i></b>&nbsp;&nbsp;Agregar una cuenta</a> </h5><br>
+                      </div>
+                    </div>
+                    <h4 >¿A cuál moneda quieres enviar tu dinero?</h4>
+                    <br>
+                    <div class="col-md-12 col-sm-12 col-xs-12">
+                      <div class="col-md-2 col-sm-2 col-xs-6">
+                        {{ form1.currency }}
+                      </div>
+                    </div>
+                    
+
+                  </div>
+                  <div style="display: none;" id="step-2">
+
+                    <h3 class="StepTitle">Elige a cuál cuenta quieres enviar el dinero</h3>
+                    <hr>
+                    <div class="col-md-6 col-sm-6 col-xs-12 form-group">
+                      {% for form in form2 %}
+                        {% if form.error %}
+                          <div class="alert alert-error">
+                            {{ form.error }}
+                          </div>
+                        {% endif %}
+                      {% endfor %}
+                      {% for form in form2 %}
+                        {% if form.error %}
+                        <div class="alert alert-error">
+                          {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+                      {% endfor %}
+
+                      <div class="col-md-8 col-sm-8 col-xs-6 form-group">
+                        <b>Enviar dinero a</b>
+                      </div>
+                      <div class="col-md-4 col-sm-4 col-xs-6 form-group">
+                        <b> Monto</b>
+                      </div>
+
+                      {% for form in form2 %}
+                      <br>
+                      <div class="col-md-8 col-sm-8 col-xs-6 form-group">
+                        {{ form.account }}
+                      </div>
+                      <div class="col-md-4 col-sm-4 col-xs-6 form-group">
+                        {{ form.amount }}
+                      </div>
+                      {% endfor %}
+                      
+<!--                       <button id="add" type="button" onclick="addAccountInput()" class="btn btn-round btn-primary">
+                        <i class="fa fa-plus"></i> Agregar
+                      </button>
+                      <button id="delete" type="button" onclick="deleteAccountInput()" disabled class="btn btn-round btn-primary">
+                        <i class="fa fa-times"></i> Quitar
+                      </button> -->
+                    </div>
+                    
+                    <style type="text/css">
+                      td { font-size: 13px; width: 140px; }
+                      tr { height: 50px;}
+                      td.td-from { font-size: 16 !important; }
+                    </style>
+
+                    <div class="col-md-5 col-sm-6 col-xs-12" align="center">
+                      <table style="width: 70%;">
+                        <tr class="bottom"> 
+                          <td><b>Monto a enviar:</b></td>
+                          <td id="amount"></td>
+                        </tr>
+                        {% if fee != '0.0' %}
+                        <tr class="bottom">
+                          <td><b>Comisión:</b></td>
+                          <td id="fee"></td>
+                        </tr>
+                        {% endif %}
+
+                        <tr class="bottom" style="display: none"  style="display: none">
+                          <td><b>Total neto:</b></td>
+                          <td id="net"></td>
+                        </tr>
+
+                        <tr class="bottom">
+                          <td><b>Tasa de cambio:</b></td>
+                          <td id="rate"></td>
+                        </tr>
+
+                        <tr class="bottom" >
+                          <td><b id="amountIn">Total en VES:</b></td>
+                          <td id="ves"></td>
+                        </tr>
+
+
+                      </table>
+                    </div>
+                  </div>
+                  <div style="display: none;" id="step-3">
+                    <div class="col-md-6 col-sm-12 col-xs-12">
+                      <div class="text-center">
+                        <h3>Cuenta Origen </h3>
+                        <hr>
+                      </div>
+                      <table style="width: 100%;">
+                        <tr>  
+                          <td id="td-from" align="center"> </td>
+                        </tr>
+                      </table>
+                      <div class="text-center">
+                        <h3>Cuentas destino</h3>
+                        <hr>
+                      </div>
+                      <table style="width: 100%;" id="toAccTable">
+
+
+
+                      </table>
+                    </div>
+                    <div class="col-md-5 col-sm-12 col-xs-12" align="center">
+                      <div class="text-center">
+                        <h3>Resumen</h3>
+                        <hr>
+                      </div>
+                      <table style="width: 70%;">
+                        <tr class="bottom"> 
+                          <td><b>Monto a enviar:</b></td>
+                          <td id="amount2"> </td>
+                        </tr>
+                        {% if fee != '0.0' %}
+                        <tr class="bottom">
+                          <td><b>Comisión:</b></td>
+                          <td id="fee2"></td>
+                        </tr>
+                        {% endif %}
+
+                        <tr class="bottom"  style="display: none">
+                          <td><b>Total neto:</b></td>
+                          <td id="net2"></td>
+                        </tr>
+
+                        <tr class="bottom">
+                          <td><b>Tasa de cambio:</b></td>
+                          <td id="rate2"></td>
+                        </tr>
+
+                        <tr class="bottom">
+                          <td><b id="amountIn2">Total en VES:</b></td>
+                          <td id="ves2"></td>
+                        </tr>
+
+
+                      </table>
+                    </div>
+                  </div>
+                  <!-- End SmartWizard Content -->
+                </div>
+                <div class="clearfix"></div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super}}
+  <script type="text/javascript">
+    const fee = parseFloat('{{ fee }}')
+    const toAccs = JSON.parse('{{ toAccs | safe }}')
+    const fromAccs = JSON.parse('{{ fromAccs | safe }}')
+    const rate = JSON.parse('{{ rate | safe }}')
+    // $('#id_currency').val('VES').hide()
+    $( document ).ready(function() {
+        changeCurrency()
+    });
+    
+
+  </script>
+  <script src="{% static 'js/createOperation.js' %}"></script>
+{% endblock javascripts %}
+

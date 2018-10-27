@@ -1,0 +1,155 @@
+{% extends "base_dashboard.html" %}
+{% load staticfiles %}
+{% load mathfilters %}
+
+{% block title %} Detalles del cierre de operaciones {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendors/datatables.net-buttons-bs/css/buttons.bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendors/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendors/datatables.net-scroller-bs/css/scroller.bootstrap.min.css' %}" rel="stylesheet">
+  
+{% endblock stylesheets %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="clearfix"></div>
+
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <div class="x_title">
+              <h2>Detalles del cierre de operaciones</h2>
+              <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+              <div class="row">
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Nombre del aliado</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ closure.ally.get_full_name }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>Correo electrónico</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ closure.ally.email }}
+                </div>
+              </div>
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Fecha</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ closure.date }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>Moneda</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ closure.currency.code }}
+                </div>
+              </div>
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Cantidad total enviada por el aliado</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ closure.final_amount | currency }} {{ closure.currency.code }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>Estado actual</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ closure.status }}
+                </div>
+              </div>
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Operaciones asociadas</b>
+                </div>
+                <div class="col-md-10 col-sm-10 col-xs-12">
+                    <table class="table table-striped table-bordered dt-responsive" id="datatable-pending" cellspacing="0" width="100%">
+                      <thead>
+                        <tr class="headings">
+                          <th class="column-title">Código</th>
+                          <th class="column-title">Cliente</th>
+                          <th class="column-title">Cant. recibida</th>
+                          <th class="column-title">Cant. enviada</th>
+                          <th class="column-title">Fecha Creación</th>
+                          <th class="column-title">Estado</th>
+                          <th class="column-title">Devuelto</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for op in operations %}
+                          <tr>
+                            <td>{{ op.code }}</td>
+                            <td>{{ op.id_client.get_full_name }}</td>
+                            <td>{{ op.fiat_amount | currency }} {{ op.origin_currency.code }}</td>
+                            <td>{{ op.fiat_amount|mul:op.exchange_rate | currency | safe}} {{op.target_currency.code}}</td>  
+                            <td><p>{{ op.date }}</p></td>
+                            <td>
+                              {% if op.status == "En reclamo" %}
+                                <div style="color:red">{{ op.status }}</div>
+                              {% else %}
+                                {{ op.status }}
+                              {% endif %}
+                            </td>
+                            <td>
+                                {% if op.ally_pay_back %}
+                                  <i class="fa fa-check green"></i>
+                                {% else %}
+                                    <i class="fa fa-times red"></i>
+                                {% endif %}
+                            </td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                </div>
+                
+              </div>
+              <hr>
+              <br><br>
+              <div style="float:right;">
+                <a class="btn btn-primary" href="{% url 'summaryByAlly' %}" onclick="return !goToPreviousPage()"><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+
+        
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <!-- Datatables -->
+  <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-buttons/js/dataTables.buttons.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-buttons-bs/js/buttons.bootstrap.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-buttons/js/buttons.flash.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-buttons/js/buttons.html5.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-buttons/js/buttons.print.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-keytable/js/dataTables.keyTable.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-scroller/js/dataTables.scroller.min.js' %}"></script>
+  <script src="{% static 'vendors/jszip/dist/jszip.min.js' %}"></script>
+  <script src="{% static 'vendors/pdfmake/build/pdfmake.min.js' %}"></script>
+  <script src="{% static 'vendors/pdfmake/build/vfs_fonts.js' %}"></script>
+{% endblock javascripts %}

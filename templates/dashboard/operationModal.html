@@ -1,0 +1,120 @@
+{% extends "base_dashboard.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load mathfilters %}
+{% block title %} Detalle de la operación {% endblock title %}
+
+{% block meta %}
+{% endblock meta %}
+{% block stylesheets %}
+  <!-- Animate.css -->
+{% endblock stylesheets %}
+
+{% block body_class %}login{% endblock body_class %}
+
+{% block body %}
+
+  <div class="modal-dialog modal-lg openModal" id="modal" style="max-width: 40%; min-width: 300px">
+
+    <div class="modal-content" style="padding: 4%; background-color: white !important;">
+      <div class="table-responsive-sm" style="z-index:19999 !important;">
+        <!-- <div class="container"> -->
+        
+        <h3>Detalles de la operación</h3><hr>
+        <style type="text/css">
+          td {
+            font-size: 13px;
+            width: 140px;
+          }
+          tr {
+            /*border-bottom: 1px grey solid;*/
+            height: 50px;
+          }
+
+          td.td-from {
+            font-size: 16 !important;
+          }
+        </style>
+        <table style="width: 100%;">
+          <tr> 
+            <td><b>Código:</b></td>
+            <td> {{ operation.code }}</td>
+          </tr>
+
+          <tr>
+            <td><b>Monto enviado:</b></td>
+            <td>{{ operation.origin_currency }} {{ operation.fiat_amount | currency }}</td>
+          </tr>
+          
+          <tr>
+            <td><b>Monto a recibir:</b></td>
+            <td>{{ operation.target_currency }} {{ operation.fiat_amount | mul:operation.exchange_rate | currency }}</td>
+          </tr>
+
+          <tr>
+            <td><b>Tasa {{ operation.origin_currency }}/{{ operation.target_currency }}:</b></td>
+            <td> {{ operation.exchange_rate | currency }} </td>
+          </tr>
+
+          <tr>
+            <td><b>Cuenta origen:</b></td>
+            <td> {{ operation.id_account }}</td>
+          </tr>
+
+          <tr>
+            <td><b>Fecha:</b></td>
+            <td> {{ operation.date }}</td>
+          </tr>
+
+          <tr>
+            <td><b>Estatus:</b></td>
+            {% if operation.status == "Faltan recaudos" %}
+              <td style="color: red;">
+                <i class="fa fa-warning"></i>
+                <a href='{% url "verifyOperation" operation.code %}' style="color: red; text-decoration: underline;"> 
+                  Faltan recaudos
+                </a>
+              </td>  
+            {% else %}
+              <td>{{ operation.status }}</td>  
+            {% endif %}
+          </tr>
+
+
+        </table>
+        <br>
+        <h2> Cuentas destino </h2>
+        <hr>
+        <table style="width: 100%;">
+          {% for o in ogt %}
+            <tr> 
+              <td> {{ o.number_account }}</td>
+              <td>
+                {{ operation.id_account.id_currency}} {{ o.amount | currency }}
+                <br>
+                ({{ o.number_account.id_currency}} {{ o.amount | mul:operation.exchange_rate | currency }})
+              </td>
+            </tr>
+
+          {% endfor %}
+
+        </table>
+
+
+        <br><br><hr>
+        <div align="center" style="padding-bottom: 4%">
+          <a id="closeModal" class="btn btn-primary" data-dismiss="modal" href="{% url 'pendingOperations' %}"> Cerrar </a>
+          {% if operation.status == "Fondos transferidos" %}
+            <a id="claimOperation" class="btn btn-danger" href="{% url 'claimOperation' operation.code %}">
+              No recibí el dinero
+            </a>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+{% endblock body %}
+{% block javascripts %}
+
+{% endblock javascripts %}

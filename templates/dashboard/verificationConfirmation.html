@@ -1,0 +1,37 @@
+{% extends "base_dashboard.html" %}
+{% load staticfiles %}
+
+{% block title %} Confirmación {% endblock title %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    
+    <div class="x_panel">
+      <br><br>
+      <div class='row'>
+        <div class="col-xs-6 col-sm-6 col-md-6 col-xs-offset-3" style="margin-bottom: 50px;">
+          <!-- <div class="text-center admin_content"> -->
+          <div class="text-center">
+            <h3>¡Gracias por verificar su operación!</h3>
+          </div>
+          <br>
+          <h5>
+            
+            <p style="text-align: left;">
+              Nuestro equipo se encargará de realizar la verificación de su imagen y le estaremos informando acerca del estado de su operación.
+            </p>
+            <br>
+            <p>
+              Un correo electrónico se le enviara cuando se haya completado la operación. Además, siempre podra ver el estado de sus operaciones en la sección de 
+              <a style="color:#6f9300"href="{% url 'pendingOperations' %}">Historial de Operaciones </a>
+            </p>
+            <br>
+            <div align="center">
+              <a href="{% url 'dashboard' %}"><button class="btn btn-primary">Regresar</button></a>
+            </div>
+          </h5>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

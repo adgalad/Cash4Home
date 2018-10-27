@@ -1,0 +1,110 @@
+{% extends 'landingpage/base.html' %}
+{% load staticfiles %}
+
+{% block content %}
+	
+
+	
+
+	<!-- Banner -->
+		<section id="banner">
+
+			<div class="inner">
+
+			</div>
+			
+		</section>
+	
+	<!-- Testimonials -->
+		<section class="wrapper">
+			<div class="inner">
+				<!-- <header class="special"> -->
+					<h2>
+						<b class="orange"> El apoyo que tú y tu familia necesitan </b>
+					</h2>
+					<p><b>Cash4Home</b> es una plataforma especializada en el envío rápido y seguro de remesas familiares a Venezuela.</p>
+
+					<p>Brindamos un servicio enfocado en la eficiencia, cuidado y efectividad. <b>Cash4Home</b> ofrece más que un servicio. Somos una experiencia confiable de valores familiares y sociales que nos conectan con aquellas personas que desean extender una mano a sus seres queridos.</p>
+
+					<p>Actualmente <b>Cash4Home</b> funciona en Argentina, Perú y Panamá con miras de ampliar nuestras operaciones hacía otros países con un alto número de migrantes venezolanos.</p>
+				<!-- </header> -->
+			</div>
+
+            <div style="text-align: center;">
+				<a class="button primary" href="{% url 'login' %}">
+					Ingresar
+				</a>
+				<a class="button" href="{% url 'signup' %}">
+					Crear cuenta
+				</a>
+			</div>
+		</section>
+
+
+	<!-- CTA -->
+		<section id="cta" class="cta01 wrapper">
+			
+		</section>
+
+	<!-- Testimonials -->
+		<section class="wrapper">
+			<div class="inner">
+				<header class="special">
+					<h2><b class="orange">¿Cómo funciona Cash4Home?</b></h2>
+				</header>
+				
+				<p>
+					El funcionamiento de <b>Cash4Home</b> es bastante simple, recibimos el dinero de la moneda local del país donde se encuentre el emisor y nosotros depositamos en bolívares a la(s) cuenta(s) en Venezuela del receptor que nos indique el cliente.
+				</p>
+
+				<header class="special">
+					<h2><b class="orange">¿Por qué usar Cash4Home?</b></h2>
+				</header>
+				
+				<div class="highlights">
+					<section class="shadow">
+						<div class="content">
+							<header>
+								<a  class="icon icon-outline">
+									<i class="far fa-handshake"></i>
+									<span class="label">Icon</span>
+								</a>
+								<h3 class="orange bold">Confianza</h3>
+								<p>
+									Somos personas que trabajamos para personas. Nuestros valores humanos y familiares nos motivan cada día para ser el aliado confiable que brinda el apoyo que tú y tus seres queridos necesitan.
+								</p>
+							</header>
+						</div>
+					</section>
+					<section class="shadow">
+						<div class="content">
+							<header>
+								<a  class="icon icon-outline">
+									<i class="fas fa-hand-holding-usd"></i>
+									<span class="label">Icon</span>
+								</a>
+								<h3 class="orange bold">Tasas Favorables</h3>
+								<p>
+									Manejamos una buena tasa en relación con nuestra competencia, generando así, bienestar y satisfacción en nuestros clientes.
+								</p>
+							</header>
+						</div>
+					</section>
+					<section class="shadow">
+						<div class="content">
+							<header>
+								<a  class="icon icon-outline">
+									<i class="fas fa-shipping-fast"></i>
+									<span class="label">Icon</span>
+								</a>
+								<h3 class="orange bold">Rapidez</h3>
+								<p>Entendemos la situación y la urgencia que tienen muchos de nuestros clientes. Es por eso que nuestro servicio busca cumplir con el menor tiempo posible en cada transacción.</p>
+							</header>
+						</div>
+					</section>
+				</div>
+			</div>
+		</section>
+	
+
+{% endblock content %}

@@ -1,11 +1,14 @@
 {% extends "base_dashboard.html" %}
+{% load staticfiles %}
 
 {% block title %} Registrarse {% endblock title %}
 
 {% block stylesheets %}
   {{ block.super }}
   <!-- Animate.css -->
-  <link href="/static/vendors/animate.css/animate.min.css" rel="stylesheet">
+  <link href="{% static 'vendors/animate.css/animate.min.css' %}" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/phoneCode/intlTelInput.css' %}">
+  <!-- <link rel="stylesheet" href="{% static 'css/phoneCode/demo.css' %}"> -->
 {% endblock stylesheets %}
 
 {% block body_class %}login{% endblock body_class %}
@@ -14,7 +17,6 @@
   <div>
     <a class="hiddenanchor" id="signup"></a>
     <a class="hiddenanchor" id="signin"></a>
-
     <div class="login_wrapper">
       <div class="form registration_form">
         <section class="login_content">
@@ -22,25 +24,34 @@
             {% csrf_token %}
             <h1>Crear cuenta</h1>
             {% for field in form %}
+                <!-- {{ field.label }} -->
+                {% if field.name != 'mobile_phone' %}
+                  {% for error in field.errors %}
+                    <p style="color: red">{{ error }}</p>
+                  {% endfor %}
+                {% endif %}
                 {{ field }}
-                {% for error in field.errors %}
-                  <p style="color: red">{{ error }}</p>
-                {% endfor %}
+                {% if field.name == 'country' %} <br> {% endif %}
             {% endfor %}
-            <button class="btn btn-primary submit" type="submit">Registrarse</button>
+            {% for error in form.mobile_phone.errors %}
+              <p style="color: red">{{ error }}</p>
+            {% endfor %}
+            <input id="phone" name="phone" class="form-control" type="tel" placeholder="Número de teléfono ( Ej 2125834456 )">
+            <br>
+            <button id="submit" class="btn btn-primary submit" type="submit">Registrarse</button>
           </form>
           <div class="clearfix"></div>
 
           <div class="separator">
             <p class="change_link">¿Ya tienes una cuenta?
-              <a href="/login" class="to_register">Iniciar Sesión</a>
+              <a href="{% url 'login' %}" class="to_register">Iniciar Sesión</a>
             </p>
 
             <div class="clearfix"></div>
             <br />
 
-            <div style="position: relative;left: 34%;"">
-             <a href="/"> <img src="/static/images/logo.png" class="img-responsive" width="30%"> </a>
+            <div style="position: relative;left: 34%;">
+             <a href="{% url 'home' %}"> <img src="{% static 'images/logo.png' %}" class="img-responsive" width="30%"> </a>
             </div>
           </div>
           
@@ -48,5 +59,49 @@
       </div>
     </div>
   </div>
+
+
+{% block javascripts %}
+  {{ block.super }}
+  <!-- Chart.js -->
+  <script src="{% static 'js/phoneCode/intlTelInput.min.js' %}"></script>
+  <script>
+    $("#phone").intlTelInput({
+      // allowDropdown: false,
+      // autoHideDialCode: false,
+      // autoPlaceholder: "off",
+      // dropdownContainer: "body",
+      // excludeCountries: ["us"],
+      // formatOnDisplay: false,
+      // geoIpLookup: function(callback) {
+      //   $.get("http://ipinfo.io", function() {}, "jsonp").always(function(resp) {
+      //     var countryCode = (resp && resp.country) ? resp.country : "";
+      //     callback(countryCode);
+      //   });
+      // },
+      // hiddenInput: "full_number",
+      // initialCountry: "auto",
+      // nationalMode: false,
+      // onlyCountries: ['us', 'gb', 'ch', 'ca', 'do'],
+      // placeholderNumberType: "MOBILE",
+      // preferredCountries: ['cn', 'jp'],
+      // separateDialCode: true,
+      utilsScript: "build/js/utils.js"
+    });
+    $("#id_mobile_phone").attr('type', 'hidden')
+    if ($("#id_mobile_phone").val() != ""){
+      $("#phone").val($("#id_mobile_phone").val())
+    } 
+    $('#submit').click(function(){
+      var code = $("#phone").intlTelInput("getSelectedCountryData")['dialCode']
+      phone = $("#phone").val().replace(' ','')
+      if (phone[0] != '+'){
+        phone = '+' + code + phone
+      }
+      $("#id_mobile_phone").val(phone)
+    })
+  </script>
+
+{% endblock javascripts %}
 {% endblock body %}
 

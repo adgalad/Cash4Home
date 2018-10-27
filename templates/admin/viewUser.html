@@ -1,0 +1,259 @@
+{% extends "base_dashboard.html" %}
+{% load staticfiles %}
+
+{% block title %} Detalles del usuario {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendors/datatables.net-buttons-bs/css/buttons.bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendors/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendors/datatables.net-scroller-bs/css/scroller.bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'css/imageModal.css' %}" rel="stylesheet">
+  
+{% endblock stylesheets %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="clearfix"></div>
+
+      <div class="row">
+        {% for message in messages %}
+          <section class="table-view {{message.tags}}">
+            <div class="container" style="display: table-cell; text-align: center; vertical-align: middle; padding-left: 15px;">
+                {% if 'safe' in message.tags %}
+                  {{ message | safe }}
+                {% else %}
+                  {{ message }}
+                {% endif %}
+            </div>
+          </section>   
+          <br>
+        {% endfor %}
+
+
+        <!-- The Modal -->
+        <div id="myModal" class="modal">
+
+          <!-- The Close Button -->
+          <span class="close">&times;</span>
+
+          <!-- Modal Content (The Image) -->
+          <img class="modal-content" id="img01">
+
+          <!-- Modal Caption (Image Text) -->
+          <div id="caption"></div>
+        </div>
+
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <div class="x_title">
+              <h2>Detalles del usuario</h2>
+              <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+              <div class="row">
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Nombre</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ user.first_name }} {{ user.last_name }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>DNI</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ user.id_number }}
+                </div>
+              </div>
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>País</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ user.country }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>Dirección</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ user.address }}
+                </div>
+              </div>
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Teléfono</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ user.mobile_phone }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>Tipo de usuario</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {% if user|has_group:'Cliente' %}
+                    Cliente
+                  {% elif user|has_group:'Aliado-1' %}
+                    Aliado-1
+                  {% elif user|has_group:'Aliado-2' %}
+                    Aliado-2
+                  {% elif user|has_group:'Aliado-3' %}
+                    Aliado-3
+                  {% elif user|has_group:'Operador' %}
+                    Operador
+                  {% else %}
+                    Administrador
+                  {% endif %}
+                </div>
+              </div>
+              {% if user|has_group:'Cliente' %}
+                <div class="row">
+                  <hr>
+                  <div class="col-md-2 col-sm-2 col-xs-12">
+                    <b>Imagen Selfie</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12 profile-img">
+        
+                      <img class="image" id="selfie_image" src="{{user.selfie_image_url}}" alt="Imagen selfie" style="width:100%;max-width:200px">
+                      
+                  </div>
+                  <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                    <b>Imagen Servicio</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12 profile-img">
+                    <!--<img src="{{ user.service_image }}" class="img-responsive">-->
+                      <img class="image" id="service_image" src="{{user.service_image_url}}" alt="Imagen de servicio" style="width:100%;max-width:200px">
+                  </div>
+                </div>
+                <div class="row">
+                  <hr>
+                  <div class="col-md-2 col-sm-2 col-xs-12">
+                    <b>DNI Frontal</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12 profile-img">
+                   
+                      <img class="image" id="id_front" src="{{user.id_front_url}}" alt="DNI Frontal" style="width:100%;max-width:200px">
+                  </div>
+                  <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                    <b>DNI Trasera</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12 profile-img">
+                    <img class="image" id="id_back" src="{{user.id_back_url}}" alt="DNI Trasera" style="width:100%;max-width:200px">
+                  </div>
+                </div>
+                <div class="row">
+                  <hr>
+                  <div class="col-md-2 col-sm-2 col-xs-12">
+                    <b>Estado</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12">
+                    {% if user.verified %}
+                      Verificado
+                    {% else %}
+                      Por verificar
+                    {% endif %}
+                  </div>
+                  <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                    <b>¿Puede comprar dólares?</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12 ">
+                    {% if user.canBuyDollar %}
+                      Si
+                    {% else %}
+                      No
+                    {% endif %}
+                  </div>
+                </div>
+              {% elif user|has_group:'Aliado-1' or user|has_group:'Aliado-2' or user|has_group:'Aliado-3' %}
+                <div class="row">
+                  <hr>
+                  <div class="col-md-2 col-sm-2 col-xs-12">
+                    <b>Referido por</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12">
+                     {% if user.referred_by %}
+                        {{ user.referred_by.first_name }} {{ user.referred_by.last_name }}
+                      {% else %}
+                        N/A
+                      {% endif %}
+                  </div>
+                  <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                    <b>¿Puede comprar dólares?</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12 ">
+                    {% if user.canBuyDollar %}
+                      Si
+                    {% else %}
+                      No
+                    {% endif %}
+                  </div>
+                </div>
+              {% endif %}
+              <hr>
+              <br><br>
+              <div style="float:right;">
+                <a class="btn btn-primary" href="{% url 'adminUser' %}" onclick="return !goToPreviousPage()"><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
+                <a class="btn btn-primary" href="{% url 'editUser' user.id %}" ><i class="fa fa-edit"></i>&nbsp Editar</a>
+                {% if user|has_group:'Cliente' %}
+                  <a class="btn btn-primary" {% if user.verified %} onclick="return false" disabled {% endif %} href="{% url 'verifyUser' user.id %}" >
+                    <i class="fa fa-check"></i>&nbsp Verificar cuenta
+                  </a> 
+                {% endif %}
+              </div>
+              
+            </div>
+          </div>
+        </div>
+
+        
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <!-- Datatables -->
+  <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-buttons/js/dataTables.buttons.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-buttons-bs/js/buttons.bootstrap.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-buttons/js/buttons.flash.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-buttons/js/buttons.html5.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-buttons/js/buttons.print.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-keytable/js/dataTables.keyTable.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-scroller/js/dataTables.scroller.min.js' %}"></script>
+  <script src="{% static 'vendors/jszip/dist/jszip.min.js' %}"></script>
+  <script src="{% static 'vendors/pdfmake/build/pdfmake.min.js' %}"></script>
+  <script src="{% static 'vendors/pdfmake/build/vfs_fonts.js' %}"></script>
+  <script type="text/javascript">
+    var modal = document.getElementById('myModal');
+    var img = document.getElementById('selfie_image');
+    var modalImg = document.getElementById("img01");
+    var captionText = document.getElementById("caption");
+    openModal = function(){
+        modal.style.display = "block";
+        modalImg.src = this.src;
+        captionText.innerHTML = this.alt;
+    }
+    $('#service_image').click(openModal)
+    $('#id_front').click(openModal)
+    $('#selfie_image').click(openModal)
+    $('#id_back').click(openModal)
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() { 
+      modal.style.display = "none";
+    }
+  </script>
+{% endblock javascripts %}

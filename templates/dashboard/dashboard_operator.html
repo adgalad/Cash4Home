@@ -1,0 +1,532 @@
+{% extends "base_dashboard.html" %}
+{% load staticfiles %}
+{% load mathfilters %}
+
+{% block title %} Dashboard {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendors/datatables.net-buttons-bs/css/buttons.bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendors/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendors/datatables.net-scroller-bs/css/scroller.bootstrap.min.css' %}" rel="stylesheet">
+  <style type="text/css">
+    /* The container <div> - needed to position the dropdown content */
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    /* Dropdown Content (Hidden by Default) */
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f1f1f1;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+    }
+
+    a.dot {
+      color: grey;
+      border-bottom: 1px dotted black;
+    }
+
+    /* Change color of dropdown links on hover */
+    .dropdown-content a:hover {background-color: #ddd}
+
+    /* Show the dropdown menu on hover */
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    /* Change the background color of the dropdown button when the dropdown content is shown */
+    .dropdown:hover .dropbtn {
+        background-color: #gray;
+    }
+
+    tr td:last-child{
+        width:1%;
+        white-space:nowrap;
+    }
+
+    table.precio {
+      table-layout: auto;
+    }
+  </style>
+{% endblock stylesheets %}
+
+{% block content %}
+
+  <div class="right_col" role="main">
+    <div class="row">
+      <div class="col-md-12 col-sm-12 col-xs-12">
+        {% for message in messages %}
+            <section class="table-view {{message.tags}}">
+              <div class="container" style="display: table-cell; text-align: center; vertical-align: middle; padding-left: 15px;">
+                  {% if 'safe' in message.tags %}
+                    {{ message | safe }}
+                  {% else %}
+                    {{ message }}
+                  {% endif %}
+              </div>
+            </section>   
+          {% endfor %}
+        <br>
+        <div class="">
+          <div class="clearfix"></div>
+          {% if perms.dashboard.btc_price %}
+            <div class="x_panel">
+              <div class="x_title">
+                <h2>Precio de exchangers</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                  <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                  </li>
+                </ul>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content">
+                <div class="row tile_count">
+
+                  {% for key, value in prices.items %}
+                    <div class="col-md-3 col-sm-4 col-xs-6 dropdown">
+                      <div class="dropbtn" align="center">
+                        <span class="count_top">
+                          <h2><i class="fa fa-money"></i> <b>BTC/{{ key }}</b></h2></span>
+                          <h2>{{value | lookup:'symbol'}} {{ value | lookup:'avg' | currency }}</h2>
+                        <div class="dropdown-content">
+                          <div style="margin: 5%; padding-right: 25px">
+                            <table class="table precio" id="t-usd">
+                              <thead>
+                                <tr> 
+                                  <th> Exchanger </th> 
+                                  <th> Precio</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for exchanger, price in value.prices.items %}
+                                <tr>
+                                  <td> {{ exchanger }} </td>
+                                  <td> {{value | lookup:'symbol'}} {{ price | currency }} </td>
+                                </tr>
+                                {% endfor %}
+                              </tbody>
+                            </table>
+                            {% if key != "VES" %}
+                            <table class="table precio" id="t-usd">
+                              <thead>
+                                <tr> 
+                                  <th> Tasa Calculada</th> 
+                                  <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for exchanger, price in value.prices.items %}
+                                      <tr>
+                                        <td>
+                                          {{ exchanger }}
+                                        </td>
+                                        <td>
+                                          {{prices  | lookup:'VES' | lookup:'prices' | lookup:'Localbitcoins' | div:price | currency}}
+                                        </td>
+                                      </tr>        
+                                {% endfor %}
+                                
+                              </tbody>
+                            </table>
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}      
+                </div>
+              </div>
+            </div>
+          {% endif %}
+
+          {% if perms.dashboard.operations_operator %}
+            <div class="row tile_count">
+              <div class="col-md-3 col-sm-4 col-xs-6 tile_stats_count">
+                <span class="count_top" style="color:orange;"><i class="fa fa-clock-o"></i> Operaciones pendientes</span>
+                <div class="count">{{totalOpen}}</div>
+              </div>
+              <div class="col-md-3 col-sm-4 col-xs-6 tile_stats_count">
+                <span class="count_top red"><i class="fa fa-warning"></i> Operaciones en reclamo</span>
+                <div class="count">{{totalClaim}}</div>
+              </div>
+              <div class="col-md-3 col-sm-4 col-xs-6 tile_stats_count">
+                <span class="count_top green"><i class="fa fa-check"></i> Operaciones finalizadas</span>
+                <div class="count">{{totalEnded}}</div>
+              </div>
+              
+              <div class="col-md-3 col-sm-4 col-xs-6 tile_stats_count">
+                <span class="count_top green"><i class="fa fa-bank"></i> Transacciones bancarias</span>
+                <div class="count">{{nTransactions}}</div>
+              </div>
+            </div> 
+            <div class="x_panel">
+              
+              <div class="row">             
+                <div class="col-md-5 col-sm-8 col-xs-8"> 
+                  <form  id="filterForm" method="post">
+                    {% csrf_token %}
+                    <div class="col-md-5 col-sm-4 col-xs-4"> 
+                      <select id="filterSelect" class="form-control" onchange="changeFilter()">
+                        <option value="month">{{ monthForm.dateMY.label }}</option>
+                        <option value="date">{{ dateForm.date.label }}</option>
+                        <option value="range">{{ rangeForm.start.label }}</option>
+                      </select>
+                    </div>
+                    <div class="col-md-7 col-sm-8 col-xs-8">
+                      <input type="text" name="filter" id="filter" style="display:none">
+                      <div id="monthFilter"> {{ monthForm.dateMY }} </div>
+                      <div id="dateFilter" style="display: none"> {{ dateForm.date }} </div>
+                      <div id="rangeFilter" style="display: none"> 
+                        {{ rangeForm.start }}
+                        {{ rangeForm.end }}
+                      </div>
+                    </div>
+                  </form>
+                </div>
+                <div class="col-md-6 col-sm-4 col-xs-4"> 
+                  <button class="btn btn-primary" onclick='document.getElementById("filterForm").submit();'>
+                    <i class="fa fa-search"></i>&nbsp; Filtrar
+                  </button>
+                  {% if hasFilter %}
+                  <button class="btn btn-danger" type="submit" onclick='document.getElementById("removeFilter").submit();'>
+                      <i class="fa fa-times"></i>&nbsp; Quitar Filtro
+                  </button>  
+                  <form method="post" id="removeFilter">
+                      {% csrf_token %}
+                      <input type="text" name="filter" id="filter" style="display:none">
+
+                  </form>
+                  {% endif %}
+                </div>
+              </div>
+              <br>
+
+
+              <div class="x_title">
+                <h2>Lista de operaciones pendientes</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                  <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                  </li>
+                </ul>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content">
+                
+                  <form class="form-horizontal form-label-left" id="form" name="form" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <table class="table table-striped table-bordered bulk_action dt-responsive" id="datatable-pending" cellspacing="0" width="100%">
+                      <thead>
+                        <tr class="headings">
+                          <th class="no-order"></th>
+                          <th class="no-order">
+                            <input type="checkbox" id="check-all" class="no-flat flat">
+                          </th>
+                          <th class="column-title">Código</th>
+                          <th class="column-title">Cliente</th>
+                          <th class="column-title">Cant. recibida</th>
+                          <th class="column-title">Cant. enviada</th>
+                          <th class="column-title">Fecha Creación</th>
+                          <th class="column-title">Aliados</th>
+                          <th class="column-title">Estado</th>
+                          <th class="column-title no-order">Devuelto</th>
+                          <th class="column-title no-order"></th>
+                          <th class="none">Bancos en el país destino:</th>
+                          {% if isAllie %}
+                            <th class="bulk-actions" colspan="11">
+                              <a class="antoo" style="font-weight:500;">( <span class="action-cnt"> </span> )
+                                <button class="btn btn-primary submit" type="button" id="buttonClosure" onclick='return modal("{% url "closureTransactionModal" %}")'>Realizar envío</button>
+                              </a>
+                            </th>
+                          {% else %}
+                            <th class="bulk-actions" colspan="10">
+                              <a class="antoo" style="font-weight:500;">( <span class="action-cnt"> </span> ) Cambiar estado a {{ formChoice.action }}
+                                <button class="btn btn-primary submit" type="submit" id="button1">Aplicar</button>
+                                <button class="btn btn-primary submit"  type="button" id="button2" style="display: none;" data-toggle="modal" data-target="#stateModal">Aplicar</button></a>
+                            </th>
+                          {% endif %}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for f, op in form|zip:actualO %}
+                          <tr>
+                            <td></td>
+                            <td class="a-center ">
+                              <input type="checkbox" name="{{ f.selected.html_name }}" class="no-flat flat item" id="{{ f.selected.auto_id }}">
+                              <input type="text" name="{{f.operation.html_name}}" id="{{f.operation.auto_id}}" value="{{f.operation.value}}" style="display:none">
+                            </td>
+                            <td>{{ op.0.code }}</td>
+                            <td>{{ op.0.id_client.get_full_name }}</td>
+                            <td>{{ op.0.fiat_amount | currency }} {{ op.0.origin_currency.code }}</td>
+                            <td>{{ op.0.fiat_amount|mul:op.0.exchange_rate | currency | safe}} {{op.0.target_currency.code}}</td>  
+                            <td><p>{{ op.0.date }}</p></td>
+                            <td>{{ op.0.id_allie_origin.get_full_name }},{{ op.0.id_allie_target.get_full_name }} </td>
+                            <td>
+                              {% if op.0.status == "En reclamo" %}
+                                <div style="color:red">{{ op.0.status }}</div>
+                              {% else %}
+                                {{ op.0.status }}
+                              {% endif %}
+                            </td>
+                            <td>
+                                {% if op.0.ally_pay_back %}
+                                  <i class="fa fa-check green"></i>
+                                {% else %}
+                                    <i class="fa fa-times red"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                              <a href="{% url 'operationDetailDashboard' op.0.code %}">
+                                <i class="fa fa-search"></i>
+                              </a>
+                              <a href="{% url 'operationEditDashboard' op.0.code %}">
+                                <i class="fa fa-edit"></i>
+                              </a>
+                            </td>
+                            <td>
+                              {% for b in op.1 %}
+                                {{ b }}, 
+                              {% endfor %}
+                            </td>
+                          
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </form>
+                
+              </div>
+
+              <div class="x_title">
+                <h2>Lista de operaciones finalizadas</h2>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content">
+                <form class="form-horizontal form-label-left" id="form" name="form" method="post" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <div id="modalEnded" class="modal fade" role="dialog"></div>
+                  <input type="text" name="ended" id="ended" style="display:none">
+                  <table id="datatable-ended" class="table table-striped table-bordered bulk_action_ended" cellspacing="0" width="100%">
+                    <thead>
+                      <tr>
+                        {% if isAllie %}
+                          <th class="no-order"><input type="checkbox" id="check-all-ended" class="no-flat flat"></th>
+                        {% endif %}
+                        <th class="column-title-ended">Código</th>
+                        <th class="column-title-ended">Cliente</th>
+                        <th class="column-title-ended">Cant. recibida</th>
+                        <th class="column-title-ended">Cant. enviada</th>
+                        <th class="column-title-ended">Fecha Creación</th>
+                        <th class="column-title-ended">Aliados</th>
+                        <th class="column-title-ended">Estado</th>
+                        <th class="column-title-ended no-order">Devuelto</th>
+                        <th class="column-title-ended no-order"></th>
+                        {% if isAllie %}
+                          <th class="bulk-actions-ended" colspan="12" style="display: none;">
+                            <a class="antoo" style="font-weight:500;">( <span class="action-cnt-ended"> </span> )
+                              <button class="btn btn-primary submit" type="button" id="buttonClosure" onclick='return modalEnded("{% url "closureTransactionModal" %}")'>Realizar envío</button>
+                            </a>
+                          </th>
+                        {% endif %}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% if isAllie %}
+                        {% for f, op in formEnded|zip:endedO %}
+                          <tr>
+                            <td class="a-center ">
+                              <input type="checkbox" name="{{ f.selected.html_name }}" class="no-flat flat item" id="{{ f.selected.auto_id }}">
+                              <input type="text" name="{{f.operation.html_name}}" id="{{f.operation.auto_id}}" value="{{f.operation.value}}" style="display:none">
+                            </td>
+                            <td>{{ op.0.code }}</td>
+                            <td>{{ op.0.id_client.get_full_name }}</td>
+                            <td>{{ op.0.fiat_amount | currency }} {{ op.0.origin_currency.code }}</td>
+                            <td>{{ op.0.fiat_amount|mul:op.0.exchange_rate | currency | safe}} {{op.0.target_currency.code}}</td>  
+                            <td>{{ op.0.date }}</td>
+                            <td>{{ op.0.id_allie_origin.get_full_name }},{{ op.0.id_allie_target.get_full_name }} </td>
+                            <td>{{ op.0.status }}</td>
+                            <td>
+                              {% if op.0.ally_pay_back %}
+                                <i class="fa fa-check green"></i>
+                              {% else %}
+                                  <i class="fa fa-times red"></i>
+                              {% endif %}
+                            </td>
+                            <td><a href="{% url 'operationDetailDashboard' op.0.code %}"><i class="fa fa-search"></i></a></td>
+                          </tr>
+                        {% endfor %}
+                      {% else %}
+                        {% for op in endedO %}
+                          <tr>
+                            <td>{{ op.0.code }}</td>
+                            <td>{{ op.0.id_client.get_full_name }}</td>
+                            <td>{{ op.0.fiat_amount | currency }} {{ op.0.origin_currency.code }}</td>
+                            <td>{{ op.0.fiat_amount|mul:op.0.exchange_rate | currency | safe}} {{op.0.target_currency.code}}</td>  
+                            <td>{{ op.0.date }}</td>
+                            <td>{{ op.0.id_allie_origin.get_full_name }},{{ op.0.id_allie_target.get_full_name }} </td>
+                            <td>{{ op.0.status }}</td>
+                            <td>
+                              {% if op.0.ally_pay_back %}
+                                <i class="fa fa-check green"></i>
+                              {% else %}
+                                  <i class="fa fa-times red"></i>
+                              {% endif %}
+                            </td>
+                            <td><a href="{% url 'operationDetailDashboard' op.0.code %}"><i class="fa fa-search"></i></a></td>
+                          </tr>
+                        {% endfor %}
+                      {% endif %}
+                    </tbody>
+                  </table>
+                </form>
+                <hr>
+              </div>
+            </div>    
+            
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <!-- Chart.js -->
+  <script src="{% static 'vendors/Chart.js/dist/Chart.min.js' %}"></script>
+  
+  <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-buttons/js/dataTables.buttons.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-buttons-bs/js/buttons.bootstrap.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-buttons/js/buttons.flash.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-buttons/js/buttons.html5.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-buttons/js/buttons.print.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-keytable/js/dataTables.keyTable.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-scroller/js/dataTables.scroller.min.js' %}"></script>
+  <script src="{% static 'vendors/jszip/dist/jszip.min.js' %}"></script>
+  <script src="{% static 'vendors/pdfmake/build/pdfmake.min.js' %}"></script>
+  <script src="{% static 'vendors/pdfmake/build/vfs_fonts.js' %}"></script>
+  <script type="text/javascript">
+    $( document ).ready(function() {
+        $("input[name=table_records]").addClass("flat");
+        var els = document.getElementsByClassName("no-order");
+        Array.prototype.forEach.call(els, function(el) {
+            el.classList.remove("sorting");
+            el.classList.remove("sorting_desc");
+            el.classList.remove("sorting_asc");
+        });
+    });
+  </script>
+  <script type="text/javascript">
+    $("#id_action").change(function(){
+      if ($("#id_action").val()=='Fondos ubicados'){
+        $("#button1").hide();
+        $("#button2").show();
+        document.getElementById("id_crypto_used").required = true;
+        document.getElementById("id_rate").required = true;
+      } else {
+        $("#button2").hide();
+        $("#button1").show();
+        document.getElementById("id_crypto_used").required = false;
+        document.getElementById("id_rate").required = false;
+      }
+    });
+  </script>
+  <script type="text/javascript">
+    dateConfig = {
+      singleDatePicker: true,
+      singleClasses: 'picker_2',
+      "locale": {
+          "format": "DD/MM/YYYY",
+          "separator": " - ",
+          "applyLabel": "Aplicar",
+          "cancelLabel": "Cancelar",
+          "fromLabel": "Desde",
+          "toLabel": "Hasta",
+          "customRangeLabel": "Custom",
+          "daysOfWeek": [
+              "Do",
+              "Lu",
+              "Mar",
+              "Miér",
+              "Jue",
+              "Vi",
+              "Sa"
+          ],
+          "monthNames": [
+              "Enero",
+              "Febrero",
+              "Marzo",
+              "Abril",
+              "Mayo",
+              "Junio",
+              "Julio",
+              "Agosto",
+              "Septiembre",
+              "Octubre",
+              "Noviembre",
+              "Diciembre"
+          ],
+          "firstDay": 1
+        }
+    }
+
+    $('#id_start').daterangepicker(dateConfig, function (start, end, label) {console.log(start.toISOString(), end.toISOString(), label)})
+    $('#id_end').daterangepicker(dateConfig, function (start, end, label) {console.log(start.toISOString(), end.toISOString(), label)})
+    function modal (url) {
+      $('#modalEnded').load(url, function () {
+        $(this).modal('show')
+        // $('#closeModal').onclick(function(){ return false })
+      })
+      return false
+    }
+    function modalEnded (url) {
+      $('#modalEnded').load(url, function () {
+        $(this).modal('show')
+        // $('#closeModal').onclick(function(){ return false })
+      })
+      return false
+    }
+
+    function changeFilter(){
+      const value = $('#filterSelect').val()
+      $('#filter').val(value)
+      if (value == "month"){
+        $('#monthFilter').show()
+        $('#dateFilter').hide()
+        $('#rangeFilter').hide()
+      } else if (value == "date"){
+        $('#monthFilter').hide()
+        $('#dateFilter').show()
+        $('#rangeFilter').hide()
+      } else if (value == "range"){
+        $('#monthFilter').hide()
+        $('#dateFilter').hide()
+        $('#rangeFilter').show()
+      }
+    }
+    $('#filterSelect').val("{{filter}}")
+    changeFilter();
+    // $(document).ready(function () {
+    //   window.setInterval(function(){
+    //     iCheck()
+    //   }, 500);
+    // })
+  </script>
+{% endblock javascripts %}
+
+
+
+
+

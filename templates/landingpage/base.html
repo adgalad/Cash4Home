@@ -1,0 +1,189 @@
+{% load staticfiles %}
+<!DOCTYPE HTML>
+<!--
+	Industrious by TEMPLATED
+	templated.co @templatedco
+	Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
+-->
+<html>
+	<head>
+		<title>Cash4Home - Envía remesas a tus familiares de manera rápida y sencilla</title>
+
+		{% block style %}
+			<link rel="stylesheet" href="{% static 'landingpage/css/main.css' %}" />
+			<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+		{% endblock style %}
+
+		<meta name="description" content="Cash4Home es una plataforma especializada en el envío rápido y seguro de remesas familiares a Venezuela.">
+		<meta name="keywords" content="Cash4Home">
+		<link rel="author" href="https://github.com/adgalad"/>
+		<link rel="canonical" href="https://www.cash4home.io"/>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		
+		<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+
+		<!-- Facebook -->
+		<meta property="og:url" content="https://www.cash4home.io/">
+		<meta property="og:image" content="https://www.cash4home.io/logo.png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+		<meta property="og:description" content="Cash4Home es una plataforma especializada en el envío rápido y seguro de remesas familiares a Venezuela.">
+		<meta property="og:title" content="Cash4Home">
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="Cash4Home">
+		<meta property="og:see_also" content="https://www.cash4home.io/">
+
+		<!-- Google + -->
+		<meta itemprop="name" content="Cash4Home">
+		<meta itemprop="description" content="Cash4Home es una plataforma especializada en el envío rápido y seguro de remesas familiares a Venezuela.">
+		<meta itemprop="image" content="https://www.cash4home.io/logo.png">
+
+		<!-- Twitter -->
+		<meta name="twitter:card" content="summary">
+		<meta name="twitter:url" content="https://www.cash4home.io/">
+		<meta name="twitter:title" content="Cash4Home">
+		<meta name="twitter:description" content="Cash4Home es una plataforma especializada en el envío rápido y seguro de remesas familiares a Venezuela.">
+		<meta name="twitter:creator" content="@cash4home">
+		<meta name="twitter:site" content="@cash4home">
+		<meta name="twitter:image" content="https://www.cash4home.io/logo.png">
+
+		<!-- Mac -->
+		<meta name="apple-mobile-web-app-title" content="Cash4Home"> <!-- New in iOS6 -->
+		<meta name='apple-mobile-web-app-capable' content='yes'>
+		<meta name='apple-touch-fullscreen' content='yes'>
+		<meta name='apple-mobile-web-app-status-bar-style' content='black'>
+		<meta name='format-detection' content='telephone=no'>
+
+		<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#8ead1b">
+		<link rel="apple-touch-icon-precomposed" sizes="57x57" href="/apple-touch-icon-57x57.png" />
+		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="/apple-touch-icon-114x114.png" />
+		<link rel="apple-touch-icon-precomposed" sizes="72x72" href="/apple-touch-icon-72x72.png" />
+		<link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144x144.png" />
+		<link rel="apple-touch-icon-precomposed" sizes="60x60" href="/apple-touch-icon-60x60.png" />
+		<link rel="apple-touch-icon-precomposed" sizes="120x120" href="/apple-touch-icon-120x120.png" />
+		<link rel="apple-touch-icon-precomposed" sizes="76x76" href="/apple-touch-icon-76x76.png" />
+		<link rel="apple-touch-icon-precomposed" sizes="152x152" href="/apple-touch-icon-152x152.png" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png">
+
+		<!-- Favicon -->
+		<link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192" />
+		<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+		<link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
+		<link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16" />
+		<link rel="icon" type="image/png" href="/favicon-128.png" sizes="128x128" />
+
+		<!-- Windows -->
+		<meta name="application-name" content="Cash4Home"/>
+		<meta name="msapplication-TileColor" content="#FFFFFF" />
+		<meta name="msapplication-TileImage" content="https://www.cash4home.io/mstile-144x144.png" />
+		<meta name="msapplication-square70x70logo" content="https://www.cash4home.io/mstile-70x70.png" />
+		<meta name="msapplication-square150x150logo" content="https://www.cash4home.io/mstile-150x150.png" />
+		<meta name="msapplication-wide310x150logo" content="https://www.cash4home.io/mstile-310x150.png" />
+		<meta name="msapplication-square310x310logo" content="https://www.cash4home.io/mstile-310x310.png" />
+	</head>
+	<body class="is-preload">
+		<!-- Header -->
+		<header id="header">
+			<a class="logo" href="index.html">
+				<img class="logo-img" src="{% static 'images/logo3.png' %}">
+			</a>
+			 <nav>
+				<a href="#menu">Menu</a>
+			</nav>
+		</header>
+
+		<!-- Nav -->
+		<nav id="menu">
+			<ul class="links">
+				<li>
+					<a href="{% url 'home' %}">
+						<i class="fas fa-home"></i>
+						Inicio
+					</a>
+				</li>
+				<li>
+					<a href="{% url 'login' %}">
+						<i class="fas fa-sign-in-alt"></i>
+					    Ingresar
+					</a>
+				</li>
+				<li>
+					<a href="{% url 'signup' %}">
+						<i class="fas fa-user-plus"></i>
+					    Crear cuenta
+					</a>
+				</li>
+				<!-- <li><a href="elements.html">¿Quienes somos?</a></li>
+				<li><a href="generic.html">Contactenos</a></li> -->
+			</ul>
+		</nav>
+		{% block content %}
+
+		{% endblock content %}
+		<!-- Footer -->
+		<footer id="footer">
+			<div class="inner">
+				<div class="content">
+					<section>
+						<h3>Cash4Home</h3>
+						<p>
+							Cash4Home es una plataforma especializada en el envío rápido y seguro de remesas familiares a Venezuela.
+						</p>
+					</section>
+					<section>
+						<h4>Links de interes</h4>
+						<ul class="alt">
+							<li>
+								<a href="{% url 'home' %}">
+									<i class="fas fa-home"></i>
+									Inicio
+								</a>
+							</li>
+							<li>
+								<a href="{% url 'login' %}">
+								    Ingresar
+								</a>
+							</li>
+							<li>
+								<a href="{% url 'signup' %}">
+								    Crear cuenta
+								</a>
+							</li>
+							<!-- <li><a href="elements.html">¿Quienes somos?</a></li>
+							<li><a href="generic.html">Contactenos</a></li> -->
+							
+						</ul>
+					</section>
+					<section>
+						<h4>Redes sociales</h4>
+						<ul class="plain footer-social">
+							<li>
+								<a target="_blank" href="https://www.facebook.com/cash4home.Argentina/">
+									<i class="fab fa-facebook">&nbsp;</i>
+									Facebook
+								</a>
+							</li>
+							<li>
+								<a target="_blank" href="https://www.instagram.com/cash4home.argentina/">
+									<i class="fab fa-instagram">&nbsp;</i>
+									Instagram
+								</a>
+							</li>
+						</ul>
+					</section>
+				</div>
+				<div class="copyright">
+					&copy; Cash4Home.
+				</div>
+			</div>
+		</footer>
+		{% block script %}
+			<script src="{% static 'landingpage/js/jquery.min.js' %}"></script>
+			<script src="{% static 'landingpage/js/browser.min.js' %}"></script>
+			<script src="{% static 'landingpage/js/breakpoints.min.js' %}"></script>
+			<script src="{% static 'landingpage/js/util.js' %}"></script>
+			<script src="{% static 'landingpage/js/main.js' %}"></script>
+		{% endblock script %}
+	</body>
+</html>

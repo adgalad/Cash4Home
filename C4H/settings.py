@@ -15,20 +15,34 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+DEFAULT_DOMAIN = 'https://www.cash4home.io'
+#DEFAULT_DOMAIN = 'http://0.0.0.0:8000/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'c)!8@d(tn2_j&#v*lqlmcx14v05!3%0xa7xodlrxz1b3xsvjmx'
+SECRET_KEY = os.environ['SECRET_KEY']
+USER_DB = os.environ['USER_DB']
+PASSWORD_DB = os.environ['PASSWORD_DB']
+NAME_DB = os.environ.get('NAME_DB','cashhom2_db')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+LOGIN_URL = "/v1/login/"
 
+OPERATION_TIMEOUT = 90 # minutos
+EMAIL_VALIDATION_EXPIRATION = 60*3 # 3 horas
 # Application definition
+
+
+# Redirect to HTTPS
+SECURE_SSL_REDIRECT = True
+
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -37,7 +51,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'mathfilters',
     'app',
+]
+
+CRON_CLASSES = [
+    "app.cron.UpdateBTCPrice",
+    # ...
 ]
 
 MIDDLEWARE = [
@@ -48,6 +68,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'app.middleware.AutoLogout'
 ]
 
 ROOT_URLCONF = 'C4H.urls'
@@ -81,6 +102,16 @@ DATABASES = {
     }
 }
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': NAME_DB,
+        'USER': USER_DB,
+        'PASSWORD': PASSWORD_DB,
+        'PORT': '5432',
+    }
+}
+
 
 
 # User substitution
@@ -89,21 +120,27 @@ AUTH_USER_MODEL = 'app.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
-# AUTH_PASSWORD_VALIDATORS = [
-#     {
-#         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-#     },
-#     {
-#         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-#     },
-#     {
-#         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-#     },
-#     {
-#         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-#     },
-# ]
+AUTH_PASSWORD_VALIDATORS = [
+    # {
+    #     'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    # },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    # {
+    #     'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    # },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
 
+
+# Session timeout
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+AUTO_LOGOUT_DELAY = 5 # minutes
+# SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# SESSION_COOKIE_AGE = 10
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
@@ -114,9 +151,13 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_L10N = True
+# USE_L10N = True
 
 USE_TZ = True
+
+DATE_FORMAT = 'Y/m/d'
+DATETIME_FORMAT = 'Y/m/d H:i'
+TIME_FORMAT = 'H:i'
 
 
 # Static files (CSS, JavaScript, Images)
@@ -126,7 +167,7 @@ USE_TZ = True
 #BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 #STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
-STATIC_ROOT = 'staticfiles' 
+STATIC_ROOT = 'static'
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
@@ -134,17 +175,21 @@ STATICFILES_DIRS = (
 )
 
 # Directorio de templates y de statics.
-STATICFILES_DIRS= [os.path.join(BASE_DIR,'static')]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
 
 
+# Email
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ['EMAIL_HOST']
+EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
+EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
+EMAIL_PORT = 465
+# EMAIL_USE_TLS = True
+EMAIL_USE_SSL = True
+DEFAULT_FROM_EMAIL = "Soporte de Cash4Home <%s>"%os.environ['EMAIL_HOST_USER']
+SERVER_EMAIL = os.environ['EMAIL_HOST_USER']
 
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'smarticket.suport@gmail.com' 
-EMAIL_HOST_PASSWORD = 'asd123asd'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'Equipo de soporte de Cash4Home <support@cash4home.com>'
-
+ADMINS = [('Carlos', 'carlos.25896@gmail.com'), ('Vicky', 'mvjorgemauriello@gmail.com')]

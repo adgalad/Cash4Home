@@ -1,0 +1,26 @@
+{% extends "base_dashboard.html" %}
+{% load staticfiles %}
+{% load i18n %}
+
+{% block title %} Inicio Sesión {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <!-- Animate.css -->
+  <link href="{% static 'vendors/animate.css/animate.min.css' %}" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block body_class %}login{% endblock body_class %}
+
+{% block body %}
+  <div class="col-md-12">
+    <div class="col-middle">
+      <div class="text-center text-center">
+        <h1 class="error-number">404</h1>
+        <h2>No se pudo encontrar la página que busca o algún otro error ocurrió</h2>
+        <p>¿Quiere <a href="{% url 'help' %}">Reportar el error?</a>
+        </p>
+      </div>
+    </div>
+  </div>
+{% endblock body %}

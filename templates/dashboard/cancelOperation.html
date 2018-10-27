@@ -1,0 +1,60 @@
+{% extends "base_dashboard.html" %}
+{% load staticfiles %}
+
+{% block title %} Cancelar operación {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="{% static 'css/dragndrop.css' %}" rel="stylesheet">
+
+{% endblock stylesheets %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+          <h3>Cancelar operación</h3>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+
+      <div class="row">
+        
+
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <div class="x_title">
+              <h4>Hemos cancelado su operación</h4>
+            </div>
+            <div class="x_content">
+              {% for message in messages %}
+                <div class="alert {{ message.tags }}">
+                  {{ message }}
+                </div>
+              {% endfor %}
+              <p> La operación <b> {{ operation.code }} </b> fue cancelada exitosamente. </p>
+              
+                <a href="{% url 'dashboard' %}">
+                  <button class="btn btn-primary">
+                    Regresar
+                  </button>
+                </a>
+              </div>
+
+
+
+            </div>
+          </div>
+        </div>
+
+        
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script src="{% static 'js/fileupload.js' %}"></script>
+{% endblock javascripts %}

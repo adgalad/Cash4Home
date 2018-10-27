@@ -1,5 +1,18 @@
 # Created by https://www.gitignore.io
 
+
+# a2 Hosting virtualenv and python app
+tmp/
+3.6/
+public/
+passenger_wsgi.py
+
+
+
+*.sqlite3
+db/*
+staticfiles/*
+app/migrations/*
 ### OSX ###
 .DS_Store
 .AppleDouble
@@ -82,8 +95,9 @@ target/
 *.log
 *.pot
 *.pyc
+media/
 __pycache__/
 local_settings.py
 
 .env
-db.sqlite3
+

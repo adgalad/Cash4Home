@@ -1,0 +1,190 @@
+{% extends "base_dashboard.html" %}
+{% load staticfiles %}
+
+{% block title %} Perfil {% endblock title %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="row">
+      <div class="col-xs-8 col-xs-offset-2">
+        <div class="text-center admin_content">
+          {% for message in messages %}
+            <section class="table-view {{message.tags}}">
+              <div class="row">
+                <div class="container" style="text-align: center; vertical-align: middle; padding-left: 15px;margin-top:2%; padding-bottom: 2%">
+                    {% if 'safe' in message.tags %}
+                      {{ message | safe }}
+                    {% else %}
+                      {{ message }}
+                    {% endif %}
+                </div>
+              </div>
+            </section>   
+          {% endfor %} 
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12 col-sm-12 col-xs-12">
+        <form method="post">
+          {% csrf_token %}
+          <div class="x_panel">
+            <div class="x_title">
+              <h2>Tu perfil</h2>
+              <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+              <div class="row">
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Nombre</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ user.first_name }} {{ user.last_name }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>DNI</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ user.id_number }}
+                </div>
+              </div>
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>País</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ user.country }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>Dirección</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ user.address }}
+                </div>
+              </div>
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Teléfono</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ user.mobile_phone }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-2 col-sm-offset-2">
+                  <b>Estado</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {% if user.verified %}
+                    <p style="color:green"><i class="fa fa-check"></i> Verificado</p>
+                  {% elif not user.canVerify %} 
+                    <p style="color:orange"> Por verificar</p>
+                  {% else %}
+                    <div class="list-action">
+                      <a href="{% url 'userVerification' %}">
+                        <p style="color:red; text-decoration: underline;"><i class="fa fa-warning"></i> Falta verificación</p>
+                      </a>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="row" id="email">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Email</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  <p class="list-content"> {{user.email}} </p>
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <div class="list-action">
+                    <a href="#" onclick="edit('email')">
+                      <span>Editar</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div id="edit_email" style="display: none">
+                <hr>
+                <div class="row">
+                  <div class="col-md-2 col-sm-2 col-xs-12">
+                      <b>Email</b>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12">
+                    <input type="email" name="email" id="input_email" placeholder='{{user.email}}' class="form-control">
+                  </div>
+                </div>
+                <br>
+                <div class="row ">
+                  <div class="col-xs-9 col-xs-offset-2">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="button" onclick="cancel('email')" class="btn btn-primary">Cancelar</button>
+                  </div>
+                </div>
+              </div>
+              <div class="row" id="password">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Contraseña</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <div class="list-action">
+                    <a href="#" onclick="edit('password')">
+                      <span>Editar</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div id="edit_password" style="display: none">
+                <hr>
+                <div class="row">
+                  <div class="col-md-2 col-sm-2 col-xs-12">
+                    <p class="list-title">
+                      <strong>Contraseña</strong>
+                    </p>
+                  </div>
+                  <div class="col-md-3 col-sm-3 col-xs-12">
+                    <input type="password" name="old_password"  id="old_password" placeholder='Contraseña actual' class="form-control"> <br>
+                    <input type="password" name="new_password1" id="new_password1" placeholder='Nueva contraseña' class="form-control"> <br>
+                    <input type="password" name="new_password2" id="new_password2" placeholder='Repita la contraseña' class="form-control">
+                  </div>
+                </div>
+                <br>
+                <div class="row ">
+                  <div class="col-xs-9 col-xs-offset-2">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="button" onclick="cancel('password')" class="btn btn-primary">Cancelar</button>
+                  </div>
+                </div>
+              </div>
+              <hr>
+              
+            </div>
+          </div>
+        </form>
+        </div>
+    </div>
+  </div>
+  <script type="text/javascript">
+
+    edit = function(name){
+      cancel('email')
+      cancel('password')
+      $('#'+name).hide()
+      $('#edit_'+name).show()
+    }
+
+    cancel = function(name){
+      $('#'+name).show()
+      $('#edit_'+name).hide()
+
+      $('#input_email').val("")
+      $('#old_password').val("")
+      $('#new_password2').val("")
+      $('#new_password1').val("")
+    }
+
+  </script>
+{% endblock content %}

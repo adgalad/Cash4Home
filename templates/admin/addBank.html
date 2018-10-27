@@ -1,0 +1,64 @@
+{% extends "base_dashboard.html" %}
+{% load staticfiles %}
+{% load i18n %}
+
+{% block title %} Agregar banco {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="{% static "css/bootstrap-multiselect.css" %}" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="row">
+      <div class="col-xs-5 col-xs-offset-3">
+        <div class="text-center admin_content">
+          <h3>Agregar banco</h3>
+        </div>
+        <form method="post">
+          {% csrf_token %}
+          {% for message in messages %}
+            <section class="table-view {{message.tags}}">
+              <div class="container" style="display: table-cell; text-align: center; vertical-align: middle; padding-left: 15px;">
+                  {% if 'safe' in message.tags %}
+                    {{ message | safe }}
+                  {% else %}
+                    {{ message }}
+                  {% endif %}
+              </div>
+            </section>   
+          {% endfor %} 
+          {% for field in form %}
+            {{ field.label_tag }}
+            {{ field }} 
+            <br>
+          {% endfor %}
+          
+          <div class="text-center">
+            <br>
+            <button class="btn btn-primary submit" type="submit">Enviar</button>
+          </div>
+        </form>
+      </div>
+    </div>  
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super}}
+  <!-- jQuery Smart Wizard -->
+  <script src="{% static "js/bootstrap-multiselect.js" %}"></script>
+  <script type="text/javascript">
+      $(document).ready(function() {
+          $('#id_can_send').multiselect({
+              enableClickableOptGroups: true,
+              enableCollapsibleOptGroups: true,
+              enableFiltering: true,
+              nonSelectedText: 'Seleccione los bancos',
+              includeSelectAllOption: true
+          });
+      });
+
+  </script>
+{% endblock javascripts %}

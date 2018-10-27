@@ -1,0 +1,406 @@
+{% extends "base_dashboard.html" %}
+{% load staticfiles %}
+{% load mathfilters %}
+
+{% block title %} Detalles de la operación {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="{% static 'css/imageModal.css' %}" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="clearfix"></div>
+
+      <div class="row">
+        {% for message in messages %}
+          <section class="table-view {{message.tags}}">
+            <div class="container" style="display: table-cell; text-align: center; vertical-align: middle; padding-left: 15px;">
+                {% if 'safe' in message.tags %}
+                  {{ message | safe }}
+                {% else %}
+                  {{ message }}
+                {% endif %}
+            </div>
+          </section>   
+          <br>
+        {% endfor %}
+        <!-- The Modal -->
+        <div id="myModal" class="modal">
+
+          <!-- The Close Button -->
+          <span class="close">&times;</span>
+
+          <!-- Modal Content (The Image) -->
+          <img class="modal-content" id="img01" style=" display: none">
+          <iframe class="modal-content" id="iframe01" style="height: 80%; display: none"></iframe> 
+
+          <!-- Modal Caption (Image Text) -->
+          <div id="caption"></div>
+        </div>
+
+        <div id="popup" class="modal fade" role="dialog">
+          <h4> Hola</h4>
+        </div>
+
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <div class="x_title">
+              <h2>Detalles de la operación</h2>
+              <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+              <div class="row">
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Código</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ operation.code }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-1 col-sm-offset-1">
+                  <b>Monto</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ operation.fiat_amount | currency }}
+                </div>
+              </div>
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Status</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ operation.status }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-1 col-sm-offset-1">
+                  <b>Fecha</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ operation.date }}
+                </div>
+              </div>
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Cliente</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ operation.id_client }} 
+                  <a href="{% url 'viewUser' operation.id_client.id %}"> 
+                    <i class="fa fa-search"></i>
+                  </a>
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-1 col-sm-offset-1">
+                  <b>Cuenta del cliente</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ operation.id_account }} 
+                </div>
+              </div>
+
+
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Aliado de origen</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {% if operation.id_allie_origin %}
+                    {{ operation.id_allie_origin }} 
+                    <a href="{% url 'viewUser' operation.id_allie_origin.id %}"> 
+                      <i class="fa fa-search"></i>
+                    </a>
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-1 col-sm-offset-1">
+                  <b>Cuenta del aliado origen</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {% if operation.account_allie_origin %}
+                    {{ operation.account_allie_origin }} 
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Aliado destino</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {% if operation.id_allie_target %}
+                    {{ operation.id_allie_target }} 
+                    <a href="{% url 'viewUser' operation.id_allie_target.id %}"> 
+                      <i class="fa fa-search"></i>
+                    </a>
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-1 col-sm-offset-1">
+                  <b>Cuenta del aliado destino</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {% if operation.account_allie_target %}
+                    {{ operation.account_allie_target }} 
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="row">
+                <hr>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <b>Monto enviado</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                  {{ operation.origin_currency }} {{ operation.fiat_amount | currency }}
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 col-md-offset-1 col-sm-offset-1">
+                  <b>Tasa de cambio</b>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 ">
+                  {{ operation.origin_currency }}/{{operation.target_currency}} {{ operation.exchange_rate | currency }} 
+                </div>
+              </div>
+
+
+
+              <br><br>
+              <div class="x_title">
+                <h2>Cuentas destino</h2>
+                <div class="clearfix"></div>
+              </div>
+
+              <table class="table table-striped bulk_action">
+                <thead>
+                  <tr class="headings">
+                    <th class="column-title">Banco </th>
+                    <th class="column-title">Número de cuenta </th>
+                    <th class="column-title">Titular</th>
+                    <th class="column-title">DNI</th>
+                    <th class="column-title">Email</th>
+                    <th class="column-title">Monto</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {% for o,a in ogt %}
+                  <tr class="even pointer">
+                    <td class=" ">{{ a.id_account.id_bank }}</td>
+                    <td class=" ">{{ a.id_account.number }}</i></td>
+                    <td class=" ">{{ a.owner }}</td>
+                    <td class=" ">{{ a.id_number }}</td>
+                    <td class=" ">{{ a.email }}</td>
+
+                    <td class=" ">
+                      {{ operation.origin_currency }} {{ o.amount | currency }}<br>
+                      {{ operation.target_currency }} {{ o.amount | mul:operation.exchange_rate | currency }}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+
+              <br><br>
+
+              <div class="x_title">
+                <h2>Transacciones realizadas</h2>
+                <div class="clearfix"></div>
+              </div>
+
+              <table class="table table-striped bulk_action" id="datatable-buttons">
+                <thead>
+                  <tr class="headings">
+                    <th class="column-title">Código</th>
+                    <th class="column-title">Cuenta origen</th>
+                    <th class="column-title">Cuenta destino</th>
+                    <th class="column-title">Tipo de transacción</th>
+                    <th class="column-title">Monto</th>
+                    <th class="column-title">Fecha</th>
+                    <th class="column-title">Imagen</th>
+                    <th class="column-title">Eliminar</th>
+                    <th class="none">Crypto</th>
+                    <th class="none">Tasa Crypto</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {% for tx in transactions %}
+                    <tr class="even pointer">
+                      <td class=" ">{{ tx.code }}</td>
+                      <td class=" ">
+                        {% if tx.operation_type == "TC" %}
+                          N/A
+                        {% else %}
+                          {{ tx.origin_account }}
+                        {% endif %}
+                      </td>
+                      <td class=" ">
+                        {% if tx.operation_type == "TC" %}
+                          {{ tx.to_exchanger }}
+                        {% else %}
+                          {{ tx.target_account }}
+                        {% endif %}
+                      </td>
+                      <td class=" ">
+                        {%   if tx.operation_type == "TO" %}
+                          Origen
+                        {% elif tx.operation_type == "TD" %}
+                          Destino
+                        {% elif tx.operation_type == "TC" %}
+                          Cierre
+                        {% endif %}
+                      </td>
+                      <td class=" ">{{tx.amount | currency}} {{tx.currency}}</td>
+                      <td class=" ">{{tx.date}}</td>
+                      <td class=" ">
+                        <a class="tx_image" name="Imagen de la transacción" href="{{tx.image_url}}">
+                          <i class="fa fa-image"></i>
+                        </a>
+                      </td>
+                      <td> 
+                        <a href="{% url 'deleteTransaction' tx.code %}" onclick="return confirm('Desea elminar la transacción {{tx.code}}')">
+                          <i class="fa fa-times" style="color: red"></i></td>
+                        </a>
+                      {% if tx.crypto_used %}
+                        <td>{{tx.crypto_used.code}}</td>
+                        <td>{{tx.crypto_rate | currency}} {{tx.currency}}</td>
+                      {% else %}
+                        <td>N/A</td>
+                        <td>N/A</td>
+                      {% endif %}
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              <br>
+              {% if perms.admin.add_transaction and operation.is_active or request.user.is_superuser %}
+                <div class="row">
+                  <div style="text-align: right;" class="col-md-12 col-sm-12 col-xs-12">
+                    <a class="btn btn-primary" 
+                      {% if operation.status == "Faltan recaudos" or operation.status == "Por verificar" %}
+                        disabled 
+                        onclick="return false" 
+                      {% else %}
+                        href="{% url 'operationAddTransaction' operation.code %}"
+                      {% endif %} >
+                      <i class="fa fa-edit"></i>&nbsp Agregar transacción
+                    </a>
+                  </div>
+                </div>
+              {% endif %}
+
+
+              <br><br>
+              
+              {% if perms.admin.edit_operation and operation.is_active or request.user.is_superuser %}
+              <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    
+                      <div class="col-md-3 col-sm-3 col-xs-12">
+                        <b>{{ form.status.label_tag }}</b>
+                      </div>
+                      <div class="col-md-4 col-sm-4 col-xs-12">
+                        {{ form.status }}
+                      </div>
+                    
+                    <div class="col-md-4 col-sm-4 col-xs-12">
+                      <button class="btn btn-primary" type="submit">
+                        Cambiar Status
+                      </button>    
+                    </div>
+                </div>
+                <div id="aditionalFields" style="display: none;">
+                  <div class="row">
+                      <div class="col-md-3 col-sm-3 col-xs-12">
+                          <b>{{ form.crypto_used.label_tag }}</b>
+                      </div>
+                      <div class="col-md-4 col-sm-4 col-xs-12">
+                          {{ form.crypto_used }}
+                        </div>
+                  </div>
+                  <div class="row">
+                      <div class="col-md-3 col-sm-3 col-xs-12">
+                          <b>{{ form.rate.label_tag }}</b>
+                      </div>
+                      <div class="col-md-4 col-sm-4 col-xs-12">
+                          {{ form.rate }}
+                        </div>
+                  </div>
+                </div>
+              </form>
+              {% endif %}
+
+              <hr>
+              <br><br>
+              <div style="float:right;">
+                <a class="btn btn-primary" href="{% url 'dashboard' %}"><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
+                {% if perms.admin.edit_operation and operation.is_active or request.user.is_superuser %}
+                  <a class="btn btn-primary" href="{% url 'operationEditDashboard' operation.code %}" ><i class="fa fa-edit"></i>&nbsp Asociar aliado</a>
+                {% endif %}
+                {% if perms.admin.edit_operation %}
+                  <a class="btn btn-primary" href="{% url 'operationHistory' operation.code %}"><i class="fa fa-book"></i>&nbsp Historial</a>
+                {% endif %}
+                {% if perms.admin.cancel_operation and operation.is_active or request.user.is_superuser %}
+                  {% if operation.status != "Fondos transferidos" %}
+                    <a class="btn btn-danger"  href="{% url 'cancelOperation' operation.code %}" >
+                      <i class="fa fa-times"></i>&nbsp Cancelar Operación
+                    </a>
+                  {% endif %}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <!-- Datatables -->
+
+  <script type="text/javascript">
+    var modal = document.getElementById('myModal');
+    var modalImg = document.getElementById("img01");
+    var modalIframe = document.getElementById("iframe01");
+    var captionText = document.getElementById("caption");
+
+    openModal = function(){
+        modal.style.display = "block";
+        if (this.href.toLowerCase().endsWith(".pdf")){
+          $("#iframe01").show()
+          modalIframe.src = this.href;  
+        } else {
+          $("#img01").show()
+          modalImg.src = this.href;  
+        }
+        captionText.innerHTML = this.name;
+        return false
+    }
+    
+    $('a[class="tx_image"]').click(openModal)
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() { 
+      modal.style.display = "none";
+      $("#img01").hide()
+      modalImg.src = "";
+      $("#iframe01").hide()
+      modalIframe.src = "";
+    }
+  </script>
+{% endblock javascripts %}

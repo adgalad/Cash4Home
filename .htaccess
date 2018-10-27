@@ -1,0 +1,17 @@
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/cashhom2/Cash4Home"
+PassengerBaseURI "/v1"
+PassengerPython "/home/cashhom2/virtualenv/Cash4Home/3.6/bin/python3.6"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/cashhom2/Cash4Home"
+PassengerBaseURI "/v1"
+PassengerPython "/home/cashhom2/virtualenv/Cash4Home/3.6/bin/python3.6"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/cashhom2/Cash4Home"
+PassengerBaseURI "/v1"
+PassengerPython "/home/cashhom2/virtualenv/Cash4Home/2.7/bin/python2.7"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END

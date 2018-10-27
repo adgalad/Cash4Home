@@ -1,0 +1,146 @@
+{% extends "base_dashboard.html" %}
+{% load staticfiles %}
+{% load mathfilters %}
+
+{% block title %} Crear transacción {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="{% static 'css/dragndrop.css' %}" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="clearfix"></div>
+
+      <div class="row">
+        <div class="col-xs-5 col-xs-offset-3">
+          <div class="text-center admin_content">
+            <h3>Crear transacción</h3>
+          </div>
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% for message in messages %}
+              <section class="table-view {{message.tags}}">
+                <div class="container" style="display: table-cell; text-align: center; vertical-align: middle; padding-left: 15px;">
+                    {% if 'safe' in message.tags %}
+                      {{ message | safe }}
+                    {% else %}
+                      {{ message }}
+                    {% endif %}
+                </div>
+              </section> 
+            {{ form.non_field_errors }}  
+            {% endfor %} 
+            
+            {% for field in form %}
+              {% if field.label != "Imagen del comprobante" %}
+                <div id="div_{{field.auto_id}}">
+                  {{ field.label_tag }}
+                  {{ field }} 
+                  <br>
+                </div>
+              {% endif %}
+              {% for error in field.errors %}
+                {{ error }}<br>
+              {% endfor %}
+            {% endfor %}
+
+            <label for="id_transfer_image">Imagen del comprobante:</label>
+            <input type="file" style="display: none" name="transfer_image" class="form-control" required="" id="id_transfer_image" onchange="readURL(this, 'img_file1');" accept=".jpg, .jpeg, .png">
+            <a href="#" onclick="getAcceptedExtension('id_transfer_image')">
+              <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12" style="height: 300px; width: 400px; display: table;">
+                  <div style="display: table-cell; vertical-align: middle;">
+                    <div style="display: flex; align-items: center; justify-content: center;">
+                      <img width="100%" class="imageUpload" id="img_file1" src="{% static 'images/placeholder.png' %}" alt="your image"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </a>
+            <div class="text-center">
+              <br>
+              <a class="btn btn-primary" href="{% url 'operationDetailDashboard' operation.code %}" onclick="return !goToPreviousPage()"><i class="fa fa-chevron-left"></i>&nbsp Volver</a>
+              <a class="btn btn-primary submit" href="#" onclick="checkFields()">Enviar</a>
+            </div>
+          </form>
+        </div>              
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <!-- Datatables -->
+  <script src="{% static 'js/fileupload.js' %}"></script>
+  <script type="text/javascript">
+    checkFields = function(){
+      ok = true;
+      type = $('#id_operation_type').val()
+      if ( type == "TC") {
+        if ($('#id_to_exchanger').val() == ""){
+          $('#div_id_to_exchanger').addClass('bad');
+          ok = false
+        } 
+      }
+      else if (type == "TD"){
+        if ($('#id_origin_account').val() == ""){
+          $('#div_id_origin_account').addClass('bad');
+          ok = false
+        } 
+        
+        if ($('#id_transfer_number').val() == ""){
+          $('#div_id_transfer_number').addClass('bad');
+          ok = false
+        } 
+
+        if ($('#id_target_account').val() == ""){
+          $('#div_id_target_account').addClass('bad');
+          ok = false
+        } 
+      }
+      
+      if ($('#id_transfer_image').val() == ""){
+        $('#img_file1').attr('style', 'border: 1px solid red;');
+        ok = false
+      }
+
+      if (ok){
+        $('form').submit()
+      }
+      return false
+    }
+    f = function() {
+      type = $('#id_operation_type').val()
+      $('div[class="bad"]').removeClass('bad')
+      if ( type == "TD") {
+        $('#div_id_to_exchanger').hide();
+        $('#div_id_transfer_number').show();
+        $('#div_id_origin_account').show();
+        $('#div_id_target_account').show();
+        $("#div_id_crypto_used").show();
+        $("#div_id_rate").show();
+        document.getElementById("id_crypto_used").required = true;
+        document.getElementById("id_rate").required = true;
+      }
+      else if (type == "TC"){
+        $('#div_id_to_exchanger').show();
+        $('#div_id_transfer_number').hide();
+        $('#div_id_origin_account').hide();
+        $('#div_id_target_account').hide();
+        $("#div_id_crypto_used").hide();
+        $("#div_id_rate").hide();
+        document.getElementById("id_crypto_used").required = false;
+        document.getElementById("id_rate").required = false;
+      }
+    }
+    $('#id_amount').blur(function(){
+      return toCurrency($('#id_amount'))
+    })
+    f()
+    $('#id_operation_type').change(f)
+  </script>
+{% endblock javascripts %}

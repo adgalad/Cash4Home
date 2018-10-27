@@ -1,0 +1,113 @@
+{% extends "base_dashboard.html" %}
+{% load staticfiles %}
+{% load mathfilters %}
+
+{% block title %} Editar operación{% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="{% static 'css/imageModal.css' %}" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="clearfix"></div>
+
+      <div class="row">
+        <div class="col-xs-5 col-xs-offset-3">
+          <div class="text-center admin_content">
+            <h3>Editar operación</h3>
+          </div>
+          
+          {% csrf_token %}
+          {% for message in messages %}
+            <section class="table-view {{message.tags}}">
+              <div class="container" style="display: table-cell; text-align: center; vertical-align: middle; padding-left: 15px;">
+                  {% if 'safe' in message.tags %}
+                    {{ message | safe }}
+                  {% else %}
+                    {{ message }}
+                  {% endif %}
+              </div>
+            </section> 
+          {% endfor %}
+          <div class="col-md-12 col-sm-12 col-xs-12">     
+            <form method="post">
+              {% csrf_token %}
+              {% for field in form %}
+                {% if field.label != "Imagen de la transacción" %}
+                  <div id="div_{{field.auto_id}}">
+                    {{ field.label_tag }}
+                    {{ field }} 
+                    <br>
+                  </div>
+                {% endif %}
+                {% for error in field.errors %}
+                  {{ error }}<br>
+                {% endfor %}
+              {% endfor %}
+              <div class="text-center">
+                <br>
+                <a class="btn btn-primary" href="{% url 'operationDetailDashboard' operation.code %}" onclick="return !goToPreviousPage()">
+                  <i class="fa fa-chevron-left"></i>&nbsp Volver
+                </a>
+                <button class="btn btn-primary submit" type="submit">Enviar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}  
+  <script type="text/javascript">
+    const accountFrom = JSON.parse('{{accountFrom | safe}}')
+    const accountTo = JSON.parse('{{accountTo | safe}}')
+
+    updateAccounts = function(id, account, json){
+      console.log('Entre')
+      $("#" + account +" option[value!='']").remove();
+      var ally = $('#'+id).val()
+      console.log(">>>", ally)
+      if (ally != ""){
+        console.log(json[ally])
+        for (var i in json[ally]){
+          option = json[ally][i]
+          $('#'+account).append('<option value="' + option.id +'">' + option.number + '</option>')
+        }
+      }
+    }
+    updateAccountsFrom = function(){
+      updateAccounts('id_id_allie_origin', 'id_account_allie_origin', accountFrom)
+    }
+
+    updateAccountsTo = function(){
+      console.log('Hola')
+      updateAccounts('id_id_allie_target', 'id_account_allie_target', accountTo)
+    }
+
+
+    updateAccountsFrom()
+    updateAccountsTo()
+    $('#id_account_allie_origin').val( {{ initialFrom }} )
+    $('#id_account_allie_target').val( {{ initialto }} )
+
+    $('#id_id_allie_origin').change(updateAccountsFrom)
+    $('#id_id_allie_target').change(updateAccountsTo)
+  </script>
+{% endblock javascripts %}
+
+
+
+
+
+
+
+
+
+
+

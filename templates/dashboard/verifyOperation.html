@@ -1,0 +1,240 @@
+{% extends "base_dashboard.html" %}
+{% load staticfiles %}
+
+{% block title %} Verificar operación {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link href="{% static 'css/dragndrop.css' %}" rel="stylesheet">
+  <!-- NProgress -->
+  <link href="{% static 'vendors/nprogress/nprogress.css' %}" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block content %}
+  <div class="right_col" role="main">
+    <div class="">
+      <div class="page-title">
+        <div class="title_left">
+          <h3>Verificar operación</h3>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <div class="x_content">
+              {% for message in messages %}
+                <div class="alert {{ message.tags }}">
+                  {{ message }}
+                </div>
+              {% endfor %}
+
+              {% if operation.is_active %}
+              <div id="stage-1">
+                <h3>Datos de la transferencia</h3>
+                <hr>
+                <p> Su operación fue creada exitosamente. </p>
+                <p> Para continuar debe realizar una transferencia bancaria a la cuenta con los siguientes datos:</p>
+                <p> <b>Nota:</b> Puede hacer uso de otros mecanismos de pago como <b>Zelle</b>®, <b>PayPal</b>®, entre otros.</p>
+                
+                <style type="text/css">
+                  td {
+                    font-size: 13px;
+                    width: 140px;
+                  }
+                  tr {
+                    height: 50px;
+                    border-bottom: 1px solid;
+                  }
+                </style>
+                <br>
+                Tiempo restante: <tiempo id='timeLeft'></tiempo>
+
+                <br>
+                <div class="row">
+                  <div class="col-md-6 col-sm-10 col-xs-12">
+                    <div class="progress progress_sm">
+                      <div class="progress-bar bg-green" 
+                           role="progressbar" 
+
+                           id='progressbar' 
+                           style="width: 1%;" 
+                           aria-valuenow="0">      
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <br>  
+                <div class="row">
+                  <div class="col-md-6 col-sm-10 col-xs-12">
+                    <table style="min-width: 100%">
+                      <tr>
+                        <td><b>Banco:</b></td>
+                        <td> {{ operation.account_allie_origin.id_bank.name }} </td>
+                      </tr>
+
+                      <tr>
+                        <td><b>Cuenta:</b></td>
+                        <td> {{ operation.account_allie_origin.number }} </td>
+                      </tr>
+                      {% if operation.account_allie_origin.aba %}
+                      <tr>
+                        <td><b>Número ABA:</b></td>
+                        <td> {{ operation.account_allie_origin.aba }}</td>
+                      </tr>
+                      {% endif %}
+                      
+                      <tr>
+                        <td><b>Nombre:</b></td>
+                        <td> {{ operation.id_allie_origin.get_full_name }} </td>
+                      </tr>
+
+                      <tr>
+                        <td><b>Correo electrónico:</b></td>
+                        <td> {{ operation.id_allie_origin.email }} </td>
+                      </tr>
+
+                      <tr>
+                        <td><b>Teléfono:</b></td>
+                        <td> {{ operation.id_allie_origin.mobile_phone }} </td>
+                      </tr>
+
+                      <tr>
+                        <td><b>Monto:</b></td>
+                        <td> {{ operation.origin_currency }} {{ operation.fiat_amount | currency }} </td>
+                      </tr>
+
+                    </table>
+                  </div>
+                </div>
+                <br><br>
+
+                <button type="button" class="btn btn-primary" onclick="forward()">Continuar</button>
+                <a href="{% url 'cancelOperation' operation.code %}" onclick="return cancelOperation()"><button type="button" class="btn btn-danger">Cancelar operación</button></a>
+              </div>
+              <div id="stage-2" style="display: none">
+                <h3>Imagen del comprobante</h3>
+                <hr>
+                <p> Una vez que haya completado la transferencia, deberá subir una imagen de un comprobante con el cual podamos realizar la verificación.</p>
+                
+                
+
+                <form id="upload" action="{% url 'verifyOperation' operation.code %}" method="post" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <div class="row">
+                    <br>
+                    <a href="#" onclick="getAcceptedExtension('file')">
+                      <div class="col-xs-12 col-sm-12 col-md-6" style="height: 300px; width: 400px; display: table;">
+                        <div style="display: table-cell; vertical-align: middle;">
+                          <div style="display: flex; align-items: center; justify-content: center;">
+                            <img width="100%" class="imageUpload" id="img" src="{% static 'images/placeholder.png' %}" alt="your image"/>
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+                  <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-6">
+                      <input type='file' class="from-control" name="file" id="file" onchange="readURL(this, 'img');" />
+                    </div>
+                  </div>
+                  <br>
+                  <button type="button" class="btn btn-primary" onclick="back()">Regresar</button></a>
+                  <button type="submit" class="btn btn-primary" onclick="return verifyImage()">Continuar</button>
+                  
+                </form>
+                
+              </div>
+              {% else %}
+                <a href="{% url 'pendingOperations' %}"><button type="button" class="btn btn-primary">Regresar</button></a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <!-- bootstrap-progressbar -->
+  <script src="{% static 'vendors/bootstrap-progressbar/bootstrap-progressbar.min.js' %}"></script>
+  <script src="{% static 'js/fileupload.js' %}"></script>
+  <script type="text/javascript">
+    var start = parseInt('{{ start }}')
+    var end = parseInt('{{ end }}')
+
+    function toHHMMSS(seconds){
+      var hours   = Math.floor(seconds / 3600);
+      var minutes = Math.floor((seconds - (hours * 3600)) / 60);
+      var seconds = Math.floor(seconds - (hours * 3600) - (minutes * 60));
+
+      hours = String(hours)
+      minutes = String(minutes)
+      seconds = String(seconds)
+      
+      if (hours < 0)
+        return '0:00:00'
+
+
+      if (minutes < 0)
+        minutes = '00'
+      else if (minutes < 10) 
+        minutes = '0' + String(minutes) 
+      else 
+        minutes = String(minutes)
+
+      if (seconds < 0)
+        seconds = '00'
+      else if (seconds < 10)
+        seconds = '0' + String(seconds)
+      else 
+        seconds = String(seconds)
+
+      return hours + ':' + minutes + ':' + seconds
+    }
+
+    function updateTimer(){
+      var now = new Date()
+
+      
+      var left = end - now.getTime()/1000
+      var delta = end - start
+      
+      $('#timeLeft').html(toHHMMSS(left))
+      percentage = 100 - Math.floor(left*100.0/delta)
+      $('#progressbar').attr('style', 'width: ' + percentage + '%;')
+    }
+    updateTimer()
+    var intervalID = setInterval(updateTimer, 1000 )
+
+    function cancelOperation(){
+      if (window.confirm("¿Está seguro de cancelar la operación?")) {
+          return true;
+      } else {
+          return false;
+      }
+    }
+    function verifyImage(){
+      if ($('#file').val() === ""){
+        $('#img').attr('style', 'border: 1px solid red;')
+        return false;
+      }
+      return true
+    }
+    function forward(){
+      $('#stage-1').hide()
+      $('#stage-2').show()
+    }
+
+    function back(){
+      $('#stage-2').hide()
+      $('#stage-1').show() 
+    }
+  </script>
+
+{% endblock javascripts %}

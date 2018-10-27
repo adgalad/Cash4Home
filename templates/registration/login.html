@@ -1,5 +1,6 @@
 
 {% extends "base_dashboard.html" %}
+{% load staticfiles %}
 {% load i18n %}
 
 {% block title %} Inicio Sesión {% endblock title %}
@@ -7,7 +8,7 @@
 {% block stylesheets %}
   {{ block.super }}
   <!-- Animate.css -->
-  <link href="/static/vendors/animate.css/animate.min.css" rel="stylesheet">
+  <link href="{% static 'vendors/animate.css/animate.min.css' %}" rel="stylesheet">
 {% endblock stylesheets %}
 
 {% block body_class %}login{% endblock body_class %}
@@ -22,38 +23,44 @@
       <div class="animate form login_form">
         <section class="login_content">
           {% for message in messages %}
-          <div class="alert alert-warning" style="background-color: #6f9300; border-color: #6f9300">
-            {{ message }}
+          <div class="alert {{ message.tags }}" style="width: 100%;">
+            {{ message | safe  }}
           </div>
           {% endfor %}
           <form method="post">
             {% csrf_token %}
+            {% if request.GET.next %}
+              <input type="hidden" name="next" value="{{ request.GET.next }}" />
+            {% else %}
+              <input type="hidden" name="next" value="{% url 'dashboard' %}" />
+            {% endif %}
             <h1>Iniciar sesión</h1>
             {% for field in form %}
               {{ field }} 
             {% endfor %}
             <div>
               <button class="btn btn-primary submit" type="submit">Entrar</button>
-              <a class="reset_pass" href="/password_reset">¿Olvidaste tu contraseña?</a>
+              <a class="reset_pass" href="{% url 'password_reset' %}">¿Olvidaste tu contraseña?</a>
             </div>
           </form>
           <div class="clearfix"></div>
 
           <div class="separator">
             <p class="change_link">¿Eres nuevo por aquí?
-              <a href="/signup" class="to_register"> Crear cuenta </a>
+              <a href="{% url 'signup' %}" class="to_register"> Crear cuenta </a>
             </p>
 
             <div class="clearfix"></div>
             <br />
 
-            <div style="position: relative;left: 34%;"">
-             <a href="/"> <img src="/static/images/logo.png" class="img-responsive" width="30%"> </a>
+            <div style="position: relative;left: 34%;">
+             <a href="{% url 'home' %}"> <img src="{% static 'images/logo.png' %}" class="img-responsive" width="30%"> </a>
             </div>
           </div>
         </section>
       </div>
     </div>
   </div>
+
 {% endblock body %}
 
